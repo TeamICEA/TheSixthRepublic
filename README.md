@@ -1,5 +1,5 @@
 # The 6th Republic
-![logo](https://avatars.githubusercontent.com/u/207436724?s=500&v=4)
+![logo](https://avatars.githubusercontent.com/u/207436724?s=460&v=4)
  > [!NOTE]
  > 정치 성향 분석 서비스
 >
