@@ -1,16 +1,15 @@
 import pymysql
 import requests
+import json
+from openai import OpenAI
 from bs4 import BeautifulSoup
 
-OPEN_KEY = ""
-SQL_HOST = "175.205.96.45"
-SQL_PORT = 3306
-SQL_DATABASE = "republic"
-SQL_USERNAME = "user"
-SQL_PASSWORD = "teamicea211"
-
-con = pymysql.connect(host=SQL_HOST, user=SQL_USERNAME, password=SQL_PASSWORD, database=SQL_DATABASE, port=SQL_PORT, use_unicode=True, charset='utf8')
+keys = {}
+with open("keys.json") as f:
+    keys = json.load(f)
+con = pymysql.connect(host=keys["SQL_HOST"], user=keys["SQL_USERNAME"], password=keys["SQL_PASSWORD"], database=keys["SQL_DATABASE"], port=3306, use_unicode=True, charset='utf8')
 cur = con.cursor()
+client = OpenAI(api_key=keys["OPENAI_KEY"])
 
 def execute():
     global cur
@@ -29,18 +28,119 @@ def view():
     for row in rows:
         print(row)
 
-def crawl():
+def crawl_minjoo():
     for i in range(1201498, 1211003):
-    response = requests.get("https://theminjoo.kr/main/sub/news/view.php?sno=0&brd=230&post=1210973")
+        response = requests.get(f"https://theminjoo.kr/main/sub/news/view.php?sno=0&brd=230&post={i}")
 
-    if response.status_code == 200:
+        if response.status_code == 200:
+            html = response.text
+            soup = BeautifulSoup(html, "html.parser")
+            texts = soup.select_one("#container > div.article-body > div > div.board-view__wrap > div.board-view > div.board-view__body")
+            
+            print(texts.text)
+
+def crawl_all_articles():
+    # YH STYLE
+    for i in range(1, 21):
+        url = f"https://www.yna.co.kr/politics/all/{i}"
+
+        response = requests.get(url)
+
+        if response.status_code != 200:
+            break
+        
         html = response.text
         soup = BeautifulSoup(html, "html.parser")
-        texts = soup.select_one("#container > div.article-body > div > div.board-view__wrap > div.board-view > div.board-view__body")
-        print(texts.text)
+        articles = soup.select("#container > div.container521 > div.content03 > div.section01 > section > div > ul > li")
+
+        for article in articles:
+            url_a = article.select_one("div > div > strong > a")
+
+            if url_a is not None:
+                url = url_a["href"]
+                crawl_one_article(url)
+
+def get_article_raw(url: str, title_selector: str, contents_selector: str) -> tuple[str, str]:
+    response = requests.get(url)
+
+    if response.status_code != 200:
+        return
+    
+    html = response.text
+    soup = BeautifulSoup(html, "html.parser")
+    title = soup.select_one(title_selector)
+    contents = soup.select_one(contents_selector)
+
+    return title.text, contents.text
+
+def get_article_naver(url: str) -> tuple[str, str]:
+    return get_article_raw(url, "#title_area > span", "#dic_area")
+
+def get_article_yh(url: str) -> tuple[str, str]:
+    return get_article_raw(url, "#container > div.container591 > div.content90 > header > h1", "#articleWrap > div.story-news.article")
+
+def crawl_one_article(url: str):
+    global client, cur
+
+    title, contents = get_article_naver(url)
+    question = f"""# {title}
+{contents}
+
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+이 문장들이 핵심 데이터고, 이 문장들을 기반으로 너는 INSERT 명령어를 채워야 해.
+
+각각 category 테이블의 데이터로, 필드는 id, name, description, parent_id야
+'1', '경제 정책', '시장 자유도, 복지, 조세 정책\n자유시장 vs 복지국가', NULL
+'2', '사회 이슈', '여성, 성소수자, 다문화 수용\n보수적 vs 진보적', NULL
+'3', '국가 안보', '대북정책, 국방 강화\n강경 대응 vs 평화 협력', NULL
+'4', '법과 질서', '범죄 처벌, 사형제도\n강력 처벌 vs 인권 중심', NULL
+'5', '교육 정책', '교육 자율성, 입시 제도\n경쟁 중심 vs 공정·형평', NULL
+'6', '환경 정책', '기후변화 대응, 탄소세\n산업 우선 vs 환경 보호', NULL
+'7', '노동·고용', '비정규직, 최저임금, 주 4일제\n노동자 권리 vs 기업 자율', NULL
+'8', '종교와 정치', '종교적 영향력\n세속주의 vs 전통가치 중시', NULL
+'9', '언론/표현의 자유', '허위 정보, 검열, 표현 규제\n자유 보장 vs 질서 유지', NULL
+'10', '정치 제도 개혁', '선거제도, 국회의원 수\n현행 유지 vs 제도 개편', NULL
+'11', '부동산·주거 정책', '공급 확대, 공공주택, 세금 정책 등', NULL
+'12', '보건의료 정책', '공공의료 확대, 건강보험, 의료 인프라', NULL
+'13', '청년/고령층 정책', '청년 지원, 고령화 대책, 세대 간 형평성', NULL
+'14', '중소기업·자영업', '지원 정책, 세제 혜택, 규제 완화 등', NULL
+'15', '디지털/과학기술', '디지털 전환, AI/로봇, R&D 투자', NULL
+'16', '행정·지방자치', '지방분권, 행정 효율화, 공무원 제도', NULL
+
+이게 category야
+
+각각 stances 테이블의 필드명, 타입, 설명
+id, INT, 정치인 ID
+category_id, INT, 정책 분야 ID
+position_summary, TEXT, 요약된 입장
+position_score, FLOAT, 성향 점수 (-1 ~ 1 사이 예: -1 보수 0 중립 1 진보 등)
+source_url, TEXT, 뉴스/공약 링크 등 출처
+
+source_url은 {url}로 고정시켜주고
+id는 0으로 고정시켜주고
+너가 category_id, position_summary, position_score을 채워주면 돼.
+position_summary는 몇문장으로 압축해야돼
+position_score는 float로 -1과 1사이를 조정할 수 있어. 소수값도 허용이고
+-1이 보수, 0이 중립, 1이 진보야.
+
+INSERT INTO stances (id, category_id, position_summary, position_score, source_url) VALUES (...)
+
+이 명령어의 VALUES 안에 있는 걸 너가 채워주고 답변을 INSERT 명령어로만 해줘 
+INSERT 명령어 하나로만 답변해. **마크다운 문법없이, 특수문자 '나 "가 들어가는 일 없이 raw text로 출력해.**"""
+
+    completion = client.chat.completions.create(
+    model="gpt-4o-mini",
+    store=False,
+    messages=[
+        {"role": "user", "content": question}
+    ]
+    )
+
+    print(completion.choices[0].message.content)
+    cur.execute(completion.choices[0].message.content)
 
 def main():
-    print("DB 자동화\n1. MySQL 명령어 입력\n2. MySQL 보기\n3. 크롤링링")
+    print("DB 자동화\n1. MySQL 명령어 입력\n2. MySQL 보기\n3. 크롤링")
 
     option_str = input("옵션을 선택하세요: ")
     option = int(option_str)
@@ -50,7 +150,7 @@ def main():
     elif option == 2:
         view()
     elif option == 3:
-        crawl()
+        crawl_all_articles()
 
 main()
 
