@@ -1,0 +1,66 @@
+CREATE TABLE categories (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    parent_id INT,
+    FOREIGN KEY (parent_id) REFERENCES categories(id)
+);
+CREATE TABLE categories (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    parent_id INT,
+    FOREIGN KEY (parent_id) REFERENCES categories(id)
+);
+CREATE TABLE politicians (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    party_id INT,
+    profile_url VARCHAR(255),
+    description TEXT,
+    FOREIGN KEY (party_id) REFERENCES parties(id)
+);
+CREATE TABLE stances (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    politician_id INT NOT NULL,
+    category_id INT NOT NULL,
+    position_summary TEXT,
+    position_score FLOAT,
+    source_url TEXT,
+    FOREIGN KEY (politician_id) REFERENCES politicians(id),
+    FOREIGN KEY (category_id) REFERENCES categories(id)
+);
+CREATE TABLE users (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(100),
+    email VARCHAR(100),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE user_responses (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    category_id INT NOT NULL,
+    response_text TEXT,
+    response_score FLOAT,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (category_id) REFERENCES categories(id)
+);
+CREATE TABLE user_reports (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    top_party_ids JSON,
+    top_politician_ids JSON,
+    summary_text TEXT,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+CREATE TABLE news_articles (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    title VARCHAR(255),
+    url VARCHAR(500),
+    category_id INT,
+    published_at DATETIME,
+    summary TEXT,
+    ai_tags JSON,
+    FOREIGN KEY (category_id) REFERENCES categories(id)
+);
