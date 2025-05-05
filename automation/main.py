@@ -79,10 +79,34 @@ def get_article_naver(url: str) -> tuple[str, str]:
 def get_article_yh(url: str) -> tuple[str, str]:
     return get_article_raw(url, "#container > div.container591 > div.content90 > header > h1", "#articleWrap > div.story-news.article")
 
+def gpt(content: str) -> str:
+    completion = client.chat.completions.create(
+    model="gpt-4o-mini",
+    store=False,
+    messages=[
+        {"role": "user", "content": content}
+    ]
+    )
+
+    return completion.choices[0].message.content
+
+def find_id(sql: str) -> str:
+    sql2 = sql.replace("INSERT INTO stances (id, category_id, position_summary, position_score, source_url) VALUES (", "")
+    sql3 = ""
+
+    for i in range(0, len(sql2)):
+        if sql2[i] == ',':
+            break
+        sql3 += sql2[i]
+
+    sql3 = sql3.replace("'", "")
+    sql3 = sql3.replace('"', '')
+    return sql3
+
 def crawl_one_article(url: str):
     global client, cur
 
-    title, contents = get_article_naver(url)
+    title, contents = get_article_yh(url)
     question = f"""# {title}
 {contents}
 
@@ -110,15 +134,14 @@ def crawl_one_article(url: str):
 이게 category야
 
 각각 stances 테이블의 필드명, 타입, 설명
-id, INT, 정치인 ID
+id, TEXT, 정치인 이름
 category_id, INT, 정책 분야 ID
 position_summary, TEXT, 요약된 입장
 position_score, FLOAT, 성향 점수 (-1 ~ 1 사이 예: -1 보수 0 중립 1 진보 등)
 source_url, TEXT, 뉴스/공약 링크 등 출처
 
 source_url은 {url}로 고정시켜주고
-id는 0으로 고정시켜주고
-너가 category_id, position_summary, position_score을 채워주면 돼.
+너가 id, category_id, position_summary, position_score을 채워주면 돼.
 position_summary는 몇문장으로 압축해야돼
 position_score는 float로 -1과 1사이를 조정할 수 있어. 소수값도 허용이고
 -1이 보수, 0이 중립, 1이 진보야.
@@ -126,18 +149,21 @@ position_score는 float로 -1과 1사이를 조정할 수 있어. 소수값도 �
 INSERT INTO stances (id, category_id, position_summary, position_score, source_url) VALUES (...)
 
 이 명령어의 VALUES 안에 있는 걸 너가 채워주고 답변을 INSERT 명령어로만 해줘 
-INSERT 명령어 하나로만 답변해. **마크다운 문법없이, 특수문자 '나 "가 들어가는 일 없이 raw text로 출력해.**"""
+INSERT 명령어 하나로만, VALUES도 하나로만 답변해. **마크다운 문법없이, 특수문자 '나 "가 들어가는 일 없이 raw text로 출력해.**"""
 
-    completion = client.chat.completions.create(
-    model="gpt-4o-mini",
-    store=False,
-    messages=[
-        {"role": "user", "content": question}
-    ]
-    )
+    sql = gpt(question)
+    name = find_id(sql)
 
-    print(completion.choices[0].message.content)
-    cur.execute(completion.choices[0].message.content)
+    cur.execute(f"select str_id from politicians where name='{name}';")
+    rows = cur.fetchall()
+
+    if len(rows) == 0:
+        return
+
+    sql = sql.replace(name, str(rows[0][0]), 1)
+    print(sql)
+
+    # cur.execute(sql)
 
 def main():
     print("DB 자동화\n1. MySQL 명령어 입력\n2. MySQL 보기\n3. 크롤링")
