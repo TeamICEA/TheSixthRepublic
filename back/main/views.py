@@ -17,7 +17,7 @@ def on_test_click():
     # 검사 버튼 클릭 시, 테스트 페이지로 리다이렉트
     pass
 
-def on_news_click():
+def on_news_click(button_name: str):
     # 뉴스 제목 클릭 시, 해당 뉴스 웹페이지로 리다이렉트
     pass
 #endregion
