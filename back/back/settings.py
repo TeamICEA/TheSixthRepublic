@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import json
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,7 +21,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-pwyf_vm84$umoaq1=pbjiqbplpk@$&sm&952rfzxv-j$l5g^7^'
+keys = {}
+with open("keys.json") as f:
+    keys = json.load(f)
+SECRET_KEY = keys["DJANGO_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -75,10 +79,10 @@ WSGI_APPLICATION = 'back.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'republic',
-        'USER' : 'root',
-        'PASSWORD' : 'teamicea211',
-        'HOST' : '175.205.96.45',
+        'NAME': keys["SQL_DATABASE"],
+        'USER' : keys["SQL_USERNAME"],
+        'PASSWORD' : keys["SQL_PASSWORD"],
+        'HOST' : keys["SQL_HOST"],
         'PORT' : '3306',
     }
 }
