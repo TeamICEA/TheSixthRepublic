@@ -162,8 +162,7 @@ INSERT 명령어 하나로만, VALUES도 하나로만 답변해. **마크다운 
 
     sql = sql.replace(name, str(rows[0][0]), 1)
     print(sql)
-
-    # cur.execute(sql)
+    cur.execute(sql)
 
 def main():
     print("DB 자동화\n1. MySQL 명령어 입력\n2. MySQL 보기\n3. 크롤링")
