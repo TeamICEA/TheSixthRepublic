@@ -62,7 +62,7 @@ def on_report_item_hover(item_type: int, id: int | str):
 
 #region 정치인 목록 페이지
 def GoToPoliticianPage(request, str_id: str):
-    #str_id에 해당하는 정치인 데이터 기반으로 렌더링
+    #str_id에 해당하는 정치인의 DB 데이터를 기반으로 랜더링
     pass
 #endregion
 
@@ -80,4 +80,11 @@ def on_preport_item_hover(item_type: int, id: str):
     # id => 정치인 id
     # 랭킹 아이템을 갖다 댈시 그에 맞는 이유 표시
     pass
+
+
+#region 분야별 랭킹 페이지
+def GoToAnotherRanking(request,filter:str):
+    #사용자가 필터 항목 선택 시, 항목에 맞게 정렬된 DB 데이터를 기반으로 랜더링 
+    pass
 #endregion
+
