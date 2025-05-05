@@ -26,5 +26,11 @@ def on_news_click(button_name: str):
 #질문페이지 인덱스 관리
 def PageIdxCtrl(request,page_num):
     #유효 인덱스 확인, 인덱스에 해당하는 질문 가져와 넘겨주기(기존 응답이 있다면 응답까지)
+    #만약 인덱스가 유효 인덱스보다 커졌다면 결과분석페이지로 리다이렉트
     #응답값 저장 후, 이전/다음 url로 리다이렉트
+    pass
+
+#정치인 목록 페이지
+def GoToPoliticianPage(request,str_id):
+    #str_id에 해당하는 정치인 데이터 기반으로 렌더링
     pass
