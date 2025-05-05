@@ -23,12 +23,19 @@ def on_news_click(button_name: str):
     pass
 #endregion
 
-#질문페이지 인덱스 관리
+
+
+
+#region 질문페이지 인덱스 관리
 def PageIdxCtrl(request, page_num: int):
     #유효 인덱스 확인, 인덱스에 해당하는 질문 가져와 넘겨주기(기존 응답이 있다면 응답까지)
     #만약 인덱스가 유효 인덱스보다 커졌다면 결과분석페이지로 리다이렉트
     #응답값 저장 후, 이전/다음 url로 리다이렉트
     pass
+#endregion
+
+
+
 
 #region 리포트 페이지
 def load_all_politicians() -> list[Politician]:
@@ -57,14 +64,27 @@ def on_report_item_hover(item_type: int, id: int | str):
     # id => 정치인 또는 정당당 id
     # 랭킹 아이템을 갖다 댈시 그에 맞는 이유 표시
     pass
-
 #endregion
 
-#region 정치인 목록 페이지
+
+
+
+#region 정치인 목록
 def GoToPoliticianPage(request, str_id: str):
-    #str_id에 해당하는 정치인의 DB 데이터를 기반으로 랜더링
+    #각 정치인 항목 클릭 시, str_id에 해당하는 정치인의 DB 데이터를 기반으로 랜더링
+    pass
+
+def FilteredInquiry(request):
+    #사용자가 입력한 정당, 정치인 이름에 해당하는 요청에 따른 랜더링
+    pass
+
+def Pagenation(request):
+    #이전, 다음, 페이지 번호 수를 눌렀을 때, 해당 요청에 따른 랜더링
     pass
 #endregion
+
+
+
 
 #region 개별 집중 분석
 def add_politician_data(id: str):
@@ -80,11 +100,51 @@ def on_preport_item_hover(item_type: int, id: str):
     # id => 정치인 id
     # 랭킹 아이템을 갖다 댈시 그에 맞는 이유 표시
     pass
+#endregion
 
 
-#region 분야별 랭킹 페이지
-def GoToAnotherRanking(request,filter:str):
-    #사용자가 필터 항목 선택 시, 항목에 맞게 정렬된 DB 데이터를 기반으로 랜더링 
+
+
+#region 채팅 페이지
+def GoToChat(request,str_id:str):
+    #챗봇 상대의 해당하는 정치인 id를 받아, 해당 정치인의 성향 등을 반영한 정보를 기반으로 랜더링
+    pass
+
+def ManageChat(request, str_id:str):
+    #사용자의 메세지를 받아,정치인 스타일로 AI 응답 반환
+    #응답 생성은 CreateResponse()호출로 이루어짐
+    pass
+
+def CreateResponse(prompt:str)->str:
+    #정치인 말투에 맞게 응답을 만들어내는 AI 호출
+    pass
+#endreigon
+
+
+
+
+#region 분야별 랭킹
+def GoToAnotherRanking(request,criteria:str):
+    #사용자가 정렬 기준 항목 선택 시, 항목에 맞게 정렬된 DB 데이터를 기반으로 랜더링 
+    pass
+
+def GoToPoliticianPage(request, str_id: str):
+    #각 정치인 항목 클릭 시, str_id에 해당하는 정치인의 DB 데이터를 기반으로 랜더링
+    pass
+
+def Pagenation(request):
+    #이전, 다음, 페이지 번호 수를 눌렀을 때, 해당 요청에 따른 랜더링
     pass
 #endregion
 
+
+
+#region 지난 리포트 다시보기
+def SaveToCookie(response,request,new_report):
+    #새 리포트를 기존 쿠키에 누적 저장
+    pass
+
+def ReportHistory(request):
+    #쿠키에서 리포트 목록을 가져와 템플릿에 랜더링
+    pass
+#endregion
