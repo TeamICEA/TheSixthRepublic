@@ -10,6 +10,10 @@ context = {
 def index(request):
     return render(request,'main/index.html', context)
 
+def go_home():
+    # 로고 버튼을 누르면 메인 홈페이지로 리다이렉트
+    pass
+
 def add_news_articles():
     # 뉴스 기사를 불러오고 (크롤링) post 데이터 (context)에 저장
     pass
