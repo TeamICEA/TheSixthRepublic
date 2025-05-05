@@ -30,17 +30,20 @@ def PageIdxCtrl(request, page_num: int):
     #응답값 저장 후, 이전/다음 url로 리다이렉트
     pass
 
-#정치인 목록 페이지
-def GoToPoliticianPage(request, str_id: str):
-    #str_id에 해당하는 정치인 데이터 기반으로 렌더링
-    pass
-
 #region 리포트 페이지
-def load_politicians() -> list[Politician]:
+def load_all_politicians() -> list[Politician]:
     # 국회의원 리스트를 DB에서 불러온 후 반환
     pass
 
-def load_parties() -> list[Party]:
+def load_all_politicians_simple() -> list[PoliticianSimple]:
+    # 국회의원의 기본 데이터 리스트를 DB에서 불러온 후 반환
+    pass
+
+def load_politician(id: str) -> Politician:
+    # 국회의원 ID를 기반으로 DB에서 불러온 후 반환
+    pass
+
+def load_all_parties() -> list[Party]:
     # 정당 리스트를 DB에서 불러온 후 반환
     pass
 
@@ -51,8 +54,30 @@ def write_report(responses: list[Response]):
 
 def on_report_item_hover(item_type: int, id: int | str):
     # item_type: 1 => 적합한 정당, 2 => 적합한 정치인 TOP, 3 => 적합한 정치인 WORST
-    # id => 정치인 또는 정답 id
+    # id => 정치인 또는 정당당 id
     # 랭킹 아이템을 갖다 댈시 그에 맞는 이유 표시
     pass
 
+#endregion
+
+#region 정치인 목록 페이지
+def GoToPoliticianPage(request, str_id: str):
+    #str_id에 해당하는 정치인 데이터 기반으로 렌더링
+    pass
+#endregion
+
+#region 개별 집중 분석
+def add_politician_data(id: str):
+    # 정치인 id를 기반으로 DB에서 데이터를 불러온 후 UI에 표시
+    pass
+
+def write_politician_report(id: str):
+    # 정치인의 분석 결과를 UI에 표시
+    pass
+
+def on_preport_item_hover(item_type: int, id: str):
+    # item_type: 1 => 적합한 정치인 TOP, 2 => 적합한 정치인 WORST
+    # id => 정치인 id
+    # 랭킹 아이템을 갖다 댈시 그에 맞는 이유 표시
+    pass
 #endregion

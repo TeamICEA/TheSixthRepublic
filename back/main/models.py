@@ -27,6 +27,14 @@ class Politician(models.Model):
     curr_assets = models.BigIntegerField() # 자산
     bill_approved = models.TextField()
 
+class PoliticianSimple(models.Model):
+    id = models.IntegerField() # ID
+    name = models.CharField(max_length=50) # 이름
+    hanja_name = models.CharField(max_length=50) # 한자
+    party_id = models.IntegerField() # 정당 id
+    birthdate = models.DateField() #생일2
+    address = models.CharField(max_length=100) # 주소
+
 class Party(models.Model):
     id = models.IntegerField() # 정당 ID
     name = models.CharField(max_length=100) # 이름
