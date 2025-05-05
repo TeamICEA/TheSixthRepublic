@@ -154,7 +154,7 @@ position_score는 float로 -1과 1사이를 조정할 수 있어. 소수값도 �
 INSERT INTO stances (id, category_id, position_summary, position_score, source_url) VALUES (...);
 
 이 명령어의 VALUES 안에 있는 걸 너가 채워주고 답변을 INSERT 명령어로만 해줘 
-INSERT 명령어 하나로만, VALUES도 하나로만 답변해. 마지막엔 세미콜론 (;) 붙여주고. **마크다운 문법없이, 특수문자 '나 "가 들어가는 일 없이 raw text로 출력해.**"""
+INSERT 명령어 하나로만 답변해. 마지막엔 세미콜론 (;) 붙여주고. **마크다운 문법없이, 특수문자 '나 "가 들어가는 일 없이, raw text로 출력해.**"""
 
     sql = gpt(question)
     name = find_id(sql)
@@ -165,7 +165,8 @@ INSERT 명령어 하나로만, VALUES도 하나로만 답변해. 마지막엔 �
     if len(rows) == 0:
         return
 
-    sql = sql.replace(name, str(rows[0][0]), 1)
+    sql = sql.replace(f"'{name}'", f"'{str(rows[0][0])}'")
+    sql = sql.replace(f'"{name}"', f'"{str(rows[0][0])}"')
     print(sql)
     cur.execute(sql)
 
