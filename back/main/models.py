@@ -32,3 +32,9 @@ class Party(models.Model):
     name = models.CharField(max_length=100) # 이름
     ideology = models.TextField() # 이념
     logo_url = models.CharField(max_length=255) # 로고 (URL 링크)
+
+class Response(models.Model):
+    category_id = models.IntegerField()
+    question = models.TextField()
+    response_text = models.TextField()
+    response_score = models.FloatField()
