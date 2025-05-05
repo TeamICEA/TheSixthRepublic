@@ -151,10 +151,10 @@ position_summary는 몇문장으로 압축해야돼
 position_score는 float로 -1과 1사이를 조정할 수 있어. 소수값도 허용이고
 -1이 보수, 0이 중립, 1이 진보야.
 
-INSERT INTO stances (id, category_id, position_summary, position_score, source_url) VALUES (...)
+INSERT INTO stances (id, category_id, position_summary, position_score, source_url) VALUES (...);
 
 이 명령어의 VALUES 안에 있는 걸 너가 채워주고 답변을 INSERT 명령어로만 해줘 
-INSERT 명령어 하나로만, VALUES도 하나로만 답변해. **마크다운 문법없이, 특수문자 '나 "가 들어가는 일 없이 raw text로 출력해.**"""
+INSERT 명령어 하나로만, VALUES도 하나로만 답변해. 마지막엔 세미콜론 (;) 붙여주고. **마크다운 문법없이, 특수문자 '나 "가 들어가는 일 없이 raw text로 출력해.**"""
 
     sql = gpt(question)
     name = find_id(sql)
