@@ -41,6 +41,8 @@ def crawl_minjoo():
 
 def crawl_all_articles():
     # YH STYLE
+    global con
+
     for i in range(1, 21):
         url = f"https://www.yna.co.kr/politics/all/{i}"
 
@@ -53,12 +55,15 @@ def crawl_all_articles():
         soup = BeautifulSoup(html, "html.parser")
         articles = soup.select("#container > div.container521 > div.content03 > div.section01 > section > div > ul > li")
 
+        print(f"The number of article: {len(articles)}")
         for article in articles:
             url_a = article.select_one("div > div > strong > a")
 
             if url_a is not None:
                 url = url_a["href"]
                 crawl_one_article(url)
+        print(f"DONE!")
+        con.commit()
 
 def get_article_raw(url: str, title_selector: str, contents_selector: str) -> tuple[str, str]:
     response = requests.get(url)
