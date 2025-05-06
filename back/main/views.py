@@ -42,6 +42,10 @@ def PageIdxCtrl(request, page_num: int):
 
 
 #region 리포트 페이지
+def report_view(request):
+    # 유저의 대답을 기반으로 UI에 표시 후 렌더링
+    pass
+
 def load_all_politicians() -> list[Politician]:
     # 국회의원 리스트를 DB에서 불러온 후 반환
     pass
@@ -91,6 +95,11 @@ def Pagenation(request):
 
 
 #region 개별 집중 분석
+def preport_view(request, id: str):
+    # 정치인 데이터를 DB에서 불러오는 함수와 분석 결과를 UI에 표시하는 함수를 호출한 후,
+    # 나머지 데이터 렌더링링
+    pass
+
 def add_politician_data(id: str):
     # 정치인 id를 기반으로 DB에서 데이터를 불러온 후 UI에 표시
     pass
