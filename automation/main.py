@@ -217,11 +217,19 @@ def crawl_all_v2():
         politicians.append(row)
 
     for politician in politicians:
+        gongyak = False
+
         for keyword in keywords:
             keywords2 = str(keyword[2]).split(",")
             for keyword2 in keywords2:
                 keyword2 = keyword2.strip(" ")
                 category = f"{politician[1]} {keyword2}"
+
+                if keyword2 == "공약":
+                    if gongyak:
+                        continue
+                    gongyak = True
+
                 articles = crawl_v2(category, 1, 10)
 
                 for article in articles:
@@ -238,6 +246,8 @@ def crawl_all_v2():
     ㅡㅡㅡㅡ
     이 문장이 너가 맞춰야 할 구조 형식이야.
     또한, 문장을 생성하면서 "이나 '같은 특수문자를 넣으면 절대 안돼.
+
+    문장 구조를 잘 갖춘 예: [환경·에너지관] 이재명은 재생에너지 중심의 에너지 전환 정책을 추진하며, 탈원전을 선언하였다. 예를 들어, "2050년까지 원전 비중 제로"라고 밝혔다.
 
     [카테고리]는 {keyword2}, [정치인 이름]은 {politician[1]}이야."""
                     summary = gpt(query).replace("'", "")
@@ -257,6 +267,7 @@ def crawl_all_v2():
                     sql = f"INSERT INTO stances (id_int, category_id, position_summary, position_score, source_url, id) VALUES (1, {keyword[0]}, '{summary}', {score}, '{article[1]}', '{politician[0]}')"
                     cur.execute(sql)
                     
+                    print(keyword2)
                     print(summary)
                     print(score)
                     print()
