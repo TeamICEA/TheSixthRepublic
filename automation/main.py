@@ -69,17 +69,38 @@ def crawl_all_articles():
         con.commit()
 
 def get_article_raw(url: str, title_selector: str, contents_selector: str) -> tuple[str, str]:
-    response = requests.get(url)
+    response_text = ""
 
-    if response.status_code != 200:
-        return
+    try:
+        response = requests.get(url, headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:138.0) Gecko/20100101 Firefox/138.0",
+                "Referer": "https://www.google.com/",
+                "Connection": "keep-alive"
+            })
+
+        if response.status_code != 200:
+            return
+        
+        response_text = response_text
+    except:
+        pass
     
-    html = response.text
+    if response_text:
+        return
+
+    html = response_text
     soup = BeautifulSoup(html, "html.parser")
     title = soup.select_one(title_selector)
+    title_text = ""
     contents = soup.select_one(contents_selector)
+    contents_text = ""
 
-    return title.text, contents.text
+    if title is not None:
+        title_text = title.text
+    if contents is not None:
+        contents_text = contents.text
+
+    return title_text, contents_text
 
 def get_article_naver(url: str) -> tuple[str, str]:
     return get_article_raw(url, "#title_area > span", "#dic_area")
@@ -180,12 +201,72 @@ def cleanhtml(raw_html):
   return cleantext
 
 def crawl_all_v2():
-    for i in range(1, 1001, 100):
-        crawl_v2("경제 복지관", i)
+    politicians = []
+    keywords = []
+
+    cur.execute("select id, name, description from categories;")
+    rows = cur.fetchall()
+
+    for row in rows:
+        keywords.append(row)
+    
+    cur.execute("select str_id, name from politicians;")
+    rows = cur.fetchall()
+
+    for row in rows:
+        politicians.append(row)
+
+    for politician in politicians:
+        for keyword in keywords:
+            keywords2 = str(keyword[2]).split(",")
+            for keyword2 in keywords2:
+                keyword2 = keyword2.strip(" ")
+                category = f"{politician[1]} {keyword2}"
+                articles = crawl_v2(category, 1, 10)
+
+                for article in articles:
+                    query = f"""# {article[0]}
+    {article[3]}
+
+    ㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+    이 문장들이 핵심 데이터고, 이 문장들을 기반으로 너는 답변해야 해.
+
+    너가 서술해야 할 구조 형식을 이제 알려줄게.
+    
+    ㅡㅡㅡㅡㅡ
+    [카테고리] [정치인 이름]은(는) [공약/발언/행적]을 통해 [정책 방향성]을 강조하였다. 예를 들어, "[대표 발언 또는 주요 표현]" 등이 있다.
+    ㅡㅡㅡㅡ
+    이 문장이 너가 맞춰야 할 구조 형식이야.
+    또한, 문장을 생성하면서 "이나 '같은 특수문자를 넣으면 절대 안돼.
+
+    [카테고리]는 {keyword2}, [정치인 이름]은 {politician[1]}이야."""
+                    summary = gpt(query).replace("'", "")
+                    
+                    query = f"""다음은 정치인의 정책 방향 요약입니다:
+    {summary}
+
+    이 내용을 기준으로 {keyword2}에서 {politician[1]}의 정치 성향은 다음 기준에 따라 몇 점인지 판단하세요:
+
+    - 0.00: 매우 보수적
+    - 0.50: 중도
+    - 1.00: 매우 진보적
+
+    0.00 부터 1.00 사이인 실수형 숫자를 알려줘. 형식은 무조건 숫자여야 해."""
+                    score = gpt(query)
+                    
+                    sql = f"INSERT INTO stances (id_int, category_id, position_summary, position_score, source_url, id) VALUES (1, {keyword[0]}, '{summary}', {score}, '{article[1]}', '{politician[0]}')"
+                    cur.execute(sql)
+                    
+                    print(summary)
+                    print(score)
+                    print()
+            con.commit()
+            print("SAVED!")
+
     pass
 
-def crawl_v2(category: str, start = 1):
-    url = f"https://openapi.naver.com/v1/search/news.json?query={category}&start={start}&display=100&sort=sim"
+def crawl_v2(category: str, start = 1, display = 100):
+    url = f"https://openapi.naver.com/v1/search/news.json?query={category}&start={start}&display={display}&sort=sim"
     response = requests.get(url, headers={
         "Host": "openapi.naver.com",
         "User-Agent": "curl/7.49.1",
@@ -193,20 +274,25 @@ def crawl_v2(category: str, start = 1):
         "X-Naver-Client-Id": keys["NAVER_KEY_ID"],
         "X-Naver-Client-Secret": keys["NAVER_KEY_SECRET"]
     })
+    articles = []
     
     if response.status_code != 200:
         return
 
     text_json = json.loads(response.text)
-    
+ 
     for item in text_json["items"]:
         title: str = cleanhtml(item["title"])
         link: str = item["link"]
         description: str = cleanhtml(item["description"])
+        description2 = get_article_naver(link)[1]
 
-        print(f"{title}, {description[:20]}")
+        if description2 == "":
+            description2 = description
 
-    pass
+        articles.append((title, link, description, description2))
+
+    return articles
 
 def main():
     print("DB 자동화\n1. PostgreSQL 명령어 입력\n2. PostgreSQL 보기\n3. 크롤링")
