@@ -1,4 +1,5 @@
 import pymysql
+import psycopg2
 import requests
 import json
 from openai import OpenAI
@@ -7,7 +8,8 @@ from bs4 import BeautifulSoup
 keys = {}
 with open("keys.json") as f:
     keys = json.load(f)
-con = pymysql.connect(host=keys["SQL_HOST"], user=keys["SQL_USERNAME"], password=keys["SQL_PASSWORD"], database=keys["SQL_DATABASE"], port=3306, use_unicode=True, charset='utf8')
+# con = pymysql.connect(host=keys["SQL_HOST"], user=keys["SQL_USERNAME"], password=keys["SQL_PASSWORD"], database=keys["SQL_DATABASE"], port=3306, use_unicode=True, charset='utf8')
+con = psycopg2.connect(host=keys["SQL_HOST"], dbname=keys["SQL_DATABASE"],user=keys["SQL_USERNAME"],password=keys["SQL_PASSWORD"],port=5432)
 cur = con.cursor()
 client = OpenAI(api_key=keys["OPENAI_KEY"])
 
