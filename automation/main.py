@@ -264,8 +264,12 @@ def crawl_all_v2():
     0.00 부터 1.00 사이인 실수형 숫자를 알려줘. 형식은 무조건 숫자여야 해. 0.41이나 0.23이나 0.67같은 구체적인 숫자면 더욱 좋아."""
                     score = gpt(query)
                     
-                    sql = f"INSERT INTO stances (id_int, category_id, position_summary, position_score, source_url, id) VALUES (1, {keyword[0]}, '{summary}', {score}, '{article[1]}', '{politician[0]}')"
-                    cur.execute(sql)
+                    try:
+                        sql = f"INSERT INTO stances (id_int, category_id, position_summary, position_score, source_url, id) VALUES (1, {keyword[0]}, '{summary}', {score}, '{article[1]}', '{politician[0]}')"
+                        cur.execute(sql)
+                    except:
+                        print("SQL EXECUTE ERROR")
+                        pass
                     
                     print(keyword2)
                     print(summary)
