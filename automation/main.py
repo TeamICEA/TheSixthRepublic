@@ -2,6 +2,7 @@ import pymysql
 import psycopg2
 import requests
 import json
+import re
 from openai import OpenAI
 from bs4 import BeautifulSoup
 
@@ -172,8 +173,43 @@ INSERT 명령어 하나로만 답변해. 마지막엔 세미콜론 (;) 붙여주
     print(sql)
     cur.execute(sql)
 
+CLEANR = re.compile('<.*?>')
+
+def cleanhtml(raw_html):
+  cleantext = re.sub(CLEANR, '', raw_html)
+  return cleantext
+
+def crawl_all_v2():
+    for i in range(1, 1001, 100):
+        crawl_v2("경제 복지관", i)
+    pass
+
+def crawl_v2(category: str, start = 1):
+    url = f"https://openapi.naver.com/v1/search/news.json?query={category}&start={start}&display=100&sort=sim"
+    response = requests.get(url, headers={
+        "Host": "openapi.naver.com",
+        "User-Agent": "curl/7.49.1",
+        "Accept": "*/*",
+        "X-Naver-Client-Id": keys["NAVER_KEY_ID"],
+        "X-Naver-Client-Secret": keys["NAVER_KEY_SECRET"]
+    })
+    
+    if response.status_code != 200:
+        return
+
+    text_json = json.loads(response.text)
+    
+    for item in text_json["items"]:
+        title: str = cleanhtml(item["title"])
+        link: str = item["link"]
+        description: str = cleanhtml(item["description"])
+
+        print(f"{title}, {description[:20]}")
+
+    pass
+
 def main():
-    print("DB 자동화\n1. MySQL 명령어 입력\n2. MySQL 보기\n3. 크롤링")
+    print("DB 자동화\n1. PostgreSQL 명령어 입력\n2. PostgreSQL 보기\n3. 크롤링")
 
     option_str = input("옵션을 선택하세요: ")
     option = int(option_str)
@@ -183,7 +219,8 @@ def main():
     elif option == 2:
         view()
     elif option == 3:
-        crawl_all_articles()
+        crawl_all_v2()
+        #crawl_all_articles()
 
 main()
 
