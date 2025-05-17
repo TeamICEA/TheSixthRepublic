@@ -79,14 +79,14 @@ def get_article_raw(url: str, title_selector: str, contents_selector: str) -> tu
             })
 
         if response.status_code != 200:
-            return
+            return "", ""
         
         response_text = response_text
     except:
         pass
     
-    if response_text:
-        return
+    if response_text == "":
+        return "", ""
 
     html = response_text
     soup = BeautifulSoup(html, "html.parser")
@@ -219,6 +219,9 @@ def crawl_all_v2():
     for politician in politicians:
         gongyak = False
 
+        if politician[1] == "강경숙":
+            continue
+
         for keyword in keywords:
             keywords2 = str(keyword[2]).split(",")
             for keyword2 in keywords2:
@@ -300,7 +303,11 @@ def crawl_v2(category: str, start = 1, display = 100):
         title: str = cleanhtml(item["title"])
         link: str = item["link"]
         description: str = cleanhtml(item["description"])
-        description2 = get_article_naver(link)[1]
+        description2 = get_article_naver(link)
+        if description2 is not None:
+            description2 = description2[1]
+        else:
+            description2 = ""
 
         if description2 == "":
             description2 = description
