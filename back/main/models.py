@@ -48,7 +48,7 @@ class Response(models.Model):
     response_score = models.FloatField()
 
 
-# 2 설문지 페이지
+# 2 질문지 페이지
 class Question(models.Model):
     text = models.CharField(max_length=255)
 
