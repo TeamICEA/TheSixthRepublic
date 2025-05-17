@@ -46,3 +46,13 @@ class Response(models.Model):
     question = models.TextField()
     response_text = models.TextField()
     response_score = models.FloatField()
+
+
+# 2 설문지 페이지
+class Question(models.Model):
+    text = models.CharField(max_length=255)
+
+class Response(models.Model):
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    user_id = models.CharField(max_length=100)  # 세션이나 쿠키로 구분
+    answer = models.IntegerField()  # 1~5 (매우 비동의~매우 동의)

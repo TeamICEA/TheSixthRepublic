@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from .models import *
 
 # Create your views here.
@@ -31,19 +31,62 @@ def on_news_click(button_name: str):
 
 
 #region 질문페이지 인덱스 관리
-def PageIdxCtrl(request, page_num: int):
+#def PageIdxCtrl(request, page_num: int):
     #유효 인덱스 확인, 인덱스에 해당하는 질문 가져와 넘겨주기(기존 응답이 있다면 응답까지)
     #만약 인덱스가 유효 인덱스보다 커졌다면 결과분석페이지로 리다이렉트
     #응답값 저장 후, 이전/다음 url로 리다이렉트
     pass
 #endregion
+# 2 질문지 페이지: 질문을 5개씩 보여주고, 응답을 저장하고, 마지막엔 결과 페이지로 이동
+def question_page(request, page_num):
+    QUESTIONS_PER_PAGE = 5
+    total_questions = Question.objects.count()
+    total_pages = (total_questions - 1) // QUESTIONS_PER_PAGE + 1
 
+    # 페이지 번호 유효성 검사
+    if page_num < 1 or page_num > total_pages:
+        return redirect('result_page')  # 결과 페이지로 이동
+
+    # 질문 가져오기
+    start = (page_num - 1) * QUESTIONS_PER_PAGE
+    end = start + QUESTIONS_PER_PAGE
+    questions = Question.objects.all()[start:end]
+
+    if request.method == 'POST':
+        for q in questions:
+            answer = request.POST.get(f'question_{q.id}')
+            if answer:
+                Response.objects.update_or_create(
+                    user_id=request.session.session_key,
+                    question=q,
+                    defaults={'answer': answer}
+                )
+        # 다음 페이지로 이동 또는 결과 페이지로 이동
+        if page_num < total_pages:
+            return redirect('question_page', page_num=page_num+1)
+        else:
+            return redirect('result_page')
+
+    # 기존 응답 불러오기(선택지 유지)
+    responses = {r.question_id: r.answer for r in Response.objects.filter(
+        user_id=request.session.session_key,
+        question__in=questions
+    )}
+
+    context = {
+        'questions': questions,
+        'page_num': page_num,
+        'total_pages': total_pages,
+        'responses': responses,
+    }
+    return render(request, 'main/question_page.html', context)
 
 
 
 #region 리포트 페이지
 def report_view(request):
     # 유저의 대답을 기반으로 UI에 표시 후 렌더링
+    # return render(request, 'main/result.html')
     pass
 
 def load_all_politicians() -> list[Politician]:
