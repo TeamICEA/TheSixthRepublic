@@ -216,10 +216,14 @@ def crawl_all_v2():
     for row in rows:
         politicians.append(row)
 
+    start = False
+
     for politician in politicians:
         gongyak = False
 
-        if politician[1] == "강경숙":
+        if politician[1] == "김교흥":
+            start = True
+        if not start:
             continue
 
         for keyword in keywords:
@@ -254,6 +258,10 @@ def crawl_all_v2():
 
     [카테고리]는 {keyword2}, [정치인 이름]은 {politician[1]}이야."""
                     summary = gpt(query).replace("'", "")
+
+                    if not summary.startswith(f"[{keyword2}] {politician[1]}"):
+                        print(f"Summary is wrong: {summary}")
+                        continue
                     
                     query = f"""다음은 정치인의 정책 방향 요약입니다:
     {summary}
@@ -274,7 +282,7 @@ def crawl_all_v2():
                         print("SQL EXECUTE ERROR")
                         pass
                     
-                    print(keyword2)
+                    print(f"{politician[1]}: {keyword[0]}, {keyword2}")
                     print(summary)
                     print(score)
                     print()
