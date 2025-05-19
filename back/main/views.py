@@ -1,3 +1,5 @@
+import uuid
+import datetime
 from django.shortcuts import render, get_object_or_404
 from .models import *
 
@@ -95,10 +97,27 @@ def Pagenation(request):
 
 
 #region 개별 집중 분석
+def write_politician_report(id: str):
+    # 정치인의 분석 결과를 UI에 표시
+    pass
+
+def on_preport_item_hover(item_type: int, id: str):
+    # item_type: 1 => 적합한 정치인 TOP, 2 => 적합한 정치인 WORST
+    # id => 정치인 id
+    # 랭킹 아이템을 갖다 댈시 그에 맞는 이유 표시
+    pass
+
+
+
 def IndividualPoliticians(request, str_id):
 
     politician=get_object_or_404(Politician,str_id=str_id)
     #str_id와 같은 아이디, Politician에서 갖고오기
+    report=write_politician_report(str_id)
+    #도우미함수 호출(리포트 작성 완성이 우선)
+    best_rank=on_report_item_hover(1,str_id)
+    wort_rank=on_report_item_hover(2,str_id)
+    #랭킹 데이터
     context={
         'name':politician.name,
         'hanja':politician.hanja_name,
@@ -122,11 +141,13 @@ def IndividualPoliticians(request, str_id):
         'secretary':politician.secretatry,
         'bill_approved':politician.bill_approved,
         'election_name':politician.election_name,
-        'election_type':politician.election_type
+        'election_type':politician.election_type,
+        'politician_report':report,
+        'best_rank':best_rank,
+        "worst_rank":wort_rank
     }
 
-    return render(request,'PoliticianReport.html',context)
-#endregion
+    return render(request,'PoliticianReport.html',context)#endregion
 
 
 
@@ -167,10 +188,31 @@ def Pagenation(request):
 
 #region 지난 리포트 다시보기
 def SaveToCookie(response,request,new_report):
+    if request.COOKIES.get('id') is None:
+        response.set_cookie('id', uuid.uuid4().hex)
+    id = request.COOKIES.get('id')
+
+    # TODO: 질문별 for문 돌려서 완성
+    for i in range(0, 100):
+        response = Responses.objects.create(user_id=id, question_id=0, answer=0, answer_text="", response_date=datetime.datetime.now(), position_score=0)
+        # response.save()
+
+    # 대충 uuid를 쿠키에서 불러오고 DB에 응답 저장!!!!!!!!!!!!!!!!!!!
     #새 리포트를 기존 쿠키에 누적 저장
     pass
 
 def ReportHistory(request):
+    id = request.COOKIES.get('id')
+
+    if id is None:
+        pass # 오류: uuid가 존재하지 않음
+
+    responses = Responses.objects.filter(user_id=id)
+
+    for response in responses:
+        pass
+
+    # uuid를 쿠키에서 가져오고 DB에서 불러온 뒤 렌더링합시다!!!!!!!!!!!!!!
     #쿠키에서 리포트 목록을 가져와 템플릿에 랜더링
     pass
 #endregion
