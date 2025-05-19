@@ -41,8 +41,16 @@ class Party(models.Model):
     ideology = models.TextField() # 이념
     logo_url = models.CharField(max_length=255) # 로고 (URL 링크)
 
-class Response(models.Model):
-    category_id = models.IntegerField()
-    question = models.TextField()
-    response_text = models.TextField()
-    response_score = models.FloatField()
+class Questions(models.Model):
+    id = models.IntegerField() # 질문 고유 ID
+    category_id = models.IntegerField() # 질문별 카테고리 ID
+    text = models.TextField() # 질문 내용
+
+class Responses(models.Model):
+    id = models.IntegerField() # 대답 ID
+    user_id = models.CharField(max_length=100) # 유저 ID
+    question_id = models.IntegerField() # 질문 ID
+    answer = models.IntegerField() # 답변 (점수)
+    answer_text = models.TextField() # 답변 (주관식)
+    response_date = models.DateTimeField() # 답변 날짜 + 시간 (UTC)
+    position_score = models.FloatField() # 성향 점수

@@ -1,4 +1,5 @@
 import uuid
+import datetime
 from django.shortcuts import render
 from .models import *
 
@@ -159,7 +160,10 @@ def SaveToCookie(response,request,new_report):
         response.set_cookie('id', uuid.uuid4().hex)
     id = request.COOKIES.get('id')
 
-
+    # TODO: 질문별 for문 돌려서 완성
+    for i in range(0, 100):
+        response = Responses.objects.create(user_id=id, question_id=0, answer=0, answer_text="", response_date=datetime.datetime.now(), position_score=0)
+        # response.save()
 
     # 대충 uuid를 쿠키에서 불러오고 DB에 응답 저장!!!!!!!!!!!!!!!!!!!
     #새 리포트를 기존 쿠키에 누적 저장
@@ -170,6 +174,11 @@ def ReportHistory(request):
 
     if id is None:
         pass # 오류: uuid가 존재하지 않음
+
+    responses = Responses.objects.filter(user_id=id)
+
+    for response in responses:
+        pass
 
     # uuid를 쿠키에서 가져오고 DB에서 불러온 뒤 렌더링합시다!!!!!!!!!!!!!!
     #쿠키에서 리포트 목록을 가져와 템플릿에 랜더링
