@@ -170,7 +170,7 @@ def ReportHistory(request):
 
     if id is None:
         pass # 오류: uuid가 존재하지 않음
-    
+
     # uuid를 쿠키에서 가져오고 DB에서 불러온 뒤 렌더링합시다!!!!!!!!!!!!!!
     #쿠키에서 리포트 목록을 가져와 템플릿에 랜더링
     pass
