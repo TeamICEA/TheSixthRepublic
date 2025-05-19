@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import *
 
 # Create your views here.
@@ -84,7 +84,7 @@ def question_page(request, page_num):
 
 
 #region 리포트 페이지
-def report_view(request):
+def result_page(request):
     # 유저의 대답을 기반으로 UI에 표시 후 렌더링
     # return render(request, 'main/result.html')
     pass
@@ -121,20 +121,40 @@ def on_report_item_hover(item_type: int, id: int | str):
 
 
 #region 정치인 목록
-def GoToPoliticianPage(request, str_id: str):
+def GoToPoliticianPage(request, int_id: int):
     #각 정치인 항목 클릭 시, str_id에 해당하는 정치인의 DB 데이터를 기반으로 랜더링
-    pass
+    politician = get_object_or_404(Politician, id=int_id)
+    return render(request, 'main/politician_detail.html', {'politician': politician})
 
 def FilteredInquiry(request):
     #사용자가 입력한 정당, 정치인 이름에 해당하는 요청에 따른 랜더링
-    pass
+    name_query = request.GET.get('name', '')
+    party_query = request.GET.get('party', '')
+    page_number = request.GET.get('page', 1)
+
+    # 정치인 쿼리셋
+    politicians = Politician.objects.all()
+    if name_query:
+        politicians = politicians.filter(name__icontains=name_query)
+    if party_query:
+        politicians = politicians.filter(party__name=party_query)
+
+    paginator = Paginator(politicians, 30)
+    page_obj = paginator.get_page(page_number)
+    parties = Party.objects.all()
+
+    context = {
+        'page_obj': page_obj,
+        'name_query': name_query,
+        'party_query': party_query,
+        'parties': parties,
+    }
+    return render(request, 'main/politician_list.html', context)
 
 def Pagenation(request):
     #이전, 다음, 페이지 번호 수를 눌렀을 때, 해당 요청에 따른 랜더링
     pass
 #endregion
-
-
 
 
 #region 개별 집중 분석
