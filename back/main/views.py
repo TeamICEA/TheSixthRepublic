@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from .models import *
 
 # Create your views here.
@@ -95,24 +95,37 @@ def Pagenation(request):
 
 
 #region 개별 집중 분석
-def preport_view(request, id: str):
-    # 정치인 데이터를 DB에서 불러오는 함수와 분석 결과를 UI에 표시하는 함수를 호출한 후,
-    # 나머지 데이터 렌더링링
-    pass
+def IndividualPoliticians(request, str_id):
 
-def add_politician_data(id: str):
-    # 정치인 id를 기반으로 DB에서 데이터를 불러온 후 UI에 표시
-    pass
+    politician=get_object_or_404(Politician,str_id=str_id)
+    #str_id와 같은 아이디, Politician에서 갖고오기
+    context={
+        'name':politician.name,
+        'hanja':politician.hanja_name,
+        'eng':politician.english_name,
+        'job':politician.job,
+        'birth':politician.birthdate,
+        'birth_type':politician.birthdate_type,
+        'reelected':politician.reelected,
+        'party':politician.party,
+        'gender':politician.gender,
+        'comittees':politician.comittees or '위원회 없음',
+        'address':politician.address,
+        'email':politician.email or '이메일 없음',
+        'tel':politician.tel or '전화번호 없음',
+        'profile':politician.profile,
+        'pic':politician.pic_link,
+        'book':politician.book or '저서 없음',
+        'curr_assets':politician.curr_assets,
+        'boja':politician.boja,
+        'top_secretary':politician.top_secretary,
+        'secretary':politician.secretatry,
+        'bill_approved':politician.bill_approved,
+        'election_name':politician.election_name,
+        'election_type':politician.election_type
+    }
 
-def write_politician_report(id: str):
-    # 정치인의 분석 결과를 UI에 표시
-    pass
-
-def on_preport_item_hover(item_type: int, id: str):
-    # item_type: 1 => 적합한 정치인 TOP, 2 => 적합한 정치인 WORST
-    # id => 정치인 id
-    # 랭킹 아이템을 갖다 댈시 그에 맞는 이유 표시
-    pass
+    return render(request,'PoliticianReport.html',context)
 #endregion
 
 
