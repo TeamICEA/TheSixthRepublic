@@ -1,3 +1,4 @@
+import uuid
 from django.shortcuts import render
 from .models import *
 
@@ -154,10 +155,23 @@ def Pagenation(request):
 
 #region 지난 리포트 다시보기
 def SaveToCookie(response,request,new_report):
+    if request.COOKIES.get('id') is None:
+        response.set_cookie('id', uuid.uuid4().hex)
+    id = request.COOKIES.get('id')
+
+
+
+    # 대충 uuid를 쿠키에서 불러오고 DB에 응답 저장!!!!!!!!!!!!!!!!!!!
     #새 리포트를 기존 쿠키에 누적 저장
     pass
 
 def ReportHistory(request):
+    id = request.COOKIES.get('id')
+
+    if id is None:
+        pass # 오류: uuid가 존재하지 않음
+    
+    # uuid를 쿠키에서 가져오고 DB에서 불러온 뒤 렌더링합시다!!!!!!!!!!!!!!
     #쿠키에서 리포트 목록을 가져와 템플릿에 랜더링
     pass
 #endregion
