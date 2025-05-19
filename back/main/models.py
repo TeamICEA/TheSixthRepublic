@@ -9,7 +9,7 @@ class Politician(models.Model):
     english_name = models.CharField(max_length=50) # 영어
     birthdate_type = models.CharField(max_length=2) # 생일
     birthdate = models.DateField() #생일2
-    job = models.CharField(max_length=50) # 직
+    job = models.CharField(max_length=50) # 직책책
     party = models.CharField(max_length=50) # 당
     gender = models.CharField(max_length=2) # 성별
     reelected = models.CharField(max_length=3) # 재선 여부
@@ -26,6 +26,8 @@ class Politician(models.Model):
     books = models.TextField() # 책
     curr_assets = models.BigIntegerField() # 자산
     bill_approved = models.TextField()
+    election_name=models.CharField(max_length=200)  #선거구명
+    election_type=models.CharField(max_length=200)  #선거구 구분분
 
 class PoliticianSimple(models.Model):
     id = models.IntegerField() # ID
