@@ -27,7 +27,9 @@ class Politician(models.Model):
     curr_assets = models.BigIntegerField() # 자산
     bill_approved = models.TextField()
     election_name=models.CharField(max_length=200)  #선거구명
-    election_type=models.CharField(max_length=200)  #선거구 구분분
+    election_type=models.CharField(max_length=200)  #선거구 구분
+    attendance_plenary=models.FloatField()  #본회의 출석률
+    election_gap=models.FloatField()    #득표격차 퍼센트 표시
 
 class PoliticianSimple(models.Model):
     id = models.IntegerField() # ID

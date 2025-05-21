@@ -208,6 +208,8 @@ def PoliticianRanking(request):
         'reelected':'-reelected_count',
         'curr_assets':'-curr_assets',
         'birthdate':'-age',
+        'attendace':'-attendance_plenary',
+        'election_gap':'-election_gap',
     }
 
     #기본 정렬 기준 설정(다선여부)
