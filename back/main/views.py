@@ -215,9 +215,10 @@ def PoliticianRanking(request):
     #기본 정렬 기준 설정(다선여부)
     standard_order_field=sort_fields.get(sort_by,'-reelected_count')
 
-    #null값 뒤로 빼서 정렬
+    #null값 필드 지정정
     null_fields=['attendance','election_gap']
 
+    #null값 뒤로 빼서 정렬
     if any(key in sort_by for key in null_fields):
         if(standard_order_field.startswith('-')):
             field=F(standard_order_field[1:]).desc(nulls_last=True)
