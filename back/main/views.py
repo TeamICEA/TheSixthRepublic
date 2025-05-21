@@ -1,6 +1,9 @@
 import uuid
 import datetime
 from django.shortcuts import render, get_object_or_404
+from django.core.paginator import Paginator
+from django.db.models import *
+from django.db.models.functions import *
 from .models import *
 
 # Create your views here.
@@ -64,7 +67,7 @@ def load_all_parties() -> list[Party]:
     # 정당 리스트를 DB에서 불러온 후 반환
     pass
 
-def write_report(responses: list[Response]):
+def write_report(responses: list[Responses]):
     # 유저 응답이 담긴 리스트를 기반으로 분석
     # 유저의 리포트를 기반으로 정당과 정치인 적합도까지 점수화
     pass
@@ -147,7 +150,7 @@ def IndividualPoliticians(request, str_id):
         "worst_rank":wort_rank
     }
 
-    return render(request,'PoliticianReport.html',context)#endregion
+    return render(request,'politician_report.html',context)#endregion
 
 
 
@@ -171,17 +174,58 @@ def CreateResponse(prompt:str)->str:
 
 
 #region 분야별 랭킹
-def GoToAnotherRanking(request,criteria:str):
-    #사용자가 정렬 기준 항목 선택 시, 항목에 맞게 정렬된 DB 데이터를 기반으로 랜더링 
-    pass
+def PoliticianRanking(request):
 
-def GoToPoliticianPage(request, str_id: str):
-    #각 정치인 항목 클릭 시, str_id에 해당하는 정치인의 DB 데이터를 기반으로 랜더링
-    pass
+    sort_by=request.GET.get('sort','reelected')
 
-def Pagenation(request):
-    #이전, 다음, 페이지 번호 수를 눌렀을 때, 해당 요청에 따른 랜더링
-    pass
+
+    #나이 계산을 위한 변수 current_year
+    current_year=datetime.date.today().year
+
+    politicians=Politician.objects.annotate(
+
+        #다선 여부 가공
+        reelected_count=Case(
+            When(reelected='초선',then=Value(1)),
+            When(reelected='재선',then=Value(2)),
+            When(reelected='3선',then=Value(3)),
+            When(reelected='4선',then=Value(4)),
+            When(reelected='5선',then=Value(5)),
+            When(reelected='6선',then=Value(6)),
+            default=Value(0),
+            output_field=IntegerField()
+        ),
+    
+    #나이 가공
+        age=ExpressionWrapper(
+            Value(current_year)-ExtractYear('birthdate'),
+            output_field=IntegerField()
+        )
+    )
+
+    #정렬 기준 설정(정렬 필드)
+    sort_fields={
+        'reelected':'-reelected_count',
+        'curr_assets':'-curr_assets',
+        'birthdate':'-age',
+    }
+
+    #기본 정렬 기준 설정(다선여부)
+    standard_order_field=sort_fields.get(sort_by,'-reelected_count')
+    politicians=politicians.order_by(standard_order_field)
+
+    #페이지네이션
+    paginator=Paginator(politicians,20)
+    page_num=request.GET.get('page')
+    page_obj=Paginator.get_page(page_num)
+
+    #넘겨줄 정보 만들기
+    context={
+        'politicians':page_obj,
+        'sort_by':sort_by
+    }
+
+    return render(request,'politician_ranking.html',context)
 #endregion
 
 
