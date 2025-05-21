@@ -214,12 +214,23 @@ def PoliticianRanking(request):
 
     #기본 정렬 기준 설정(다선여부)
     standard_order_field=sort_fields.get(sort_by,'-reelected_count')
-    politicians=politicians.order_by(standard_order_field)
+
+    #null값 뒤로 빼서 정렬
+    null_fields=['attendance','election_gap']
+
+    if any(key in sort_by for key in null_fields):
+        if(standard_order_field.startswith('-')):
+            field=F(standard_order_field[1:]).desc(nulls_last=True)
+        else:
+            field=F(standard_order_field).asc(nulls_last=True)
+        politicians=politicians.order_by(field)
+    else:
+        politicians=politicians.order_by(standard_order_field)
 
     #페이지네이션
     paginator=Paginator(politicians,20)
     page_num=request.GET.get('page')
-    page_obj=Paginator.get_page(page_num)
+    page_obj=paginator.get_page(page_num)
 
     #넘겨줄 정보 만들기
     context={
