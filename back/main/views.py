@@ -208,7 +208,7 @@ def PoliticianRanking(request):
         'reelected':'-reelected_count',
         'curr_assets':'-curr_assets',
         'birthdate':'-age',
-        'attendace':'-attendance_plenary',
+        'attendance':'-attendance_plenary',
         'election_gap':'-election_gap',
     }
 
