@@ -252,13 +252,13 @@ class Stance(models.Model):
         verbose_name_plural = "입장 목록"
 #endregion
 
-# class PoliticianSimple(models.Model):
-#     id = models.IntegerField(primary_key=True) # ID
-#     name = models.CharField(max_length=50) # 이름
-#     hanja_name = models.CharField(max_length=50) # 한자
-#     party_id = models.IntegerField() # 정당 id
-#     birthdate = models.DateField() #생일2
-#     address = models.CharField(max_length=100) # 주소
+class PoliticianSimple(models.Model):
+    id = models.IntegerField(primary_key=True) # ID
+    name = models.CharField(max_length=50) # 이름
+    hanja_name = models.CharField(max_length=50) # 한자
+    party_id = models.IntegerField() # 정당 id
+    birthdate = models.DateField() #생일2
+    address = models.CharField(max_length=100) # 주소
 
 class Questions(models.Model):
     id = models.IntegerField() # 질문 고유 ID
