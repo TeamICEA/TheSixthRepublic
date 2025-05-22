@@ -47,7 +47,7 @@ def on_news_click(reqeust, button_name: str):
 def PageIdxCtrl(request, page_num: int):
     #유효 인덱스 확인, 인덱스에 해당하는 질문 가져와 넘겨주기(기존 응답이 있다면 응답까지)
     #만약 인덱스가 유효 인덱스보다 커졌다면 결과분석페이지로 리다이렉트
-    #응답값 저장 후, 이전/다음 url로 리다이렉트
+    #응답값 저장 후, 이전/다음 url로 리다이렉트 => 응답값 저장하는 함수: SaveToCookie(), 참고로 그냥 Response()로 클래스 생성 후 SaveToCookie에서 DB 저장
     pass
 #endregion
 
@@ -254,20 +254,17 @@ def PoliticianRanking(request):
 
 #region 지난 리포트 다시보기
 def SaveToCookie(response,request,new_report):
+    #새 리포트를 기존 쿠키에 누적 저장, response: list[Responses], 2페이지에서 검사 다 하면 실행됨
     if request.COOKIES.get('id') is None:
         response.set_cookie('id', uuid.uuid4().hex)
     id = request.COOKIES.get('id')
 
-    # TODO: 질문별 for문 돌려서 완성
-    for i in range(0, 100):
-        response = Responses.objects.create(user_id=id, question_id=0, answer=0, answer_text="", response_date=datetime.datetime.now(), position_score=0)
-        # response.save()
-
-    # 대충 uuid를 쿠키에서 불러오고 DB에 응답 저장!!!!!!!!!!!!!!!!!!!
-    #새 리포트를 기존 쿠키에 누적 저장
-    pass
+    for response2 in response:
+        response2.user_id = id
+        response2.save()
 
 def ReportHistory(request):
+    #쿠키에서 리포트 목록을 가져와 템플릿에 랜더링
     id = request.COOKIES.get('id')
 
     if id is None:
@@ -281,14 +278,22 @@ def ReportHistory(request):
             responses2[response.response_date] = []
         responses2[response.response_date].append(response)
 
+    context = {
+        "reports": []
+    }
+    i = 0
+
     for response in responses2:
         report: Report = write_report(response)
         
-        # 여기서 렌더링 필요
-        pass
+        context["reports"].append({
+            "rank": i + 1,
+            "date": response[0].response_date,
+            "party": report.parties[0]["name"],
+            "politician": report.politicians_top[0]["name"],
+            "ratio": report.ratio
+        })
+        i += 1
     
-
-    # uuid를 쿠키에서 가져오고 DB에서 불러온 뒤 렌더링합시다!!!!!!!!!!!!!!
-    #쿠키에서 리포트 목록을 가져와 템플릿에 랜더링
-    pass
+    return render(request, 'history.html', context)
 #endregion

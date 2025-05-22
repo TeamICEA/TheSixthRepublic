@@ -61,4 +61,7 @@ class Responses(models.Model):
 
 class Report(models.Model):
     summary = models.TextField() # 전체 요약 메시지
-    # 각 정당/정치인 데이터 써야하는데, dict가 허용안되지 않음?
+    ratio = models.IntegerField() # 전체 성향 (0~100%)
+    parties = models.JSONField() # 적합한 정당 랭킹, 데이터: (rank: 순위, picture: 로고, name: 이름, ratio: 적합도, reason: 이유)
+    politicians_top = models.JSONField() # 적합한 정치인 TOP 10, 데이터: (rank: 순위, picture: 사진, name: 이름, birth: 출생, party: 정당, ratio: 적합도, reason: 이유)
+    politicians_bottom = models.JSONField() # 적합한 정치인 BOTTOM 10, 데이터: (rank: 순위, picture: 사진, name: 이름, birth: 출생, party: 정당, ratio: 적합도, reason: 이유)
