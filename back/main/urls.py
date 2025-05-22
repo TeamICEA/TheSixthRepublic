@@ -15,5 +15,7 @@ urlpatterns = [
     path('politicians/', views.FilteredInquiry, name='politician_list'),
     path('politicians/<int:int_id>/', views.GoToPoliticianPage, name='politician_detail'),
 
-
+    path('', views.index, name='index'),
+    path('<str:str_id>/',views.IndividualPoliticians,name='IndividualPoliticians'),
+    path('ranking/',views.PoliticianRanking,name='PoliticianRanking'),
 ]

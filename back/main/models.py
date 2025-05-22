@@ -202,9 +202,12 @@ class Politician(models.Model):
     books = models.TextField() # 책
     curr_assets = models.BigIntegerField() # 자산
     bill_approved = models.TextField()
+    election_name=models.CharField(max_length=200)  #선거구명
+    election_type=models.CharField(max_length=200)  #선거구 구분
+    attendance_plenary=models.FloatField()  #본회의 출석률
+    election_gap=models.FloatField()    #득표격차 퍼센트 표시
 #endregion
-
-
+    
 #region 8 stances
 class Stance(models.Model):
     # id는 Django에서 자동으로 생성되므로 별도로 정의할 필요 없음
@@ -256,3 +259,24 @@ class Stance(models.Model):
 #     party_id = models.IntegerField() # 정당 id
 #     birthdate = models.DateField() #생일2
 #     address = models.CharField(max_length=100) # 주소
+
+class Questions(models.Model):
+    id = models.IntegerField() # 질문 고유 ID
+    category_id = models.IntegerField() # 질문별 카테고리 ID
+    text = models.TextField() # 질문 내용
+
+class Responses(models.Model):
+    id = models.IntegerField() # 대답 ID
+    user_id = models.CharField(max_length=100) # 유저 ID
+    question_id = models.IntegerField() # 질문 ID
+    answer = models.IntegerField() # 답변 (점수)
+    answer_text = models.TextField() # 답변 (주관식)
+    response_date = models.DateTimeField() # 답변 날짜 + 시간 (UTC)
+    position_score = models.FloatField() # 성향 점수
+
+class Report(models.Model):
+    summary = models.TextField() # 전체 요약 메시지
+    ratio = models.IntegerField() # 전체 성향 (0~100%)
+    parties = models.JSONField() # 적합한 정당 랭킹, 데이터: (rank: 순위, picture: 로고, name: 이름, ratio: 적합도, reason: 이유)
+    politicians_top = models.JSONField() # 적합한 정치인 TOP 10, 데이터: (rank: 순위, picture: 사진, name: 이름, birth: 출생, party: 정당, ratio: 적합도, reason: 이유)
+    politicians_bottom = models.JSONField() # 적합한 정치인 BOTTOM 10, 데이터: (rank: 순위, picture: 사진, name: 이름, birth: 출생, party: 정당, ratio: 적합도, reason: 이유)
