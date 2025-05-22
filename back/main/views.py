@@ -1,6 +1,6 @@
 import uuid
 import datetime
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 from django.core.paginator import Paginator
 from django.db.models import *
 from django.db.models.functions import *
@@ -8,7 +8,7 @@ from .models import *
 
 # Create your views here.
 
-#region 메인 페이지
+#region 1 메인 페이지
 def index(request):
     redirect = request.GET.get('redirect')
     
@@ -43,20 +43,64 @@ def on_news_click(reqeust, button_name: str):
 
 
 
-#region 질문페이지 인덱스 관리
-def PageIdxCtrl(request, page_num: int):
+#region 2 질문 페이지
+# 질문을 5개씩 보여주고, 응답을 저장하고, 마지막엔 결과 페이지로 이동
+# 질문 페이지 인덱스 관리
+#def PageIdxCtrl(request, page_num: int):
     #유효 인덱스 확인, 인덱스에 해당하는 질문 가져와 넘겨주기(기존 응답이 있다면 응답까지)
     #만약 인덱스가 유효 인덱스보다 커졌다면 결과분석페이지로 리다이렉트
     #응답값 저장 후, 이전/다음 url로 리다이렉트 => 응답값 저장하는 함수: SaveToCookie(), 참고로 그냥 Response()로 클래스 생성 후 SaveToCookie에서 DB 저장
     pass
 #endregion
+def question_page(request, page_num):
+    QUESTIONS_PER_PAGE = 5
+    total_questions = Question.objects.count()
+    total_pages = (total_questions - 1) // QUESTIONS_PER_PAGE + 1
+
+    # 페이지 번호 유효성 검사
+    if page_num < 1 or page_num > total_pages:
+        return redirect('result_page')  # 결과 페이지로 이동
+
+    # 질문 가져오기
+    start = (page_num - 1) * QUESTIONS_PER_PAGE
+    end = start + QUESTIONS_PER_PAGE
+    questions = Question.objects.all()[start:end]
+
+    if request.method == 'POST':
+        for q in questions:
+            answer = request.POST.get(f'question_{q.id}')
+            if answer:
+                Response.objects.update_or_create(
+                    user_id=request.session.session_key,
+                    question=q,
+                    defaults={'answer': answer}
+                )
+        # 다음 페이지로 이동 또는 결과 페이지로 이동
+        if page_num < total_pages:
+            return redirect('question_page', page_num=page_num+1)
+        else:
+            return redirect('result_page')
+
+    # 기존 응답 불러오기(선택지 유지)
+    responses = {r.question_id: r.answer for r in Response.objects.filter(
+        user_id=request.session.session_key,
+        question__in=questions
+    )}
+
+    context = {
+        'questions': questions,
+        'page_num': page_num,
+        'total_pages': total_pages,
+        'responses': responses,
+    }
+    return render(request, 'main/question_page.html', context)
 
 
 
-
-#region 리포트 페이지
-def report_view(request):
+#region 3 리포트 페이지
+def result_page(request):
     # 유저의 대답을 기반으로 UI에 표시 후 렌더링
+    # return render(request, 'main/result.html')
     pass
 
 def load_all_politicians() -> list[Politician]:
@@ -90,24 +134,43 @@ def on_report_item_hover(item_type: int, id: int | str):
 
 
 
-#region 정치인 목록
-def GoToPoliticianPage(request, str_id: str):
+#region 4 정치인 목록 페이지
+def GoToPoliticianPage(request, int_id: int):
     #각 정치인 항목 클릭 시, str_id에 해당하는 정치인의 DB 데이터를 기반으로 랜더링
-    pass
+    politician = get_object_or_404(Politician, id=int_id)
+    return render(request, 'main/politician_detail.html', {'politician': politician})
 
 def FilteredInquiry(request):
     #사용자가 입력한 정당, 정치인 이름에 해당하는 요청에 따른 랜더링
-    pass
+    name_query = request.GET.get('name', '')
+    party_query = request.GET.get('party', '')
+    page_number = request.GET.get('page', 1)
+
+    # 정치인 쿼리셋
+    politicians = Politician.objects.all()
+    if name_query:
+        politicians = politicians.filter(name__icontains=name_query)
+    if party_query:
+        politicians = politicians.filter(party__name=party_query)
+
+    paginator = Paginator(politicians, 30)
+    page_obj = paginator.get_page(page_number)
+    parties = Party.objects.all()
+
+    context = {
+        'page_obj': page_obj,
+        'name_query': name_query,
+        'party_query': party_query,
+        'parties': parties,
+    }
+    return render(request, 'main/politician_list.html', context)
 
 def Pagenation(request):
     #이전, 다음, 페이지 번호 수를 눌렀을 때, 해당 요청에 따른 랜더링
     pass
 #endregion
 
-
-
-
-#region 개별 집중 분석
+#region 5 개별 집중 분석 페이지
 def write_politician_report(id: str):
     # 정치인의 분석 결과를 UI에 표시
     pass
@@ -158,12 +221,13 @@ def IndividualPoliticians(request, str_id):
         "worst_rank":wort_rank
     }
 
-    return render(request,'politician_report.html',context)#endregion
+    return render(request,'politician_report.html',context)
+  #endregion
 
 
 
 
-#region 채팅 페이지
+#region 6 채팅 페이지
 def GoToChat(request,str_id:str):
     #챗봇 상대의 해당하는 정치인 id를 받아, 해당 정치인의 성향 등을 반영한 정보를 기반으로 랜더링
     pass
@@ -181,7 +245,7 @@ def CreateResponse(prompt:str)->str:
 
 
 
-#region 분야별 랭킹
+#region 7 분야별 랭킹 페이지
 def PoliticianRanking(request):
 
     sort_by=request.GET.get('sort','reelected')
@@ -252,7 +316,7 @@ def PoliticianRanking(request):
 
 
 
-#region 지난 리포트 다시보기
+#region 8 지난 리포트 다시보기 페이지
 def SaveToCookie(response,request,new_report):
     #새 리포트를 기존 쿠키에 누적 저장, response: list[Responses], 2페이지에서 검사 다 하면 실행됨
     if request.COOKIES.get('id') is None:
