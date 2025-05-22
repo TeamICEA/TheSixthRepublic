@@ -6,7 +6,7 @@ context = {
 
 }
 
-#region 메인 페이지
+#region 1 메인 페이지
 def index(request):
     return render(request,'main/index.html', context)
 
@@ -30,14 +30,15 @@ def on_news_click(button_name: str):
 
 
 
-#region 질문페이지 인덱스 관리
+#region 2 질문 페이지
+# 질문을 5개씩 보여주고, 응답을 저장하고, 마지막엔 결과 페이지로 이동
+# 질문 페이지 인덱스 관리
 #def PageIdxCtrl(request, page_num: int):
     #유효 인덱스 확인, 인덱스에 해당하는 질문 가져와 넘겨주기(기존 응답이 있다면 응답까지)
     #만약 인덱스가 유효 인덱스보다 커졌다면 결과분석페이지로 리다이렉트
     #응답값 저장 후, 이전/다음 url로 리다이렉트
     pass
 #endregion
-# 2 질문지 페이지: 질문을 5개씩 보여주고, 응답을 저장하고, 마지막엔 결과 페이지로 이동
 def question_page(request, page_num):
     QUESTIONS_PER_PAGE = 5
     total_questions = Question.objects.count()
@@ -83,7 +84,7 @@ def question_page(request, page_num):
 
 
 
-#region 리포트 페이지
+#region 3 리포트 페이지
 def result_page(request):
     # 유저의 대답을 기반으로 UI에 표시 후 렌더링
     # return render(request, 'main/result.html')
@@ -120,7 +121,7 @@ def on_report_item_hover(item_type: int, id: int | str):
 
 
 
-#region 정치인 목록
+#region 4 정치인 목록 페이지
 def GoToPoliticianPage(request, int_id: int):
     #각 정치인 항목 클릭 시, str_id에 해당하는 정치인의 DB 데이터를 기반으로 랜더링
     politician = get_object_or_404(Politician, id=int_id)
@@ -157,7 +158,7 @@ def Pagenation(request):
 #endregion
 
 
-#region 개별 집중 분석
+#region 5 개별 집중 분석 페이지
 def preport_view(request, id: str):
     # 정치인 데이터를 DB에서 불러오는 함수와 분석 결과를 UI에 표시하는 함수를 호출한 후,
     # 나머지 데이터 렌더링링
@@ -181,7 +182,7 @@ def on_preport_item_hover(item_type: int, id: str):
 
 
 
-#region 채팅 페이지
+#region 6 채팅 페이지
 def GoToChat(request,str_id:str):
     #챗봇 상대의 해당하는 정치인 id를 받아, 해당 정치인의 성향 등을 반영한 정보를 기반으로 랜더링
     pass
@@ -199,7 +200,7 @@ def CreateResponse(prompt:str)->str:
 
 
 
-#region 분야별 랭킹
+#region 7 분야별 랭킹 페이지
 def GoToAnotherRanking(request,criteria:str):
     #사용자가 정렬 기준 항목 선택 시, 항목에 맞게 정렬된 DB 데이터를 기반으로 랜더링 
     pass
@@ -215,7 +216,7 @@ def Pagenation(request):
 
 
 
-#region 지난 리포트 다시보기
+#region 8 지난 리포트 다시보기 페이지
 def SaveToCookie(response,request,new_report):
     #새 리포트를 기존 쿠키에 누적 저장
     pass
