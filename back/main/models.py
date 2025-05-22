@@ -58,3 +58,7 @@ class Responses(models.Model):
     answer_text = models.TextField() # 답변 (주관식)
     response_date = models.DateTimeField() # 답변 날짜 + 시간 (UTC)
     position_score = models.FloatField() # 성향 점수
+
+class Report(models.Model):
+    summary = models.TextField() # 전체 요약 메시지
+    # 각 정당/정치인 데이터 써야하는데, dict가 허용안되지 않음?

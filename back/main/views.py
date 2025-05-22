@@ -7,27 +7,35 @@ from django.db.models.functions import *
 from .models import *
 
 # Create your views here.
-context = {
-
-}
 
 #region 메인 페이지
 def index(request):
+    redirect = request.GET.get('redirect')
+    
+    if redirect is not None:
+        if redirect == 'home':
+            return go_home(request)
+        elif redirect == 'test':
+            return on_test_click(request)
+
+    context = {}
     return render(request,'main/index.html', context)
 
-def go_home():
+def go_home(request):
     # 로고 버튼을 누르면 메인 홈페이지로 리다이렉트
-    pass
+    context = {}
+    return render(request,'main/index.html', context)
 
 def add_news_articles():
     # 뉴스 기사를 불러오고 (크롤링) post 데이터 (context)에 저장
     pass
 
-def on_test_click():
+def on_test_click(request):
     # 검사 버튼 클릭 시, 테스트 페이지로 리다이렉트
-    pass
+    context = {}
+    return render(request, 'main/test.html', context)
 
-def on_news_click(button_name: str):
+def on_news_click(reqeust, button_name: str):
     # 뉴스 제목 클릭 시, 해당 뉴스 웹페이지로 리다이렉트
     pass
 #endregion
@@ -69,7 +77,7 @@ def load_all_parties() -> list[Party]:
 
 def write_report(responses: list[Responses]):
     # 유저 응답이 담긴 리스트를 기반으로 분석
-    # 유저의 리포트를 기반으로 정당과 정치인 적합도까지 점수화
+    # 유저의 리포트를 기반으로 정당과 정치인 적합도까지 점수화 후 해당 데이터 반환
     pass
 
 def on_report_item_hover(item_type: int, id: int | str):
@@ -266,9 +274,19 @@ def ReportHistory(request):
         pass # 오류: uuid가 존재하지 않음
 
     responses = Responses.objects.filter(user_id=id)
+    responses2: dict[list[Responses]] = {}
 
     for response in responses:
+        if responses2[response.response_date] is None:
+            responses2[response.response_date] = []
+        responses2[response.response_date].append(response)
+
+    for response in responses2:
+        report: Report = write_report(response)
+        
+        # 여기서 렌더링 필요
         pass
+    
 
     # uuid를 쿠키에서 가져오고 DB에서 불러온 뒤 렌더링합시다!!!!!!!!!!!!!!
     #쿠키에서 리포트 목록을 가져와 템플릿에 랜더링
