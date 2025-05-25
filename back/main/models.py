@@ -5,71 +5,158 @@ from django.utils import timezone
 
 #region 1 users
 class User(models.Model):
-    # 유저 ID (UUID4)
+    # 유저 ID (UUID4, pk)
     id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
-        editable=False
+        editable=False,
+        verbose_name="사용자 ID(uuid4)"
     )
+
     # 유저 성향 벡터
-    tendency_vector = VectorField(dimensions=10)
+    tendency_vector = VectorField(
+        dimensions=10,
+        verbose_name="성향 벡터"
+    )
+
     # 유저 가중치 벡터
-    weight_vector = VectorField(dimensions=10)
+    weight_vector = VectorField(
+        dimensions=10,
+        verbose_name="가중치 벡터"
+        )
+    
     #유저 최종 벡터
-    final_vector = VectorField(dimensions=10)
+    final_vector = VectorField(
+        dimensions=10,
+        verbose_name="최종 벡터"
+        )
     
     # 유저 전체 성향 (0~1 사이 값)
-    overall_tendency = models.FloatField(default=0.5)
+    overall_tendency = models.FloatField(
+        default=0.5,
+        verbose_name="전체 성향",
+        help_text="0~1 사이의 값 (0: 보수, 1: 진보)"
+        )
     
     # 유저 편향성 (표준편차)
-    bias = models.FloatField(null=True, blank=True)
-#endregin
+    bias = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name="편향성(표준편차)"
+        )
+    
+    # 유저 생성 시각각 (근데 이러면 테이블에 필드 하나 추가)
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="유저 생성 시각"
+    )
+
+    def __str__(self):
+        return f"User {self.id}" # UUID 전체 표시
+
+    def get_tendency_label(self):
+        """전체 성향을 문자열로 변환하는 메서드"""
+        if self.overall_tendency < 0.15:
+            return "보수(극우)"
+        elif self.overall_tendency < 0.35:
+            return "보수(우파)"
+        elif self.overall_tendency < 0.45:
+            return "중도(중도 우파)"
+        elif self.overall_tendency < 0.55:
+            return "중도"
+        elif self.overall_tendency < 0.65:
+            return "중도(중도 좌파)"
+        elif self.overall_tendency < 0.85:
+            return "진보(좌파)"
+        else:
+            return "진보(극좌)"
+    
+    class Meta:
+        db_table = "users"
+        verbose_name = "사용자"
+        verbose_name_plural = "사용자들"
+        ordering = ['created_at']  # 사용자 생성 순으로 정렬
+#endregion
 
 
 #region 2 categories
 class Category(models.Model):
-    # id는 Django에서 자동으로 생성되므로 별도로 정의할 필요 없음
-    # AutoField로 1씩 증가하는 인덱스가 기본 생성됩니다
-    id = models.PositiveIntegerField()
+    id = models.PositiveIntegerField(
+        primary_key=True,
+        verbose_name="카테고리 번호"
+    )
 
     # 카테고리 이름
     name = models.CharField(
         max_length=100,
+        unique=True,
         verbose_name="카테고리 명"
     )
     
-    # 카테고리 설명 또는 키워드
+    # 카테고리 키워드
     description = models.TextField(
         blank=True,
-        verbose_name="키워드"
+        verbose_name="카테고리 키워드"
     )
-#endregin
+
+    def __str__(self):
+        return self.name
+    
+    class Meta:
+        db_table = "categories"
+        ordering = ['id']  # PostgreSQL id 순서로 정렬
+        verbose_name = "정치 카테고리"
+        verbose_name_plural = "정치 카테고리들"
+#endregion
 
 
 #region 3 questions
 class Question(models.Model):
-    # 질문 인덱스
-    index = models.PositiveIntegerField()
+    # 질문 인덱스(pk) (수동으로 질문 번호 관리)
+    id = models.PositiveIntegerField(
+        primary_key=True,
+        verbose_name="질문 번호"
+    )
     
+    # 질문 카테고리 (외래 키)(장고가 자동으로 _id도 생성)
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.CASCADE, # (필수) 카테고리 삭제 시 질문도 함께 삭제
+        related_name='questions', # Category에서 역참조 할 때 사용
+        verbose_name="질문 카테고리",
+        db_column='category_id' # DB 컬럼명을 명시적으로 저장
+    )
+
     # 질문 내용 (텍스트)
-    content = models.TextField()
-    
-    # 질문 카테고리 (외래 키)
-    category = models.ForeignKey(Category)
+    text = models.TextField(
+        verbose_name="질문 내용"
+    )
+
+    def __str__(self):
+        return f"{self.id}. {self.text[:50]}..."  # 앞 50자만 표시
     
     class Meta:
         db_table = "questions"  # 테이블 이름 지정
-        ordering = ['index']    # 인덱스 순으로 정렬
-#endregin
+        ordering = ['id']    # id 순으로 정렬
+        verbose_name = "설문 질문"
+        verbose_name_plural = "설문 질문들"
+#endregion
 
 
 #region 4 responses
 class Response(models.Model):
-    # id는 Django에서 자동으로 생성되므로 별도로 정의할 필요 없음
-    
+    # id는 Django에서 자동으로 생성
+    # id = models.BigAutoField(primary_key=True)
+
+    # 설문 세션 ID (그룹핑 용도)
+    session_id = models.UUIDField(
+        default=uuid.uuid4,
+        verbose_name="설문 세션 ID"
+    )
+
     # 사용자 (User 모델과의 외래키 관계)
     user = models.ForeignKey(
-        'User',  # User 모델을 문자열로 참조
+        User,
         on_delete=models.CASCADE,
         related_name='responses',
         verbose_name="응답자"
@@ -77,7 +164,7 @@ class Response(models.Model):
     
     # 질문 (Question 모델과의 외래키 관계)
     question = models.ForeignKey(
-        'Question',  # Question 모델을 문자열로 참조
+        Question,  # Question 모델을 문자열로 참조
         on_delete=models.CASCADE,
         related_name='responses',
         verbose_name="질문"
@@ -92,6 +179,7 @@ class Response(models.Model):
         (5, '매우동의')
     ]
     
+    # 객관식 답변
     answer = models.IntegerField(
         choices=ANSWER_CHOICES,
         verbose_name="객관식 답변"
@@ -104,10 +192,11 @@ class Response(models.Model):
         verbose_name="서술형 답변"
     )
     
-    # 답변 날짜 (년, 월, 일, 시간, 분, 초)
-    response_date = models.DateTimeField(
-        default=timezone.now,
-        verbose_name="답변 날짜"
+    # 답변 완료 시각 (년, 월, 일, 시간, 분, 초)
+    survey_completed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="답변 완료 시각"
     )
     
     # 답변 성향 점수 (0~1)
@@ -116,13 +205,21 @@ class Response(models.Model):
         verbose_name="답변 성향 점수",
         help_text="0~1 사이의 값으로 답변의 성향을 나타냅니다"
     )
+
+    def __str__(self):
+        if self.survey_completed_at:
+            completed_time = self.survey_completed_at.strftime('%Y-%m-%d %H:%M')
+        else:
+            completed_time = "진행중"
+        return f"{completed_time} - {self.user} - Q{self.question.id} ({self.get_answer_display()})"
     
     class Meta:
         db_table = "responses"
-        ordering = ['response_date']
-        # 한 사용자가 같은 질문에 중복 응답하지 못하도록 제약 추가 (선택적)
-        unique_together = ['user', 'question']
-#endregin
+        ordering = ['survey_completed_at', 'id'] # 옛날 것부터 (오름차순)
+        verbose_name = "설문 응답"
+        verbose_name_plural = "설문 응답들"
+        unique_together = ['session_id', 'user', 'question'] # 세션별 중복 응답 방지
+#endregion
 
 
 #region 5 parties
