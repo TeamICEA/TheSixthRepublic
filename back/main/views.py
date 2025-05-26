@@ -17,6 +17,8 @@ def index(request):
             return go_home(request)
         elif redirect == 'test':
             return on_test_click(request)
+        else: # 외부 url
+            return on_news_click(request, redirect)
 
     context = {}
     return render(request,'main/index.html', context)
@@ -27,7 +29,7 @@ def go_home(request):
     return render(request,'main/index.html', context)
 
 def add_news_articles():
-    # 뉴스 기사를 불러오고 (크롤링) post 데이터 (context)에 저장
+    # 뉴스 기사를 불러오고 (크롤링) post 데이터 (context)에 저장??? 크롤링 할 건가??????
     pass
 
 def on_test_click(request):
@@ -36,8 +38,9 @@ def on_test_click(request):
     return render(request, 'main/test.html', context)
 
 def on_news_click(reqeust, button_name: str):
-    # 뉴스 제목 클릭 시, 해당 뉴스 웹페이지로 리다이렉트
-    pass
+    # 뉴스 제목 클릭 시, 해당 뉴스 웹페이지로 리다이렉트, button_name -> redirect_url
+    # <button type="submit" name="redirect_url" value="https://www.google.com">구글로 이동</button>
+    return redirect(button_name)
 #endregion
 
 
