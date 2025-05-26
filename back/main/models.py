@@ -2,6 +2,7 @@ import uuid
 from django.db import models
 from pgvector.django import VectorField
 from django.utils import timezone
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 #region 1 users
 class User(models.Model):
@@ -16,36 +17,36 @@ class User(models.Model):
     # 유저 성향 벡터
     tendency_vector = VectorField(
         dimensions=10,
-        verbose_name="성향 벡터"
+        verbose_name="유저 성향 벡터"
     )
 
     # 유저 가중치 벡터
     weight_vector = VectorField(
         dimensions=10,
-        verbose_name="가중치 벡터"
-        )
+        verbose_name="유저 가중치 벡터"
+    )
     
     #유저 최종 벡터
     final_vector = VectorField(
         dimensions=10,
-        verbose_name="최종 벡터"
-        )
+        verbose_name="유저 최종 벡터"
+    )
     
     # 유저 전체 성향 (0~1 사이 값)
     overall_tendency = models.FloatField(
         default=0.5,
-        verbose_name="전체 성향",
+        verbose_name="유저 전체 성향",
         help_text="0~1 사이의 값 (0: 보수, 1: 진보)"
-        )
+    )
     
-    # 유저 편향성 (표준편차)
+    # 유저 성향 편향성 (표준편차)
     bias = models.FloatField(
         null=True,
         blank=True,
-        verbose_name="편향성(표준편차)"
-        )
+        verbose_name="유저 성향 편향성(표준편차)"
+    )
     
-    # 유저 생성 시각각 (근데 이러면 테이블에 필드 하나 추가)
+    # 유저 생성 시각 (근데 이러면 테이블에 필드 하나 추가)
     created_at = models.DateTimeField(
         auto_now_add=True,
         verbose_name="유저 생성 시각"
@@ -95,7 +96,6 @@ class Category(models.Model):
     
     # 카테고리 키워드
     description = models.TextField(
-        blank=True,
         verbose_name="카테고리 키워드"
     )
 
@@ -159,7 +159,8 @@ class Response(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name='responses',
-        verbose_name="응답자"
+        verbose_name="응답자",
+        db_column='user_id'
     )
     
     # 질문 (Question 모델과의 외래키 관계)
@@ -167,7 +168,8 @@ class Response(models.Model):
         Question,  # Question 모델을 문자열로 참조
         on_delete=models.CASCADE,
         related_name='responses',
-        verbose_name="질문"
+        verbose_name="질문",
+        db_column='question_id'
     )
     
     # 객관식 답변 (1~5)
@@ -188,7 +190,6 @@ class Response(models.Model):
     # 서술형 답변
     answer_text = models.TextField(
         blank=True,
-        null=True,
         verbose_name="서술형 답변"
     )
     
@@ -224,130 +225,519 @@ class Response(models.Model):
 
 #region 5 parties
 class Party(models.Model):
-    id = models.IntegerField(primary_key=True) # 정당 ID
-    name = models.CharField(max_length=100) # 이름
-    #ideology = models.TextField() # 이념
-    logo_url = models.CharField(max_length=255) # 로고 (URL 링크)
+    # 정당 ID (0 무소속)
+    id = models.IntegerField(
+        primary_key=True,
+        verbose_name="정당 ID"
+    )
+
+    # 정당 이름
+    name = models.CharField(
+        max_length=100,
+        unique=True, # 정당명 중복 불가
+        verbose_name="정당 이름"
+    )
+    
+    # 정당 로고 (URL 링크)
+    logo_url = models.URLField(
+        max_length=255,
+        null=True,
+        blank=True, # 무소속은 로고가 없다
+        verbose_name="정당 로고"
+    )
+    
+    # 정당 성향 벡터
+    tendency_vector = VectorField(
+        dimensions=10,
+        verbose_name="정당 성향 벡터"
+    )
+
+    # 정당 가중치 벡터
+    weight_vector = VectorField(
+        dimensions=10,
+        verbose_name="정당 가중치 벡터"
+    )
+    
+    # 정당 최종 벡터
+    final_vector = VectorField(
+        dimensions=10,
+        verbose_name="정당 최종 벡터"
+    )
+    
+    # 정당 전체 성향 (0~1 사이 값)
+    overall_tendency = models.FloatField(
+        default=0.5,
+        verbose_name="정당 전체 성향",
+        help_text="0~1 사이의 값 (0: 보수, 1: 진보)"
+    )
+    
+    # 정당 성향 편향성 (표준편차)
+    bias = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name="정당 성향 편향성(표준편차)"
+    )
+    
+    def __str__(self):
+        return self.name
+    
+    def get_tendency_label(self):
+        """정당 성향을 문자열로 변환하는 메서드"""
+        if self.overall_tendency < 0.15:
+            return "보수(극우)"
+        elif self.overall_tendency < 0.35:
+            return "보수(우파)"
+        elif self.overall_tendency < 0.45:
+            return "중도(중도 우파)"
+        elif self.overall_tendency < 0.55:
+            return "중도"
+        elif self.overall_tendency < 0.65:
+            return "중도(중도 좌파)"
+        elif self.overall_tendency < 0.85:
+            return "진보(좌파)"
+        else:
+            return "진보(극좌)"
+    
+    class Meta:
+        db_table = "parties"
+        ordering = ['id']
+        verbose_name = "정당"
+        verbose_name_plural = "정당들"
 #endregion
 
 
 #region 6 party stances
-from django.db import models
-from django.core.validators import MinValueValidator, MaxValueValidator
-
 class PartyStance(models.Model):
-    # id는 Django에서 자동으로 생성되므로 별도로 정의할 필요 없음
-    
-    # 정당 ID (외래 키)
-    party = models.ForeignKey(
-        'Party',  # Party 모델을 참조
-        on_delete=models.CASCADE,
-        related_name='stances',
-        verbose_name="정당"
+    # 당 입장 인덱스 (수동 관리)
+    id = models.PositiveIntegerField(
+        primary_key=True,
+        verbose_name="당 입장 인덱스"
     )
     
-    # 카테고리 ID (외래 키)
-    category = models.ForeignKey(
-        'Category',  # Category 모델을 참조
+    # 정당 (외래 키)
+    party = models.ForeignKey(
+        Party,  # Party 모델을 참조
         on_delete=models.CASCADE,
         related_name='party_stances',
-        verbose_name="카테고리"
+        verbose_name="정당",
+        db_column='party_id' # DB 컬럼명을 명시적으로 저장
     )
     
-    # 입장 요약 문장
+    # 카테고리 (외래 키)
+    category = models.ForeignKey(
+        Category,  # Category 모델을 참조
+        on_delete=models.CASCADE,
+        related_name='party_stances',
+        verbose_name="카테고리",
+        db_column='category_id' # DB 컬럼명을 명시적으로 저장
+    )
+    
+    # 정당 입장
     text = models.TextField(
-        verbose_name="문장 요약"
+        verbose_name="정당 입장"
     )
     
     # 입장 점수 (0~1 사이 값)
     position_score = models.FloatField(
         default=0.5,
-        verbose_name="점수 계산",
+        verbose_name="정당 입장 점수",
         help_text="0~1 사이의 값으로 정당의 입장을 나타냅니다"
     )
     
+    def __str__(self):
+        return f"{self.party.name} - {self.text[:50]}..."
+
     class Meta:
         db_table = "party_stances"
+        ordering = ['id']
         verbose_name = "정당 입장"
-        verbose_name_plural = "정당 입장 목록"
+        verbose_name_plural = "정당 입장들"
 #endregion
 
 
 #region 7 politicians
 class Politician(models.Model):
-    id = models.IntegerField(primary_key=True) # ID
-    party_id = models.IntegerField() # 정당 id
-    name = models.CharField(max_length=50) # 이름
-    hanja_name = models.CharField(max_length=50, blank=True) # 한자
-    english_name = models.CharField(max_length=50) # 영어
-    birthdate_type = models.CharField(max_length=2) # 생일
-    birthdate = models.DateField() #생일2
-    job = models.CharField(max_length=50) # 직
-    party = models.CharField(max_length=50) # 당  ## 이거 왜 ForeignKey 아님?
-    gender = models.CharField(max_length=2) # 성별
-    reelected = models.CharField(max_length=3) # 재선 여부
-    tel = models.CharField(max_length=100) # 전화번호
-    email = models.CharField(max_length=100) # 이메일
-    profile = models.TextField() # 경력
-    address = models.CharField(max_length=100) # 주소
-    boja = models.CharField(max_length=50) # 보좌
-    top_secretary = models.CharField(max_length=50) # 상위 비서
-    secretatry = models.CharField(max_length=100) # 비서
-    pic_link = models.CharField(max_length=255) # 프로필 링크
-    comittees = models.CharField(max_length=255) # 소속 위원회
-    str_id = models.CharField(max_length=45) # 의원 id
-    books = models.TextField() # 책
-    curr_assets = models.BigIntegerField() # 자산
-    bill_approved = models.TextField()
-    election_name=models.CharField(max_length=200)  #선거구명
-    election_type=models.CharField(max_length=200)  #선거구 구분
-    attendance_plenary=models.FloatField()  #본회의 출석률
-    election_gap=models.FloatField()    #득표격차 퍼센트 표시
-#endregion
+    # 정치인 ID
+    id = models.IntegerField(
+        primary_key=True,
+        verbose_name="정치인 인덱스"
+    )
+    str_id = models.CharField(
+        max_length=45,
+        unique=True,
+        verbose_name="정치인(의원) 고유 ID"
+    )
+
+    # 소속 정당 (외래키) (무소속은 0번)
+    party = models.ForeignKey(
+        Party,
+        on_delete=models.CASCADE,
+        related_name='politicians',
+        verbose_name="소속 정당",
+        db_column='party_id'
+    )
+    parties = models.CharField(
+        max_length=200, # 자꾸 길이 늘리라네 ###
+        blank=True, # 무소속 + 초선
+        verbose_name="소속했었던 정당들",
+        db_column='party'
+    )
+
+    # 이름 정보
+    name = models.CharField(
+        max_length=50,
+        verbose_name="이름"
+    )
+    hanja_name = models.CharField(
+        max_length=50,
+        blank=True,
+        verbose_name="한자명"
+    )
+    english_name = models.CharField(
+        max_length=50,
+        blank=True,
+        verbose_name="영문명"
+    )
+
+    # 성별 및 생년월일 정보
+    gender = models.CharField(
+        max_length=2,
+        verbose_name="성별"
+    )
+    birthdate_type = models.CharField(
+        max_length=2,
+        verbose_name="양력 / 음력"
+    )
+    birthdate = models.DateField(
+        verbose_name="생년월일"
+    )
+
+    # 직책 및 정치 정보
+    job = models.CharField(
+        max_length=50,
+        blank=True,
+        verbose_name="직책"
+    )
+    reelected = models.CharField(
+        max_length=4,
+        blank=True,
+        verbose_name="선수"
+    )
     
+    # 연락처 정보
+    tel = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="전화번호"
+    )
+    email = models.EmailField(  # EmailField 사용
+        max_length=100,
+        null=True,
+        blank=True,
+        verbose_name="이메일"
+    )
+    address = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="주소"
+    )
+
+    # 보좌진 정보
+    boja = models.CharField(
+        max_length=50,
+        blank=True,
+        verbose_name="보좌관"
+    )
+    top_secretary = models.CharField(
+        max_length=50,
+        blank=True,
+        verbose_name="수석비서관"
+    )
+    secretary = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="비서"
+    )
+
+    # 기타 정보
+    pic_link = models.URLField(  # URLField 사용
+        max_length=255,
+        null=True,
+        blank=True,
+        verbose_name="프로필 사진 링크"
+    )
+    committees = models.CharField(  # 오타 수정
+        max_length=255,
+        blank=True,
+        verbose_name="소속 위원회"
+    )
+    profile = models.TextField(
+        blank=True,
+        verbose_name="경력"
+    )
+    books = models.TextField(
+        blank=True,
+        verbose_name="저서"
+    )
+
+    # 재정 및 성과 정보
+    curr_assets = models.BigIntegerField( # char vs integer
+        verbose_name="현재 자산"
+    )
+    bill_approved = models.TextField(
+        blank=True,
+        verbose_name="통과 법안"
+    )
+
+    # 선거 정보
+    election_name = models.CharField(
+        max_length=200,
+        blank=True,
+        verbose_name="선거구명"
+    )
+    election_type = models.CharField(
+        max_length=200,
+        blank=True,
+        verbose_name="선거구 구분"
+    )
+    election_gap = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name="득표격차(%p)"
+    )
+
+    # 출석률 정보
+    attendance_plenary = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name="본회의 출석률"
+    )
+    
+    # 성향 정보
+    # 정치인 성향 벡터
+    tendency_vector = VectorField(
+        dimensions=10,
+        verbose_name="정치인 성향 벡터"
+    )
+
+    # 정치인 가중치 벡터
+    weight_vector = VectorField(
+        dimensions=10,
+        verbose_name="정치인 가중치 벡터"
+    )
+    
+    # 정치인 최종 벡터
+    final_vector = VectorField(
+        dimensions=10,
+        verbose_name="정치인 최종 벡터"
+    )
+    
+    # 정치인 전체 성향 (0~1 사이 값)
+    overall_tendency = models.FloatField(
+        default=0.5,
+        verbose_name="정치인 전체 성향",
+        help_text="0~1 사이의 값 (0: 보수, 1: 진보)"
+    )
+    
+    # 정치인 성향 편향성 (표준편차)
+    bias = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name="정치인 성향 편향성(표준편차)"
+    )
+    
+    def __str__(self):
+        return f"{self.name} ({self.party.name})"
+    
+    def get_tendency_label(self):
+        """정치인 성향을 문자열로 변환하는 메서드"""
+        if self.overall_tendency < 0.15:
+            return "보수(극우)"
+        elif self.overall_tendency < 0.35:
+            return "보수(우파)"
+        elif self.overall_tendency < 0.45:
+            return "중도(중도 우파)"
+        elif self.overall_tendency < 0.55:
+            return "중도"
+        elif self.overall_tendency < 0.65:
+            return "중도(중도 좌파)"
+        elif self.overall_tendency < 0.85:
+            return "진보(좌파)"
+        else:
+            return "진보(극좌)"
+    
+    class Meta:
+        db_table = "politicians"
+        ordering = ['name']
+        verbose_name = "정치인"
+        verbose_name_plural = "정치인들"
+#endregion
+
+
 #region 8 stances
 class Stance(models.Model):
     # id는 Django에서 자동으로 생성되므로 별도로 정의할 필요 없음
+    # id = models.BigAutoField(primary_key=True)
     
-    # 카테고리 ID (외래 키)
-    category = models.ForeignKey(
-        'Category',  # Category 모델을 참조
+    # 정치인 (외래 키)
+    politician = models.ForeignKey(
+        Politician,
         on_delete=models.CASCADE,
         related_name='stances',
-        verbose_name="카테고리"
+        verbose_name="국회의원",
+        db_column='politician_str_id' # db 필드명 바꿔야 함 ###
+    )
+
+    # 카테고리 (외래 키)
+    category = models.ForeignKey(
+        Category,  # Category 모델을 참조
+        on_delete=models.CASCADE,
+        related_name='stances',
+        verbose_name="카테고리",
+        db_column='category_id'
     )
     
-    # 입장 요약
+    # 발언 요약
     position_summary = models.TextField(
-        verbose_name="입장 요약"
+        verbose_name="발언 요약"
     )
     
-    # 입장 점수 (0~1 사이 값)
+    # 발언 점수 (0~1 사이 값)
     position_score = models.FloatField(
-        default = 0.5,
-        verbose_name="입장 점수",
+        default=0.5,
+        verbose_name="발언 점수",
         help_text="0~1 사이의 값으로 입장을 나타냅니다"
     )
     
     # 뉴스 URL 주소
     source_url = models.URLField(
         max_length=500,
+        null=True,
+        blank=True,
         verbose_name="뉴스 URL 주소"
     )
-    
-    # 국회의원 ID (외래 키)
-    id = models.ForeignKey(
-        'Politician',  # Politician 모델을 참조
-        on_delete=models.CASCADE,
-        related_name='stances',
-        verbose_name="국회의원"
-    )
+
+    def __str__(self):
+        return f"{self.politician.name} - {self.category.name} ({self.position_score})"
     
     class Meta:
         db_table = "stances"
-        verbose_name = "입장"
-        verbose_name_plural = "입장 목록"
+        verbose_name = "정치인 발언"
+        verbose_name_plural = "정치인 발언들"
 #endregion
+
+
+#region 9 reports
+# 지난 보고서를 보여주기 위해 보고서를 저장
+class Report(models.Model):
+    # id 자동 생성
+    # id = models.BigAutoField(primary_key=True)
+
+    # 사용자 (외래키, UUID) (설문 결과 리포트인 경우)
+    user = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name='reports',
+        verbose_name="사용자",
+        db_column='user_id'
+    )
+    
+    # 정치인 (외래키, str_id) (정치인 분석 리포트인 경우)
+    politician = models.ForeignKey(
+        Politician,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name='reports',
+        verbose_name="정치인",
+        db_column='politician_str_id'
+    )
+
+    # 보고서 전문
+    full_text = models.TextField(
+        verbose_name="보고서 전문"
+    )
+    
+    # 전체 성향 (0~100%)
+    ratio = models.IntegerField(
+        verbose_name="전체 성향 비율",
+        help_text="0~100% 사이의 값"
+    )
+
+    # 적합한 정당 랭킹
+    parties_rank = models.JSONField(
+        null=True,
+        blank=True,
+        verbose_name="정당 랭킹",
+        help_text="rank, picture, name, ratio, reason 포함"
+    )
+    
+    # 적합한 정치인 TOP 10
+    politicians_top = models.JSONField(
+        null=True,
+        blank=True,
+        verbose_name="상위 정치인 TOP 10",
+        help_text="rank, picture, name, birth, party, ratio, reason 포함"
+    )
+    
+    # 적합한 정치인 BOTTOM 10
+    politicians_bottom = models.JSONField(
+        null=True,
+        blank=True,
+        verbose_name="하위 정치인 BOTTOM 10",
+        help_text="rank, picture, name, birth, party, ratio, reason 포함"
+    )
+
+    # 생성 시간 (사용자는 응답 시간과 같다. 모든 리포트)
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="리포트 생성 시간"
+    )
+
+    def __str__(self):
+        time_str = self.created_at.strftime('%Y-%m-%d %H:%M:%S')
+        if self.user:
+            return f"User Report {self.user.id} - {time_str}"
+        elif self.politician:
+            return f"Politician Report {self.politician.str_id} - {self.politician.name} - {time_str}"
+        else:
+            return f"Report {self.id} - {time_str}"
+        
+    def clean(self):
+        from django.core.exceptions import ValidationError
+
+        # 보고서 전문 검증
+        if not self.full_text.strip():
+            raise ValidationError("보고서 전문은 필수입니다.")
+    
+        # 전체 성향 범위 검증(0~100)
+        if self.ratio < 0 or self.ratio > 100:
+            raise ValidationError("비율은 0~100 사이의 값이어야 합니다.")
+        
+        # XOR 조건: 사용자, 정치인 중 하나만
+        if not self.user and not self.politician:
+            raise ValidationError("사용자 또는 정치인 중 하나는 반드시 설정되어야 합니다.")
+        if self.user and self.politician:
+            raise ValidationError("사용자와 정치인을 동시에 설정할 수 없습니다.")
+    
+    class Meta:
+        db_table = "reports"
+        ordering = ['created_at']
+        verbose_name = "분석 리포트"
+        verbose_name_plural = "분석 리포트들"
+        constraints = [
+            models.CheckConstraint(
+                check=(
+                    models.Q(user__isnull=False, politician__isnull=True) |
+                    models.Q(user__isnull=True, politician__isnull=False)
+                ),
+                name='report_must_have_exactly_one_user_or_politician'
+            )
+        ]
+#endregion
+
 
 class PoliticianSimple(models.Model):
     id = models.IntegerField(primary_key=True) # ID
@@ -357,23 +747,16 @@ class PoliticianSimple(models.Model):
     birthdate = models.DateField() #생일2
     address = models.CharField(max_length=100) # 주소
 
-class Questions(models.Model):
-    id = models.IntegerField() # 질문 고유 ID
-    category_id = models.IntegerField() # 질문별 카테고리 ID
-    text = models.TextField() # 질문 내용
+# class Questions(models.Model):
+#     id = models.IntegerField() # 질문 고유 ID
+#     category_id = models.IntegerField() # 질문별 카테고리 ID
+#     text = models.TextField() # 질문 내용
 
-class Responses(models.Model):
-    id = models.IntegerField() # 대답 ID
-    user_id = models.CharField(max_length=100) # 유저 ID
-    question_id = models.IntegerField() # 질문 ID
-    answer = models.IntegerField() # 답변 (점수)
-    answer_text = models.TextField() # 답변 (주관식)
-    response_date = models.DateTimeField() # 답변 날짜 + 시간 (UTC)
-    position_score = models.FloatField() # 성향 점수
-
-class Report(models.Model):
-    summary = models.TextField() # 전체 요약 메시지
-    ratio = models.IntegerField() # 전체 성향 (0~100%)
-    parties = models.JSONField() # 적합한 정당 랭킹, 데이터: (rank: 순위, picture: 로고, name: 이름, ratio: 적합도, reason: 이유)
-    politicians_top = models.JSONField() # 적합한 정치인 TOP 10, 데이터: (rank: 순위, picture: 사진, name: 이름, birth: 출생, party: 정당, ratio: 적합도, reason: 이유)
-    politicians_bottom = models.JSONField() # 적합한 정치인 BOTTOM 10, 데이터: (rank: 순위, picture: 사진, name: 이름, birth: 출생, party: 정당, ratio: 적합도, reason: 이유)
+# class Responses(models.Model):
+#     id = models.IntegerField() # 대답 ID
+#     user_id = models.CharField(max_length=100) # 유저 ID
+#     question_id = models.IntegerField() # 질문 ID
+#     answer = models.IntegerField() # 답변 (점수)
+#     answer_text = models.TextField() # 답변 (주관식)
+#     response_date = models.DateTimeField() # 답변 날짜 + 시간 (UTC)
+#     position_score = models.FloatField() # 성향 점수

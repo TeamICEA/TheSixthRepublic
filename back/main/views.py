@@ -119,7 +119,7 @@ def load_all_parties() -> list[Party]:
     # 정당 리스트를 DB에서 불러온 후 반환
     pass
 
-def write_report(responses: list[Responses]):
+def write_report(responses: list[Response]):
     # 유저 응답이 담긴 리스트를 기반으로 분석
     # 유저의 리포트를 기반으로 정당과 정치인 적합도까지 점수화 후 해당 데이터 반환
     pass
