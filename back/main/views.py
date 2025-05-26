@@ -323,9 +323,8 @@ def SaveToCookie(response,request,new_report):
         response.set_cookie('id', uuid.uuid4().hex)
     id = request.COOKIES.get('id')
 
-    for response2 in response:
-        response2.user_id = id
-        response2.save()
+    report: Report = write_report(request)
+    report.save()
 
 def ReportHistory(request):
     #쿠키에서 리포트 목록을 가져와 템플릿에 랜더링
@@ -334,30 +333,35 @@ def ReportHistory(request):
     if id is None:
         pass # 오류: uuid가 존재하지 않음
 
-    responses = Responses.objects.filter(user_id=id)
-    responses2: dict[list[Responses]] = {}
+    responses = Report.objects.filter(user_id=id)
+    responses2: dict[list[Report]] = {}
 
     for response in responses:
-        if responses2[response.response_date] is None:
-            responses2[response.response_date] = []
-        responses2[response.response_date].append(response)
+        if responses2[response.created_at] is None:
+            responses2[response.created_at] = []
+        responses2[response.created_at].append(response)
 
     context = {
         "reports": []
     }
     i = 0
 
-    for response in responses2:
-        report: Report = write_report(response)
-        
-        context["reports"].append({
-            "rank": i + 1,
-            "date": response[0].response_date,
-            "party": report.parties[0]["name"],
-            "politician": report.politicians_top[0]["name"],
-            "ratio": report.ratio
-        })
-        i += 1
+    for reports in responses2:
+        if i >= 10: # limit
+            break
+
+        for report in reports:
+            if i >= 10: # limit
+                break
+
+            context["reports"].append({
+                "rank": i + 1,
+                "date": report.created_at,
+                "party": report.party[0]["name"],
+                "politician": report.politicians_top[0]["name"],
+                "ratio": report.ratio
+            })
+            i += 1
     
     return render(request, 'history.html', context)
 #endregion
