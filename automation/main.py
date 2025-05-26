@@ -221,7 +221,7 @@ def crawl_all_v2():
     for politician in politicians:
         gongyak = False
 
-        if politician[1] == "김교흥":
+        if politician[1] == "박균택":
             start = True
         if not start:
             continue
