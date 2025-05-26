@@ -360,7 +360,7 @@ def ReportHistory(request):
             context["reports"].append({
                 "rank": i + 1,
                 "date": report.created_at,
-                "party": report.party[0]["name"],
+                "party": report.parties[0]["name"],
                 "politician": report.politicians_top[0]["name"],
                 "ratio": report.ratio
             })
