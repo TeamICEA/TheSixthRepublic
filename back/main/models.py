@@ -656,7 +656,7 @@ class Report(models.Model):
     )
 
     # 적합한 정당 랭킹
-    party = models.JSONField(
+    parties = models.JSONField(
         null=True,
         blank=True,
         verbose_name="정당 랭킹",
