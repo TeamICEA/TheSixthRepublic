@@ -1,5 +1,8 @@
 import uuid
 import datetime
+import requests
+import json
+import re
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.paginator import Paginator
 from django.db.models import *
@@ -7,6 +10,11 @@ from django.db.models.functions import *
 from .models import *
 
 # Create your views here.
+CLEANR = re.compile('<.*?>')
+
+keys = {}
+with open("../keys.json") as f:
+    keys = json.load(f)
 
 #region 1 메인 페이지
 def index(request):
@@ -28,9 +36,40 @@ def go_home(request):
     context = {}
     return render(request,'main/index.html', context)
 
-def add_news_articles():
-    # 뉴스 기사를 불러오고 (크롤링) post 데이터 (context)에 저장??? 크롤링 할 건가??????
-    pass
+def add_news_articles(request):
+    # 뉴스 기사를 불러오고 (크롤링) post 데이터 (context)에 저장
+    categories = ["정치", "경제", "글로벌", "사회"]
+    context = {}
+
+    for i in range(0, 4):
+        category = categories[i]
+        url = f"https://openapi.naver.com/v1/search/news.json?query={category}&start=1&display=3&sort=sim"
+        response = requests.get(url, headers={
+            "Host": "openapi.naver.com",
+            "User-Agent": "curl/7.49.1",
+            "Accept": "*/*",
+            "X-Naver-Client-Id": keys["NAVER_KEY_ID"],
+            "X-Naver-Client-Secret": keys["NAVER_KEY_SECRET"]
+        })
+
+        if response.status_code != 200:
+            return
+
+        text_json = json.loads(response.text)
+        context[category] = []
+    
+        for item in text_json["items"]:
+            title: str = re.sub(CLEANR, '', item["title"])
+            link: str = item["link"]
+            # description: str = re.sub(CLEANR, '', item["description"])
+
+            article = {
+                "title": title,
+                "link": link
+            }
+            context[str(i)].append(article)
+
+    return render(request, 'main/index.html', context)
 
 def on_test_click(request):
     # 검사 버튼 클릭 시, 테스트 페이지로 리다이렉트
