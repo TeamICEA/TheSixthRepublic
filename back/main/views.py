@@ -52,47 +52,160 @@ def on_news_click(reqeust, button_name: str):
     #응답값 저장 후, 이전/다음 url로 리다이렉트 => 응답값 저장하는 함수: SaveToCookie(), 참고로 그냥 Response()로 클래스 생성 후 SaveToCookie에서 DB 저장
     pass
 #endregion
+# def question_page(request, page_num):
+#     QUESTIONS_PER_PAGE = 5
+#     total_questions = Question.objects.count()
+#     total_pages = (total_questions - 1) // QUESTIONS_PER_PAGE + 1
+
+#     # 페이지 번호 유효성 검사
+#     if page_num < 1 or page_num > total_pages:
+#         return redirect('result_page')  # 결과 페이지로 이동
+
+#     # 질문 가져오기
+#     start = (page_num - 1) * QUESTIONS_PER_PAGE
+#     end = start + QUESTIONS_PER_PAGE
+#     questions = Question.objects.all()[start:end]
+
+#     if request.method == 'POST':
+#         for q in questions:
+#             answer = request.POST.get(f'question_{q.id}')
+#             if answer:
+#                 Response.objects.update_or_create(
+#                     user_id=request.session.session_key,
+#                     question=q,
+#                     defaults={'answer': answer}
+#                 )
+#         # 다음 페이지로 이동 또는 결과 페이지로 이동
+#         if page_num < total_pages:
+#             return redirect('question_page', page_num=page_num+1)
+#         else:
+#             return redirect('result_page')
+
+#     # 기존 응답 불러오기(선택지 유지)
+#     responses = {r.question_id: r.answer for r in Response.objects.filter(
+#         user_id=request.session.session_key,
+#         question__in=questions
+#     )}
+
+#     context = {
+#         'questions': questions,
+#         'page_num': page_num,
+#         'total_pages': total_pages,
+#         'responses': responses,
+#     }
+#     return render(request, 'main/question_page.html', context)
+from django.shortcuts import render, redirect
+from django.core.paginator import Paginator
+from django.contrib.sessions.models import Session
+from django.utils import timezone
+from .models import Question, Response, User
+import uuid
+
 def question_page(request, page_num):
+    """
+    설문 질문 페이지 - 5개씩 질문을 보여주고 응답을 저장
+    """
     QUESTIONS_PER_PAGE = 5
-    total_questions = Question.objects.count()
-    total_pages = (total_questions - 1) // QUESTIONS_PER_PAGE + 1
-
+    
+    # 세션이 없으면 생성 (처음 방문하는 사용자)
+    if not request.session.session_key:
+        request.session.create()
+    
+    # 전체 질문 가져오기 (ID 순서대로)
+    all_questions = Question.objects.all().order_by('id')
+    
+    # Django Paginator 사용 (더 안전하고 효율적)
+    paginator = Paginator(all_questions, QUESTIONS_PER_PAGE)
+    total_pages = paginator.num_pages
+    
     # 페이지 번호 유효성 검사
-    if page_num < 1 or page_num > total_pages:
+    if page_num < 1:
+        return redirect('question_page', page_num=1)
+    elif page_num > total_pages:
         return redirect('result_page')  # 결과 페이지로 이동
-
-    # 질문 가져오기
-    start = (page_num - 1) * QUESTIONS_PER_PAGE
-    end = start + QUESTIONS_PER_PAGE
-    questions = Question.objects.all()[start:end]
-
+    
+    # 현재 페이지의 질문들 가져오기
+    try:
+        page_obj = paginator.get_page(page_num)
+        questions = page_obj.object_list
+    except:
+        return redirect('question_page', page_num=1)
+    
+    # POST 요청 처리 (사용자가 답변을 제출했을 때)
     if request.method == 'POST':
-        for q in questions:
-            answer = request.POST.get(f'question_{q.id}')
+        session_id = request.session.get('survey_session_id')
+        
+        # 설문 세션 ID가 없으면 새로 생성
+        if not session_id:
+            session_id = uuid.uuid4()
+            request.session['survey_session_id'] = str(session_id)
+        
+        # 사용자 객체 가져오기 또는 생성
+        user, created = User.objects.get_or_create(
+            id=request.session.session_key,
+            defaults={
+                'tendency_vector': [0.5] * 10,  # 기본값
+                'weight_vector': [1.0] * 10,    # 기본값
+                'final_vector': [0.5] * 10,     # 기본값
+            }
+        )
+        
+        # 각 질문의 답변 저장
+        for question in questions:
+            answer = request.POST.get(f'question_{question.id}')
             if answer:
-                Response.objects.update_or_create(
-                    user_id=request.session.session_key,
-                    question=q,
-                    defaults={'answer': answer}
-                )
+                try:
+                    answer_int = int(answer)
+                    if 1 <= answer_int <= 5:  # 유효한 답변인지 확인
+                        # 기존 응답 업데이트 또는 새로 생성
+                        Response.objects.update_or_create(
+                            session_id=session_id,
+                            user=user,
+                            question=question,
+                            defaults={
+                                'answer': answer_int,
+                                'tendency_score': 0.5,  # 기본값 (나중에 계산 로직 추가)
+                                'survey_completed_at': timezone.now() if page_num == total_pages else None
+                            }
+                        )
+                except ValueError:
+                    continue  # 잘못된 답변은 무시
+        
         # 다음 페이지로 이동 또는 결과 페이지로 이동
         if page_num < total_pages:
-            return redirect('question_page', page_num=page_num+1)
+            return redirect('question_page', page_num=page_num + 1)
         else:
+            # 마지막 페이지면 모든 응답의 완료 시간 업데이트
+            Response.objects.filter(
+                session_id=session_id,
+                user=user
+            ).update(survey_completed_at=timezone.now())
             return redirect('result_page')
-
-    # 기존 응답 불러오기(선택지 유지)
-    responses = {r.question_id: r.answer for r in Response.objects.filter(
-        user_id=request.session.session_key,
-        question__in=questions
-    )}
-
+    
+    # 기존 응답 불러오기 (페이지를 다시 방문했을 때 선택 상태 유지)
+    session_id = request.session.get('survey_session_id')
+    responses = {}
+    
+    if session_id:
+        existing_responses = Response.objects.filter(
+            session_id=session_id,
+            question__in=questions
+        ).select_related('question')
+        
+        responses = {r.question.id: r.answer for r in existing_responses}
+    
+    # 템플릿에 전달할 데이터
     context = {
         'questions': questions,
         'page_num': page_num,
         'total_pages': total_pages,
         'responses': responses,
+        'is_first_page': page_num == 1,  # 첫 페이지인지 확인
+        'is_last_page': page_num == total_pages,  # 마지막 페이지인지 확인
+        'prev_page': page_num - 1 if page_num > 1 else None,
+        'next_page': page_num + 1 if page_num < total_pages else None,
     }
+    
     return render(request, 'main/question_page.html', context)
 
 
@@ -335,7 +448,7 @@ def ReportHistory(request):
         pass # 오류: uuid가 존재하지 않음
 
     responses = Responses.objects.filter(user_id=id)
-    responses2: dict[list[Responses]] = {}
+    responses2: dict[list[Response]] = {}
 
     for response in responses:
         if responses2[response.response_date] is None:
