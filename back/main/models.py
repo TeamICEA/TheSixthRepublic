@@ -643,20 +643,9 @@ class Report(models.Model):
         verbose_name="사용자",
         db_column='user_id'
     )
-    
-    # 정치인 (외래키, str_id) (정치인 분석 리포트인 경우)
-    politician = models.ForeignKey(
-        Politician,
-        null=True,
-        blank=True,
-        on_delete=models.CASCADE,
-        related_name='reports',
-        verbose_name="정치인",
-        db_column='politician_str_id'
-    )
 
     # 보고서 전문
-    full_text = models.TextField(
+    summary = models.TextField(
         verbose_name="보고서 전문"
     )
     
@@ -667,7 +656,7 @@ class Report(models.Model):
     )
 
     # 적합한 정당 랭킹
-    parties_rank = models.JSONField(
+    parties = models.JSONField(
         null=True,
         blank=True,
         verbose_name="정당 랭킹",

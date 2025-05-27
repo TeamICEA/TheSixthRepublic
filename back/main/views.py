@@ -1,12 +1,22 @@
 import uuid
 import datetime
-from django.shortcuts import render, redirect, get_object_or_404
+import requests
+import json
+import re
+from openai import OpenAI
+from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
 from django.core.paginator import Paginator
 from django.db.models import *
 from django.db.models.functions import *
 from .models import *
 
 # Create your views here.
+CLEANR = re.compile('<.*?>')
+
+keys = {}
+with open("../keys.json") as f:
+    keys = json.load(f)
+openai_client = OpenAI(api_key=keys["OPENAI_KEY"])
 
 #region 1 메인 페이지
 def index(request):
@@ -17,6 +27,8 @@ def index(request):
             return go_home(request)
         elif redirect == 'test':
             return on_test_click(request)
+        else: # 외부 url
+            return on_news_click(request, redirect)
 
     context = {}
     return render(request,'main/index.html', context)
@@ -26,9 +38,40 @@ def go_home(request):
     context = {}
     return render(request,'main/index.html', context)
 
-def add_news_articles():
+def add_news_articles(request):
     # 뉴스 기사를 불러오고 (크롤링) post 데이터 (context)에 저장
-    pass
+    categories = ["정치", "경제", "글로벌", "사회"]
+    context = {}
+
+    for i in range(0, 4):
+        category = categories[i]
+        url = f"https://openapi.naver.com/v1/search/news.json?query={category}&start=1&display=3&sort=sim"
+        response = requests.get(url, headers={
+            "Host": "openapi.naver.com",
+            "User-Agent": "curl/7.49.1",
+            "Accept": "*/*",
+            "X-Naver-Client-Id": keys["NAVER_KEY_ID"],
+            "X-Naver-Client-Secret": keys["NAVER_KEY_SECRET"]
+        })
+
+        if response.status_code != 200:
+            return
+
+        text_json = json.loads(response.text)
+        context[category] = []
+    
+        for item in text_json["items"]:
+            title: str = re.sub(CLEANR, '', item["title"])
+            link: str = item["link"]
+            # description: str = re.sub(CLEANR, '', item["description"])
+
+            article = {
+                "title": title,
+                "link": link
+            }
+            context[str(i)].append(article)
+
+    return render(request, 'main/index.html', context)
 
 def on_test_click(request):
     # 검사 버튼 클릭 시, 테스트 페이지로 리다이렉트
@@ -36,8 +79,9 @@ def on_test_click(request):
     return render(request, 'main/test.html', context)
 
 def on_news_click(reqeust, button_name: str):
-    # 뉴스 제목 클릭 시, 해당 뉴스 웹페이지로 리다이렉트
-    pass
+    # 뉴스 제목 클릭 시, 해당 뉴스 웹페이지로 리다이렉트, button_name -> redirect_url
+    # <button type="submit" name="redirect_url" value="https://www.google.com">구글로 이동</button>
+    return redirect(button_name)
 #endregion
 
 
@@ -213,33 +257,62 @@ def question_page(request, page_num):
 #region 3 리포트 페이지
 def result_page(request):
     # 유저의 대답을 기반으로 UI에 표시 후 렌더링
-    # return render(request, 'main/result.html')
-    pass
+    responses = Response.objects.filter(user_id=get_user_id()).order_by('-survey_completed_at')
+    responses2: list[Response] = [] # 가장 최근 진행한 유저의 대답 리스트
+    created_at: DateTimeField = None
+
+    for response in responses:
+        if created_at is None:
+            created_at = response.survey_completed_at
+        if created_at == response.survey_completed_at:
+            responses2.append(response)
+        else:
+            break
+
+    # 구현 미완성
+    
+
+    return render(request, 'main/result.html')
 
 def load_all_politicians() -> list[Politician]:
     # 국회의원 리스트를 DB에서 불러온 후 반환
-    pass
+    return Politician.objects.all()
 
 def load_all_politicians_simple() -> list[PoliticianSimple]:
     # 국회의원의 기본 데이터 리스트를 DB에서 불러온 후 반환
-    pass
+    politicians = Politician.objects.values("id", "name", "hanja_name", "party_id", "birthdate", "address")
+    politicians2 = []
+
+    for politician in politicians:
+        politician2 = PoliticianSimple()
+        politician2.id = politician["id"]
+        politician2.name = politician["name"]
+        politician2.hanja_name = politician["hanja_name"]
+        politician2.party_id = politician["party_id"]
+        politician2.birthdate = politician["birthdate"]
+        politician2.address = politician["address"]
+
+        politicians2.append(politician2)
+    
+    return politician2
 
 def load_politician(id: str) -> Politician:
     # 국회의원 ID를 기반으로 DB에서 불러온 후 반환
-    pass
+    return Politician.objects.get(id=id)
 
 def load_all_parties() -> list[Party]:
     # 정당 리스트를 DB에서 불러온 후 반환
-    pass
+    return Politician.objects.all()
 
 def write_report(responses: list[Response]):
     # 유저 응답이 담긴 리스트를 기반으로 분석
     # 유저의 리포트를 기반으로 정당과 정치인 적합도까지 점수화 후 해당 데이터 반환
+    response = CreateResponse()
     pass
 
 def on_report_item_hover(item_type: int, id: int | str):
     # item_type: 1 => 적합한 정당, 2 => 적합한 정치인 TOP, 3 => 적합한 정치인 WORST
-    # id => 정치인 또는 정당당 id
+    # id => 정치인 또는 정당 id
     # 랭킹 아이템을 갖다 댈시 그에 맞는 이유 표시
     pass
 #endregion
@@ -284,8 +357,8 @@ def Pagenation(request):
 #endregion
 
 #region 5 개별 집중 분석 페이지
-def write_politician_report(id: str):
-    # 정치인의 분석 결과를 UI에 표시
+def write_politician_report(id: str) -> Report:
+    # 정치인의 분석 결과 반환
     pass
 
 def on_preport_item_hover(item_type: int, id: str):
@@ -294,10 +367,7 @@ def on_preport_item_hover(item_type: int, id: str):
     # 랭킹 아이템을 갖다 댈시 그에 맞는 이유 표시
     pass
 
-
-
 def IndividualPoliticians(request, str_id):
-
     politician=get_object_or_404(Politician,str_id=str_id)
     #str_id와 같은 아이디, Politician에서 갖고오기
     report=write_politician_report(str_id)
@@ -334,7 +404,7 @@ def IndividualPoliticians(request, str_id):
         "worst_rank":wort_rank
     }
 
-    return render(request,'politician_report.html',context)
+    return render(request,'main/politician_report.html',context)
   #endregion
 
 
@@ -343,16 +413,38 @@ def IndividualPoliticians(request, str_id):
 #region 6 채팅 페이지
 def GoToChat(request,str_id:str):
     #챗봇 상대의 해당하는 정치인 id를 받아, 해당 정치인의 성향 등을 반영한 정보를 기반으로 랜더링
+    politician = load_politician(str_id)
+
+    # 정치인의 무슨 데이터를 반영할 것인지 구현 필요
+    
+
+    context = {
+
+    }
+    return render(request, "main/chat.html", context)
     pass
 
 def ManageChat(request, str_id:str):
     #사용자의 메세지를 받아,정치인 스타일로 AI 응답 반환
     #응답 생성은 CreateResponse()호출로 이루어짐
-    pass
+    
+    user_text = "" # 유저의 메시지는 어디서 가져올 것인가?
+    ai_text = CreateResponse("") # 로직 구현 필요
+
+    context = { "response": ai_text }
+    return render(request, "main/chat.html", context)
 
 def CreateResponse(prompt:str)->str:
     #정치인 말투에 맞게 응답을 만들어내는 AI 호출
-    pass
+    completion = openai_client.chat.completions.create(
+    model="gpt-4o-mini",
+    store=False,
+    messages=[
+        {"role": "user", "content": prompt}
+    ]
+    )
+
+    return completion.choices[0].message.content
 #endreigon
 
 
@@ -430,47 +522,51 @@ def PoliticianRanking(request):
 
 
 #region 8 지난 리포트 다시보기 페이지
-def SaveToCookie(response,request,new_report):
-    #새 리포트를 기존 쿠키에 누적 저장, response: list[Responses], 2페이지에서 검사 다 하면 실행됨
+def get_user_id(request):
     if request.COOKIES.get('id') is None:
+        response = HttpResponse('SET USER ID')
         response.set_cookie('id', uuid.uuid4().hex)
-    id = request.COOKIES.get('id')
 
-    for response2 in response:
-        response2.user_id = id
-        response2.save()
+    id = request.COOKIES.get('id')
+    return id
+
+def SaveToCookie(response,request,new_report):
+    #새 리포트를 기존 쿠키에 누적 저장, response: list[Response], 2페이지에서 검사 다 하면 실행됨
+    report: Report = write_report(response)
+    report.save()
 
 def ReportHistory(request):
     #쿠키에서 리포트 목록을 가져와 템플릿에 랜더링
-    id = request.COOKIES.get('id')
-
-    if id is None:
-        pass # 오류: uuid가 존재하지 않음
-
-    responses = Responses.objects.filter(user_id=id)
-    responses2: dict[list[Response]] = {}
+    id = get_user_id()
+    responses = Report.objects.filter(user_id=id)
+    responses2: dict[list[Report]] = {}
 
     for response in responses:
-        if responses2[response.response_date] is None:
-            responses2[response.response_date] = []
-        responses2[response.response_date].append(response)
+        if responses2[response.created_at] is None:
+            responses2[response.created_at] = []
+        responses2[response.created_at].append(response)
 
     context = {
         "reports": []
     }
     i = 0
 
-    for response in responses2:
-        report: Report = write_report(response)
-        
-        context["reports"].append({
-            "rank": i + 1,
-            "date": response[0].response_date,
-            "party": report.parties[0]["name"],
-            "politician": report.politicians_top[0]["name"],
-            "ratio": report.ratio
-        })
-        i += 1
+    for reports in responses2:
+        if i >= 10: # limit
+            break
+
+        for report in reports:
+            if i >= 10: # limit
+                break
+
+            context["reports"].append({
+                "rank": i + 1,
+                "date": report.created_at,
+                "party": report.parties[0]["name"],
+                "politician": report.politicians_top[0]["name"],
+                "ratio": report.ratio
+            })
+            i += 1
     
     return render(request, 'history.html', context)
 #endregion
