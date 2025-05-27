@@ -3,6 +3,7 @@ import datetime
 import requests
 import json
 import re
+from openai import OpenAI
 from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
 from django.core.paginator import Paginator
 from django.db.models import *
@@ -15,6 +16,7 @@ CLEANR = re.compile('<.*?>')
 keys = {}
 with open("../keys.json") as f:
     keys = json.load(f)
+openai_client = OpenAI(api_key=keys["OPENAI_KEY"])
 
 #region 1 메인 페이지
 def index(request):
@@ -289,7 +291,7 @@ def IndividualPoliticians(request, str_id):
         "worst_rank":wort_rank
     }
 
-    return render(request,'politician_report.html',context)
+    return render(request,'main/politician_report.html',context)
   #endregion
 
 
@@ -298,16 +300,38 @@ def IndividualPoliticians(request, str_id):
 #region 6 채팅 페이지
 def GoToChat(request,str_id:str):
     #챗봇 상대의 해당하는 정치인 id를 받아, 해당 정치인의 성향 등을 반영한 정보를 기반으로 랜더링
+    politician = load_politician(str_id)
+
+    # 정치인의 무슨 데이터를 반영할 것인지 구현 필요
+    
+
+    context = {
+
+    }
+    return render(request, "main/chat.html", context)
     pass
 
 def ManageChat(request, str_id:str):
     #사용자의 메세지를 받아,정치인 스타일로 AI 응답 반환
     #응답 생성은 CreateResponse()호출로 이루어짐
-    pass
+    
+    user_text = "" # 유저의 메시지는 어디서 가져올 것인가?
+    ai_text = CreateResponse("") # 로직 구현 필요
+
+    context = { "response": ai_text }
+    return render(request, "main/chat.html", context)
 
 def CreateResponse(prompt:str)->str:
     #정치인 말투에 맞게 응답을 만들어내는 AI 호출
-    pass
+    completion = openai_client.chat.completions.create(
+    model="gpt-4o-mini",
+    store=False,
+    messages=[
+        {"role": "user", "content": prompt}
+    ]
+    )
+
+    return completion.choices[0].message.content
 #endreigon
 
 
