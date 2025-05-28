@@ -727,6 +727,24 @@ class Report(models.Model):
         ]
 #endregion
 
+#region 10 tone
+class Tone(models.Model):
+    # id는 Django에서 자동으로 생성되므로 별도로 정의할 필요 없음
+    # 본회의 발언
+    name = models.CharField(30, verbose_name="정치인 이름")
+
+    speech = models.TextField(
+        verbose_name="본회의 발언"
+    )
+
+    def __str__(self):
+        return f"{self.name} - {len(self.speech)}"
+    
+    class Meta:
+        db_table = "tone"
+        verbose_name = "정치인 말투"
+        verbose_name_plural = "정치인 말투들"
+#endregion
 
 class PoliticianSimple(models.Model):
     id = models.IntegerField(primary_key=True) # ID
