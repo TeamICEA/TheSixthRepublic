@@ -3,6 +3,7 @@ import datetime
 import requests
 import json
 import re
+import random
 from openai import OpenAI
 from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
 from django.core.paginator import Paginator
@@ -429,19 +430,47 @@ def ManageChat(request, str_id:str):
     #응답 생성은 CreateResponse()호출로 이루어짐
     
     user_text = "" # 유저의 메시지는 어디서 가져올 것인가?
-    ai_text = CreateResponse("") # 로직 구현 필요
+    prompt = ""
+    system = ""
+    TONE_COUNT = 5
+
+    politician = load_politician(str_id)
+    speeches = Tone.objects.all()
+    indicies = list(range(0, len(speeches)))
+    speeches2: list[str] = []
+    random.shuffle(indicies)
+
+    for i in range(0, TONE_COUNT):
+        index = indicies[i]
+        speech: Tone = speeches[index]
+        speeches2.append(speech.speech)
+        
+    system += f"""너의 임무는 지금부터 대한민국에서 정치 활동을 하고 있는 국회의원 {politician.name}이 되는 거야.
+    {politician.name}, 기본 정보를 알려주자면 성별은 {politician.gender}, 생일은 {politician.birthdate}, 정당은 {politician.party}이고 경력은 '{politician.profile}'이야.
+    
+    (정치인 세부 정보 나열)
+    (정치인 말투 나열)
+    
+    넌 앞으로 성격, 말투, 외모, 지능 모두 {politician.name}인 척 말하고, 길게 말하지 마. 그리고 한국어로 말해."""
+    prompt += user_text
+
+    ai_text = CreateResponse(prompt, system) # 로직 구현 필요
+    # 문제점: 텍스트만 생성해야 하고, 딴 질문에는 답변하지 않아야 함. 그런 제한할 수 있는 기능이 있나?
 
     context = { "response": ai_text }
     return render(request, "main/chat.html", context)
 
-def CreateResponse(prompt:str)->str:
+def CreateResponse(prompt:str, system="")->str:
     #정치인 말투에 맞게 응답을 만들어내는 AI 호출
+    messages = [{"role": "user", "content": prompt}]
+
+    if system != "":
+        messages.append({"role": "system", "content": system})
+
     completion = openai_client.chat.completions.create(
     model="gpt-4o-mini",
-    store=False,
-    messages=[
-        {"role": "user", "content": prompt}
-    ]
+    store=True,
+    messages=messages
     )
 
     return completion.choices[0].message.content
