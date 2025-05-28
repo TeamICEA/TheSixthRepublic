@@ -414,42 +414,12 @@ def IndividualPoliticians(request, str_id):
 #region 6 채팅 페이지
 def GoToChat(request,str_id:str):
     #챗봇 상대의 해당하는 정치인 id를 받아, 해당 정치인의 성향 등을 반영한 정보를 기반으로 랜더링
+
     politician = load_politician(str_id)
-
-    # 정치인의 무슨 데이터를 반영할 것인지 구현 필요
-    
-
-    context = {
-
-    }
-    return render(request, "main/chat.html", context)
-    pass
-
-def ManageChat(request, str_id:str):
-    #사용자의 메세지를 받아,정치인 스타일로 AI 응답 반환
-    #응답 생성은 CreateResponse()호출로 이루어짐
-    
     user_text = "" # 유저의 메시지는 어디서 가져올 것인가?
-    prompt = ""
-    system = ""
-    TONE_COUNT = 5
 
-    politician = load_politician(str_id)
-    speeches = Tone.objects.all()
-    indicies = list(range(0, len(speeches)))
-    speeches2: list[str] = [] # 최종 발언 데이터
-
-    info1 = "" # 정치인 세부 정보
-    info2 = "" # 정치인 말투
-
-    random.shuffle(indicies)
-
-    for i in range(0, TONE_COUNT):
-        index = indicies[i]
-        speech: Tone = speeches[index]
-        speeches2.append(speech.speech)
-
-    poly_infos = { # 이 정보들 중 필요 없는 정보는 제외 필요
+    # 정치인의 무슨 데이터를 반영할 것인지, 이 중에 필요 없는 정보는 무엇인지 제외 필요
+    poly_infos = {
         '이름':politician.name,
         '한자명':politician.hanja_name,
         '영문명':politician.english_name,
@@ -475,6 +445,32 @@ def ManageChat(request, str_id:str):
         '득표격차':politician.election_gap,
         '본회의 출석률':politician.attendance_plenary
     }
+    response = ManageChat(request, user_text, politician, poly_infos)
+
+    context = { "response": response }
+    return render(request, "main/chat.html", context)
+
+def ManageChat(request, user_text: str, politician: Politician, poly_infos: dict) -> str:
+    #사용자의 메세지를 받아,정치인 스타일로 AI 응답 반환
+    #응답 생성은 CreateResponse()호출로 이루어짐
+    
+    prompt = ""
+    system = ""
+    TONE_COUNT = 5
+
+    speeches = Tone.objects.all()
+    indicies = list(range(0, len(speeches)))
+    speeches2: list[str] = [] # 최종 발언 데이터
+
+    info1 = "" # 정치인 세부 정보
+    info2 = "" # 정치인 말투
+
+    random.shuffle(indicies)
+
+    for i in range(0, TONE_COUNT):
+        index = indicies[i]
+        speech: Tone = speeches[index]
+        speeches2.append(speech.speech)
 
     info1 = "\n".join([f"{key}: {poly_infos[key]}" for key in poly_infos])
     info2 = "\n\n".join(speeches2)
@@ -495,8 +491,7 @@ def ManageChat(request, str_id:str):
     ai_text = CreateResponse(prompt, system) # 로직 구현 필요
     # 문제점: 텍스트만 생성해야 하고, 딴 질문에는 답변하지 않아야 함. 그런 제한할 수 있는 기능이 있나?
 
-    context = { "response": ai_text }
-    return render(request, "main/chat.html", context)
+    return ai_text
 
 def CreateResponse(prompt:str, system="")->str:
     #정치인 말투에 맞게 응답을 만들어내는 AI 호출
