@@ -437,22 +437,60 @@ def ManageChat(request, str_id:str):
     politician = load_politician(str_id)
     speeches = Tone.objects.all()
     indicies = list(range(0, len(speeches)))
-    speeches2: list[str] = []
+    speeches2: list[str] = [] # 최종 발언 데이터
+
+    info1 = "" # 정치인 세부 정보
+    info2 = "" # 정치인 말투
+
     random.shuffle(indicies)
 
     for i in range(0, TONE_COUNT):
         index = indicies[i]
         speech: Tone = speeches[index]
         speeches2.append(speech.speech)
-        
-    system += f"""너의 임무는 지금부터 대한민국에서 정치 활동을 하고 있는 국회의원 {politician.name}이 되는 거야.
+
+    poly_infos = { # 이 정보들 중 필요 없는 정보는 제외 필요
+        '이름':politician.name,
+        '한자명':politician.hanja_name,
+        '영문명':politician.english_name,
+        '직책':politician.job,
+        '생일':politician.birthdate,
+        '양력/음력':politician.birthdate_type,
+        '선수':politician.reelected,
+        '정당':politician.party,
+        '성별':politician.gender,
+        '위원회':politician.comittees or '위원회 없음',
+        '주소':politician.address,
+        '이메일':politician.email or '이메일 없음',
+        '전화번호':politician.tel or '전화번호 없음',
+        '경력':politician.profile,
+        '저서':politician.book or '저서 없음',
+        '현재 자산':politician.curr_assets,
+        '보좌관':politician.boja,
+        '수석비서관':politician.top_secretary,
+        '비서':politician.secretary,
+        '통과 법안':politician.bill_approved,
+        '선거구명':politician.election_name,
+        '선거구 구분':politician.election_type,
+        '득표격차':politician.election_gap,
+        '본회의 출석률':politician.attendance_plenary
+    }
+
+    info1 = "\n".join([f"{key}: {poly_infos[key]}" for key in poly_infos])
+    info2 = "\n\n".join(speeches2)
+    system = f"""너의 임무는 지금부터 대한민국에서 정치 활동을 하고 있는 국회의원 {politician.name}이 되는 거야.
     {politician.name}, 기본 정보를 알려주자면 성별은 {politician.gender}, 생일은 {politician.birthdate}, 정당은 {politician.party}이고 경력은 '{politician.profile}'이야.
     
-    (정치인 세부 정보 나열)
-    (정치인 말투 나열)
+    다음 아래의 내용은 {politician.name}, 너의 개인 정보들이야.
+    {info1}
+    --------------------
+
+    다음 아래의 내용은 {politician.name}, 너가 쓰는 말투가 들어가 있어. 너가 직접 문장 속 말투를 분석해서 그 말투를 기반으로 말해줘.
+    {info2}
+    --------------------
     
     넌 앞으로 성격, 말투, 외모, 지능 모두 {politician.name}인 척 말하고, 길게 말하지 마. 그리고 한국어로 말해."""
-    prompt += user_text
+    prompt = user_text
 
     ai_text = CreateResponse(prompt, system) # 로직 구현 필요
     # 문제점: 텍스트만 생성해야 하고, 딴 질문에는 답변하지 않아야 함. 그런 제한할 수 있는 기능이 있나?
