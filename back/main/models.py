@@ -628,7 +628,7 @@ class Stance(models.Model):
 
 
 #region 9 reports
-# 지난 보고서를 보여주기 위해 보고서를 저장
+# 지난 보고서를 보여주기 위해 보고서를 저장 -> response 외래키 추가?
 class Report(models.Model):
     # id 자동 생성
     # id = models.BigAutoField(primary_key=True)
@@ -645,7 +645,7 @@ class Report(models.Model):
     )
 
     # 보고서 전문
-    summary = models.TextField(
+    summary = models.TextField( # 이거 텍스트로 바꿀거임
         verbose_name="보고서 전문"
     )
     
