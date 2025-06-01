@@ -200,9 +200,11 @@ def cleanhtml(raw_html):
   cleantext = re.sub(CLEANR, '', raw_html)
   return cleantext
 
-def crawl_all_v2():
+def crawl_all_v2(reverse=False, start_from=""):
     politicians = []
+    politicians2 = []
     keywords = []
+    start = True
 
     cur.execute("select id, name, description from categories;")
     rows = cur.fetchall()
@@ -216,20 +218,29 @@ def crawl_all_v2():
     for row in rows:
         politicians.append(row)
 
-    start = False
+    if reverse:
+        politicians.reverse()
 
+    if start_from != "":
+        start = False
+    
     for politician in politicians:
-        gongyak = False
-
-        if politician[1] == "박균택":
+        if start_from != "" and politician[1] == start_from:
             start = True
         if not start:
             continue
 
-        for keyword in keywords:
-            keywords2 = str(keyword[2]).split(",")
-            for keyword2 in keywords2:
-                keyword2 = keyword2.strip(" ")
+        politicians2.append(politician)
+
+    gongyak = False
+
+    for keyword in keywords:
+        keywords2 = str(keyword[2]).split(",")
+
+        for keyword2 in keywords2:
+            keyword2 = keyword2.strip(" ")
+
+            for politician in politicians2:
                 category = f"{politician[1]} {keyword2}"
 
                 if keyword2 == "공약":
@@ -278,18 +289,18 @@ def crawl_all_v2():
                     try:
                         sql = f"INSERT INTO stances (id_int, category_id, position_summary, position_score, source_url, id) VALUES (1, {keyword[0]}, '{summary}', {score}, '{article[1]}', '{politician[0]}')"
                         cur.execute(sql)
-                    except:
+                    except Exception as e:
+                        print(sql)
                         print("SQL EXECUTE ERROR")
-                        pass
+                        print(e)
                     
                     print(f"{politician[1]}: {keyword[0]}, {keyword2}")
                     print(summary)
                     print(score)
                     print()
-            con.commit()
-            print("SAVED!")
-
-    pass
+                
+                con.commit()
+                print("SAVED!")
 
 def crawl_v2(category: str, start = 1, display = 100):
     url = f"https://openapi.naver.com/v1/search/news.json?query={category}&start={start}&display={display}&sort=sim"
@@ -335,7 +346,14 @@ def main():
     elif option == 2:
         view()
     elif option == 3:
-        crawl_all_v2()
+        reverse_str = input("(강...허) 순차적으로 하실 거면 Y, (허...강) 역행으로 하실 거면 N을 입력해주세요: ")
+        start_from = input("어떤 정치인부터 시작할 건지 이름을 정해주세요 (공백 시 전체): ")
+        reverse = False
+
+        if reverse_str.lower() == "n":
+            reverse = True
+
+        crawl_all_v2(reverse, start_from)
         #crawl_all_articles()
 
 main()
