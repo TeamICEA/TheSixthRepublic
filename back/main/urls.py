@@ -12,9 +12,12 @@ urlpatterns = [
 
 
     # 4 정치인 목록 페이지
-    path('politicians/', views.FilteredInquiry, name='politician_list'),
-    path('politicians/<int:int_id>/', views.GoToPoliticianPage, name='politician_detail'),
+    path('politicians/', views.politician_list, name='politician_list'),
+    path('politicians/<int:politician_id>/', views.politician_detail, name='politician_detail'),
 
+
+
+    # 몇 페이지인지 주석 써주세요.
     path('', views.index, name='index'),
     path('<str:str_id>/',views.IndividualPoliticians,name='IndividualPoliticians'),
     path('ranking/',views.PoliticianRanking,name='PoliticianRanking'),

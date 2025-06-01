@@ -45,12 +45,6 @@ class User(models.Model):
         blank=True,
         verbose_name="유저 성향 편향성(표준편차)"
     )
-    
-    # 유저 생성 시각 (근데 이러면 테이블에 필드 하나 추가)
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name="유저 생성 시각"
-    )
 
     def __str__(self):
         return f"User {self.id}" # UUID 전체 표시
@@ -76,7 +70,6 @@ class User(models.Model):
         db_table = "users"
         verbose_name = "사용자"
         verbose_name_plural = "사용자들"
-        ordering = ['created_at']  # 사용자 생성 순으로 정렬
 #endregion
 
 
@@ -148,12 +141,6 @@ class Response(models.Model):
     # id는 Django에서 자동으로 생성
     # id = models.BigAutoField(primary_key=True)
 
-    # 설문 세션 ID (그룹핑 용도)
-    session_id = models.UUIDField(
-        default=uuid.uuid4,
-        verbose_name="설문 세션 ID"
-    )
-
     # 사용자 (User 모델과의 외래키 관계)
     user = models.ForeignKey(
         User,
@@ -161,6 +148,19 @@ class Response(models.Model):
         related_name='responses',
         verbose_name="응답자",
         db_column='user_id'
+    )
+
+    # 설문 세션 ID (그룹핑 용도)
+    survey_attempt_id = models.UUIDField(
+        default=uuid.uuid4,
+        verbose_name="설문 시도 ID"
+    )
+
+    # 답변 완료 시각 (년, 월, 일, 시간, 분, 초)
+    survey_completed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="설문 완료 시각"
     )
     
     # 질문 (Question 모델과의 외래키 관계)
@@ -193,13 +193,6 @@ class Response(models.Model):
         verbose_name="서술형 답변"
     )
     
-    # 답변 완료 시각 (년, 월, 일, 시간, 분, 초)
-    survey_completed_at = models.DateTimeField(
-        null=True,
-        blank=True,
-        verbose_name="답변 완료 시각"
-    )
-    
     # 답변 성향 점수 (0~1)
     tendency_score = models.FloatField(
         default=0.5,
@@ -219,7 +212,7 @@ class Response(models.Model):
         ordering = ['survey_completed_at', 'id'] # 옛날 것부터 (오름차순)
         verbose_name = "설문 응답"
         verbose_name_plural = "설문 응답들"
-        unique_together = ['session_id', 'user', 'question'] # 세션별 중복 응답 방지
+        unique_together = ['survey_attempt_id', 'user', 'question'] # 세션별 중복 응답 방지
 #endregion
 
 
@@ -644,8 +637,24 @@ class Report(models.Model):
         db_column='user_id'
     )
 
+    # 정치인 리포트용
+    politician = models.ForeignKey(
+        Politician,
+        null=True, blank=True,
+        on_delete=models.CASCADE,
+        related_name='reports',
+        verbose_name="정치인",
+        db_column='politician_id'
+    )
+
+    # 리포트 생성 시각
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="리포트 생성 시각"
+    )
+
     # 보고서 전문
-    summary = models.TextField( # 이거 텍스트로 바꿀거임
+    full_text = models.TextField(
         verbose_name="보고서 전문"
     )
     
@@ -656,7 +665,7 @@ class Report(models.Model):
     )
 
     # 적합한 정당 랭킹
-    parties = models.JSONField(
+    parties_rank = models.JSONField(
         null=True,
         blank=True,
         verbose_name="정당 랭킹",
@@ -677,12 +686,6 @@ class Report(models.Model):
         blank=True,
         verbose_name="하위 정치인 BOTTOM 10",
         help_text="rank, picture, name, birth, party, ratio, reason 포함"
-    )
-
-    # 생성 시간 (사용자는 응답 시간과 같다. 모든 리포트)
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name="리포트 생성 시간"
     )
 
     def __str__(self):
@@ -713,7 +716,7 @@ class Report(models.Model):
     
     class Meta:
         db_table = "reports"
-        ordering = ['created_at']
+        ordering = ['-created_at'] # 최신순 정렬
         verbose_name = "분석 리포트"
         verbose_name_plural = "분석 리포트들"
         constraints = [

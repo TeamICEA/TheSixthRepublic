@@ -97,7 +97,6 @@ def on_news_click(reqeust, button_name: str):
     #만약 인덱스가 유효 인덱스보다 커졌다면 결과분석페이지로 리다이렉트
     #응답값 저장 후, 이전/다음 url로 리다이렉트 => 응답값 저장하는 함수: SaveToCookie(), 참고로 그냥 Response()로 클래스 생성 후 SaveToCookie에서 DB 저장
     pass
-#endregion
 def question_page(request, page_num):
     """
     설문 질문 페이지 - 5개씩 질문을 보여주고 응답을 저장
@@ -124,7 +123,7 @@ def question_page(request, page_num):
     # 4. User 객체 가져오기
     current_user = User.objects.get(id=user_uuid)
     
-    # 5. 진행 중인 설문의 session_id 확인
+    # 5. 진행 중인 설문의 survey_attempt_id 확인
     current_survey_session = request.session.get('current_survey_session_id')
     
     # 6. 전체 질문 가져오기 (ID 순서대로)
@@ -151,7 +150,7 @@ def question_page(request, page_num):
     if current_survey_session and request.method == 'GET':
         # 답변하지 않은 첫 번째 질문 찾기
         answered_questions = Response.objects.filter(
-            session_id=current_survey_session,
+            survey_attempt_id=current_survey_session,
             user=current_user,
             survey_completed_at__isnull=True
         ).values_list('question_id', flat=True)
@@ -191,7 +190,7 @@ def question_page(request, page_num):
             # current_survey_session이 있든 없든 기존 응답 찾기
             if current_survey_session:
                 existing_responses = Response.objects.filter(
-                    session_id=current_survey_session,
+                    survey_attempt_id=current_survey_session,
                     user=current_user,
                     question__in=questions
                 ).select_related('question')
@@ -231,8 +230,8 @@ def question_page(request, page_num):
             ).first()
             
             if existing_incomplete:
-                # 기존 미완료 설문이 있으면 그 session_id 사용
-                current_survey_session = existing_incomplete.session_id
+                # 기존 미완료 설문이 있으면 그 survey_attempt_id 사용
+                current_survey_session = existing_incomplete.survey_attempt_id
                 request.session['current_survey_session_id'] = str(current_survey_session)
             else:
                 # 완전히 새로운 설문 시작
@@ -258,7 +257,7 @@ def question_page(request, page_num):
                             response_defaults['answer_text'] = answer_text.strip()
                         
                         Response.objects.update_or_create(
-                            session_id=current_survey_session,
+                            survey_attempt_id=current_survey_session,
                             user=current_user,
                             question=question,
                             defaults=response_defaults
@@ -272,7 +271,7 @@ def question_page(request, page_num):
         else:
             # 설문 완료 처리
             Response.objects.filter(
-                session_id=current_survey_session,
+                survey_attempt_id=current_survey_session,
                 user=current_user
             ).update(survey_completed_at=timezone.now())
             
@@ -289,7 +288,7 @@ def question_page(request, page_num):
     if current_survey_session:
         # 현재 진행 중인 설문의 응답들 찾기
         existing_responses = Response.objects.filter(
-            session_id=current_survey_session,
+            survey_attempt_id=current_survey_session,
             user=current_user,
             question__in=questions
         ).select_related('question')
@@ -304,7 +303,7 @@ def question_page(request, page_num):
         # 만약 미완료 응답이 있다면 그 session_id를 현재 세션으로 설정
         if existing_responses.exists():
             first_response = existing_responses.first()
-            current_survey_session = first_response.session_id
+            current_survey_session = first_response.survey_attempt_id
             request.session['current_survey_session_id'] = str(current_survey_session)
     
     responses = {r.question.id: r.answer for r in existing_responses}
@@ -325,6 +324,7 @@ def question_page(request, page_num):
     }
     
     return render(request, 'main/question_page.html', context)
+#endregion
 
 
 
@@ -391,43 +391,69 @@ def on_report_item_hover(item_type: int, id: int | str):
     pass
 #endregion
 
+#region 보고서 로직 초안
 
+#endregion
 
 
 #region 4 정치인 목록 페이지
-def GoToPoliticianPage(request, int_id: int):
-    #각 정치인 항목 클릭 시, str_id에 해당하는 정치인의 DB 데이터를 기반으로 랜더링
-    politician = get_object_or_404(Politician, id=int_id)
-    return render(request, 'main/politician_detail.html', {'politician': politician})
+def politician_detail(request, politician_id: int):
+    """개별 정치인 상세 페이지"""
+    # select_related로 정당 정보도 함께 가져와서 쿼리 최적화
+    politician = get_object_or_404(
+        Politician.objects.select_related('party'), 
+        id=politician_id
+    )
+    
+    context = {
+        'politician': politician,
+    }
+    return render(request, 'main/politician_detail.html', context)
 
-def FilteredInquiry(request):
-    #사용자가 입력한 정당, 정치인 이름에 해당하는 요청에 따른 랜더링
-    name_query = request.GET.get('name', '')
-    party_query = request.GET.get('party', '')
+def politician_list(request):
+    """정치인 목록 페이지 (검색 및 필터링 포함)"""
+    # GET 파라미터 받기
+    name_query = request.GET.get('name', '').strip()
+    party_query = request.GET.get('party', '').strip()
     page_number = request.GET.get('page', 1)
-
-    # 정치인 쿼리셋
-    politicians = Politician.objects.all()
+    
+    # 기본 쿼리셋 (정당 정보도 함께 가져오기)
+    politicians = Politician.objects.select_related('party').all()
+    
+    # 이름 검색 (검색창 입력)
     if name_query:
         politicians = politicians.filter(name__icontains=name_query)
+    
+    # 정당 필터링 (9개 버튼 클릭)
     if party_query:
-        politicians = politicians.filter(party__name=party_query)
-
-    paginator = Paginator(politicians, 30)
+        try:
+            politicians = politicians.filter(party_id=int(party_query))
+        except ValueError:
+            # 잘못된 정당 ID 무시
+            pass
+    
+    # 가나다순 정렬
+    politicians = politicians.order_by('name')
+    
+    # 페이지네이션
+    paginator = Paginator(politicians, 20) # 한 페이지당 20명
     page_obj = paginator.get_page(page_number)
-    parties = Party.objects.all()
-
+    
+    # 정당 목록 (무소속 포함 8개, 버튼은 총 9개)
+    # 0: 무소속, 1~7: 원내 정당들 - ID 기준으로 가져오기
+    parties_for_buttons = Party.objects.filter(
+        id__in=[0, 1, 2, 3, 4, 5, 6, 7] # 무소속 포함 8개 정당
+    ).order_by('id')
+    # 템플릿에서 전체 버튼 추가로 총 9개
+    
     context = {
         'page_obj': page_obj,
         'name_query': name_query,
         'party_query': party_query,
-        'parties': parties,
+        'parties_for_buttons': parties_for_buttons,  # 9개 버튼용
+        'total_count': politicians.count(),
     }
     return render(request, 'main/politician_list.html', context)
-
-def Pagenation(request):
-    #이전, 다음, 페이지 번호 수를 눌렀을 때, 해당 요청에 따른 랜더링
-    pass
 #endregion
 
 #region 5 개별 집중 분석 페이지
