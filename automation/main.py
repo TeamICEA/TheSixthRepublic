@@ -350,7 +350,7 @@ def main():
         start_from = input("어떤 정치인부터 시작할 건지 이름을 정해주세요 (공백 시 전체): ")
         reverse = False
 
-        if reverse_str.lower() == "y":
+        if reverse_str.lower() == "n":
             reverse = True
 
         crawl_all_v2(reverse, start_from)
