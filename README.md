@@ -13,6 +13,10 @@ Discover where you stand.
 2. 국회의원 데이터로 학습한 챗봇 서비스 제공 (웹 크롤링하여 데이터 수집)
 3. 국회의원별 정보 통계 사이트 (항목별 랭킹, 상세정보 등등)
 
+## 구조
+- [automation](https://github.com/TeamICEA/TheSixthRepublic/tree/main/automation): DB 관련 자동화 툴
+- [back](https://github.com/TeamICEA/TheSixthRepublic/tree/main/back): 백엔드 (Django)
+
 ## 사용법
 ```json
 {
