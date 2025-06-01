@@ -219,7 +219,7 @@ def crawl_all_v2(reverse=False, start_from=""):
         politicians.append(row)
 
     if reverse:
-        politicians.reverse()
+        keywords.reverse()
 
     if start_from != "":
         start = False
@@ -346,11 +346,11 @@ def main():
     elif option == 2:
         view()
     elif option == 3:
-        reverse_str = input("(강...허) 순차적으로 하실 거면 Y, (허...강) 역행으로 하실 거면 N을 입력해주세요: ")
+        reverse_str = input("카테고리를 순차적으로 하실 거면 Y, 역행으로 하실 거면 N을 입력해주세요: ")
         start_from = input("어떤 정치인부터 시작할 건지 이름을 정해주세요 (공백 시 전체): ")
         reverse = False
 
-        if reverse_str.lower() == "n":
+        if reverse_str.lower() == "y":
             reverse = True
 
         crawl_all_v2(reverse, start_from)
