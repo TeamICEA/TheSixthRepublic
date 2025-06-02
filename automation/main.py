@@ -3,6 +3,7 @@ import psycopg2
 import requests
 import json
 import re
+import time
 from openai import OpenAI
 from google import genai
 from bs4 import BeautifulSoup
@@ -121,12 +122,22 @@ def gpt(content: str) -> str:
 
     return completion.choices[0].message.content
 
-def gpt_v2(prompt:str, system="") -> str:
-    response = client2.models.generate_content(
-        model="gemini-2.0-flash",
-        contents=prompt,
-    )
-    return response.text
+def gpt_v2(prompt:str, system="", indent=0) -> str:
+    try:
+        response = client2.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=prompt,
+        )
+        return response.text
+    except Exception as e:
+        if indent == 5:
+            print("GPT ERROR")
+            print(e)
+            return ""
+
+        time.sleep(3)
+        print("503?")
+        return gpt_v2(prompt, system, indent + 1)
 
 def find_id(sql: str) -> str:
     sql2 = sql.replace("INSERT INTO stances (id, category_id, position_summary, position_score, source_url) VALUES (", "")
@@ -294,6 +305,10 @@ def crawl_all_v2(reverse=False, start_from=""):
 
     0.00 부터 1.00 사이인 실수형 숫자를 알려줘. 형식은 무조건 숫자여야 해. 0.41이나 0.23이나 0.67같은 구체적인 숫자면 더욱 좋아."""
                     score = gpt_v2(query)
+
+                    if score == "":
+                        print("SCORE GPT ERROR")
+                        continue
                     
                     try:
                         sql = f"INSERT INTO stances (id_int, category_id, position_summary, position_score, source_url, id) VALUES (1, {keyword[0]}, '{summary}', {score}, '{article[1]}', '{politician[0]}')"
