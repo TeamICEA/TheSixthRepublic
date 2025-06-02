@@ -4,6 +4,7 @@ import requests
 import json
 import re
 from openai import OpenAI
+from google import genai
 from bs4 import BeautifulSoup
 
 keys = {}
@@ -13,6 +14,7 @@ with open("keys.json") as f:
 con = psycopg2.connect(host=keys["SQL_HOST"], dbname=keys["SQL_DATABASE"],user=keys["SQL_USERNAME"],password=keys["SQL_PASSWORD"],port=5432)
 cur = con.cursor()
 client = OpenAI(api_key=keys["OPENAI_KEY"])
+client2 = genai.Client(api_key=keys["GEMINI_KEY"])
 
 def execute():
     global cur
@@ -118,6 +120,13 @@ def gpt(content: str) -> str:
     )
 
     return completion.choices[0].message.content
+
+def gpt_v2(prompt:str, system="") -> str:
+    response = client2.models.generate_content(
+        model="gemini-2.0-flash",
+        contents=prompt,
+    )
+    return response.text
 
 def find_id(sql: str) -> str:
     sql2 = sql.replace("INSERT INTO stances (id, category_id, position_summary, position_score, source_url) VALUES (", "")
@@ -268,7 +277,7 @@ def crawl_all_v2(reverse=False, start_from=""):
     문장 구조를 잘 갖춘 예: [환경·에너지관] 이재명은 재생에너지 중심의 에너지 전환 정책을 추진하며, 탈원전을 선언하였다. 예를 들어, "2050년까지 원전 비중 제로"라고 밝혔다.
 
     [카테고리]는 {keyword2}, [정치인 이름]은 {politician[1]}이야."""
-                    summary = gpt(query).replace("'", "")
+                    summary = gpt_v2(query).replace("'", "")
 
                     if not summary.startswith(f"[{keyword2}] {politician[1]}"):
                         print(f"Summary is wrong: {summary}")
@@ -284,7 +293,7 @@ def crawl_all_v2(reverse=False, start_from=""):
     - 1.00: 매우 진보적
 
     0.00 부터 1.00 사이인 실수형 숫자를 알려줘. 형식은 무조건 숫자여야 해. 0.41이나 0.23이나 0.67같은 구체적인 숫자면 더욱 좋아."""
-                    score = gpt(query)
+                    score = gpt_v2(query)
                     
                     try:
                         sql = f"INSERT INTO stances (id_int, category_id, position_summary, position_score, source_url, id) VALUES (1, {keyword[0]}, '{summary}', {score}, '{article[1]}', '{politician[0]}')"
