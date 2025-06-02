@@ -105,11 +105,7 @@ def question_page(request, page_num):
     QUESTIONS_PER_PAGE = 5
     
     # 1. Django 세션이 없으면 생성 (브라우저 식별용)
-    if not request.session.session_key:
-        request.session.create()
-    
-    # 2. Django 세션에서 User UUID 가져오기 (사용자 식별용)
-    user_uuid = request.session.get('user_uuid')
+    user_uuid = get_user_id(request)
     
     # 3. User UUID가 없으면 새로운 사용자 생성
     if not user_uuid:
@@ -687,12 +683,12 @@ def PoliticianRanking(request):
 
 #region 8 지난 리포트 다시보기 페이지
 def get_user_id(request):
-    if request.COOKIES.get('id') is None:
-        response = HttpResponse('SET USER ID')
-        response.set_cookie('id', uuid.uuid4().hex)
-
-    id = request.COOKIES.get('id')
-    return id
+    if not request.session.session_key:
+        request.session.create()
+    
+    # 2. Django 세션에서 User UUID 가져오기 (사용자 식별용)
+    user_uuid = request.session.get('user_uuid')
+    return user_uuid
 
 def SaveToCookie(response,request,new_report):
     #새 리포트를 기존 쿠키에 누적 저장, response: list[Response], 2페이지에서 검사 다 하면 실행됨
