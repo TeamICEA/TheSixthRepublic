@@ -748,6 +748,38 @@ class Tone(models.Model):
         verbose_name_plural = "정치인 말투들"
 #endregion
 
+#region 11 챗봇 이전 대화 기록 (DEPRECATED?)
+class Chat(models.Model):
+    user = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name='chats',
+        verbose_name="사용자",
+        db_column='user_id'
+    )
+
+    # 대화 생성 시각
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="대화 생성 시각"
+    )
+
+    # 대화 내용
+    text = models.TextField(
+        verbose_name="대화 내용"
+    )
+
+    def __str__(self):
+        return f"{self.name} - {len(self.speech)}"
+    
+    class Meta:
+        db_table = "chats"
+        verbose_name = "정치인 말투"
+        verbose_name_plural = "정치인 말투들"
+#endregion
+
 class PoliticianSimple(models.Model):
     id = models.IntegerField(primary_key=True) # ID
     name = models.CharField(max_length=50) # 이름
