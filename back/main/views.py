@@ -325,11 +325,6 @@ def question_page(request, page_num):
 
 
 
-#region 적합도 계산, 성향 보고서 로직 함수
-
-#endregion
-
-
 #region 3 리포트 페이지
 def result_page(request):
     # 유저의 대답을 기반으로 UI에 표시 후 렌더링
