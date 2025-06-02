@@ -370,10 +370,9 @@ class Politician(models.Model):
         db_column='party_id'
     )
     parties = models.CharField(
-        max_length=200, # 자꾸 길이 늘리라네 ###
+        max_length=50,
         blank=True, # 무소속 + 초선
-        verbose_name="소속했었던 정당들",
-        db_column='party'
+        verbose_name="소속했었던 정당들"
     )
 
     # 이름 정보
