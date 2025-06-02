@@ -11,6 +11,7 @@ from django.utils import timezone
 from django.db.models import *
 from django.db.models.functions import *
 from .models import *
+from .models import *
 
 # Create your views here.
 CLEANR = re.compile('<.*?>')
@@ -328,6 +329,11 @@ def question_page(request, page_num):
 
 
 
+#region 적합도 계산, 성향 보고서 로직 함수
+
+#endregion
+
+
 #region 3 리포트 페이지
 def result_page(request):
     # 유저의 대답을 기반으로 UI에 표시 후 렌더링
@@ -391,9 +397,6 @@ def on_report_item_hover(item_type: int, id: int | str):
     pass
 #endregion
 
-#region 보고서 로직 초안
-
-#endregion
 
 
 #region 4 정치인 목록 페이지
