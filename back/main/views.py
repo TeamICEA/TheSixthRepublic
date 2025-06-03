@@ -90,14 +90,8 @@ def on_news_click(reqeust, button_name: str):
 
 
 
-#region 2 질문 페이지 (아니 이거 왜캐 복잡함?)
+#region 2 질문 페이지
 # 질문을 5개씩 보여주고, 응답을 저장하고, 마지막엔 결과 페이지로 이동
-# 질문 페이지 인덱스 관리
-#def PageIdxCtrl(request, page_num: int):
-    #유효 인덱스 확인, 인덱스에 해당하는 질문 가져와 넘겨주기(기존 응답이 있다면 응답까지)
-    #만약 인덱스가 유효 인덱스보다 커졌다면 결과분석페이지로 리다이렉트
-    #응답값 저장 후, 이전/다음 url로 리다이렉트 => 응답값 저장하는 함수: SaveToCookie(), 참고로 그냥 Response()로 클래스 생성 후 SaveToCookie에서 DB 저장
-    pass
 def question_page(request, page_num):
     """
     설문 질문 페이지 - 5개씩 질문을 보여주고 응답을 저장
@@ -451,7 +445,7 @@ def politician_list(request):
 #endregion
 
 #region 5 개별 집중 분석 페이지
-def write_politician_report(id: str) -> Report:
+def write_politician_report(id: str): #-> Report
     # 정치인의 분석 결과 반환
     pass
 

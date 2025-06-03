@@ -14,58 +14,9 @@ class User(models.Model):
         verbose_name="사용자 ID(uuid4)"
     )
 
-    # 유저 성향 벡터
-    tendency_vector = VectorField(
-        dimensions=10,
-        verbose_name="유저 성향 벡터"
-    )
-
-    # 유저 가중치 벡터
-    weight_vector = VectorField(
-        dimensions=10,
-        verbose_name="유저 가중치 벡터"
-    )
-    
-    #유저 최종 벡터
-    final_vector = VectorField(
-        dimensions=10,
-        verbose_name="유저 최종 벡터"
-    )
-    
-    # 유저 전체 성향 (0~1 사이 값)
-    overall_tendency = models.FloatField(
-        default=0.5,
-        verbose_name="유저 전체 성향",
-        help_text="0~1 사이의 값 (0: 보수, 1: 진보)"
-    )
-    
-    # 유저 성향 편향성 (표준편차)
-    bias = models.FloatField(
-        null=True,
-        blank=True,
-        verbose_name="유저 성향 편향성(표준편차)"
-    )
-
     def __str__(self):
         return f"User {self.id}" # UUID 전체 표시
 
-    def get_tendency_label(self):
-        """전체 성향을 문자열로 변환하는 메서드"""
-        if self.overall_tendency < 0.15:
-            return "보수(극우)"
-        elif self.overall_tendency < 0.35:
-            return "보수(우파)"
-        elif self.overall_tendency < 0.45:
-            return "중도(중도 우파)"
-        elif self.overall_tendency < 0.55:
-            return "중도"
-        elif self.overall_tendency < 0.65:
-            return "중도(중도 좌파)"
-        elif self.overall_tendency < 0.85:
-            return "진보(좌파)"
-        else:
-            return "진보(극좌)"
-    
     class Meta:
         db_table = "users"
         verbose_name = "사용자"
@@ -241,18 +192,24 @@ class Party(models.Model):
     
     # 정당 성향 벡터
     tendency_vector = VectorField(
+        null=True,
+        blank=True,
         dimensions=10,
         verbose_name="정당 성향 벡터"
     )
 
     # 정당 가중치 벡터
     weight_vector = VectorField(
+        null=True,
+        blank=True,
         dimensions=10,
         verbose_name="정당 가중치 벡터"
     )
     
     # 정당 최종 벡터
     final_vector = VectorField(
+        null=True,
+        blank=True,
         dimensions=10,
         verbose_name="정당 최종 벡터"
     )
@@ -508,24 +465,32 @@ class Politician(models.Model):
     # 성향 정보
     # 정치인 성향 벡터
     tendency_vector = VectorField(
+        null=True,
+        blank=True,
         dimensions=10,
         verbose_name="정치인 성향 벡터"
     )
 
-    # 정치인 가중치 벡터
+    # 정당 가중치 벡터 (당 가중치 벡터, 무소속 = 5)
     weight_vector = VectorField(
+        null=True,
+        blank=True,
         dimensions=10,
-        verbose_name="정치인 가중치 벡터"
+        verbose_name="정당 가중치 벡터"
     )
     
     # 정치인 최종 벡터
     final_vector = VectorField(
+        null=True,
+        blank=True,
         dimensions=10,
         verbose_name="정치인 최종 벡터"
     )
     
     # 정치인 전체 성향 (0~1 사이 값)
     overall_tendency = models.FloatField(
+        null=True,
+        blank=True,
         default=0.5,
         verbose_name="정치인 전체 성향",
         help_text="0~1 사이의 값 (0: 보수, 1: 진보)"
@@ -619,9 +584,8 @@ class Stance(models.Model):
 #endregion
 
 
-#region 9 reports
-# 지난 보고서를 보여주기 위해 보고서를 저장 -> response 외래키 추가?
-class Report(models.Model):
+#region 9 user_reports
+class UserReport(models.Model):
     # id 자동 생성
     # id = models.BigAutoField(primary_key=True)
 
@@ -636,10 +600,124 @@ class Report(models.Model):
         db_column='user_id'
     )
 
+    # 설문 시도 ID (Response의 survey_attempt_id와 연결)
+    survey_attempt_id = models.UUIDField(
+        verbose_name="설문 시도 ID"
+    )
+
+    # 리포트 생성 시각 (Response의 survey_completed_at과 연결)
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="리포트 생성 시각"
+    )
+
+    # 유저 성향 벡터
+    user_tendency_vector = VectorField(
+        null=True,
+        blank=True,
+        dimensions=10,
+        verbose_name="유저 성향 벡터"
+    )
+
+    # 유저 가중치 벡터
+    user_weight_vector = VectorField(
+        null=True,
+        blank=True,
+        dimensions=10,
+        verbose_name="유저 가중치 벡터"
+    )
+    
+    #유저 최종 벡터
+    user_final_vector = VectorField(
+        null=True,
+        blank=True,
+        dimensions=10,
+        verbose_name="유저 최종 벡터"
+    )
+    
+    # 유저 전체 성향 (0~1 사이 값)
+    user_overall_tendency = models.FloatField(
+        default=0.5,
+        verbose_name="유저 전체 성향",
+        help_text="0~1 사이의 값 (0: 보수, 1: 진보)"
+    )
+    
+    # 유저 성향 편향성 (표준편차)
+    user_bias = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name="유저 성향 편향성(표준편차)"
+    )
+
+    # 보고서 전문
+    full_text = models.TextField(
+        verbose_name="보고서 전문"
+    )
+
+    # 적합한 정당 랭킹
+    parties_rank = models.JSONField(
+        default=list,
+        null=True,
+        blank=True,
+        verbose_name="정당 랭킹",
+        help_text="rank, picture, name, ratio, reason 포함"
+    )
+    
+    # 적합한 정치인 TOP 10
+    politicians_top = models.JSONField(
+        default=list,
+        null=True,
+        blank=True,
+        verbose_name="상위 정치인 TOP 10",
+        help_text="rank, picture, name, birth, party, ratio, reason 포함"
+    )
+    
+    # 적합한 정치인 BOTTOM 10
+    politicians_bottom = models.JSONField(
+        default=list,
+        null=True,
+        blank=True,
+        verbose_name="하위 정치인 BOTTOM 10",
+        help_text="rank, picture, name, birth, party, ratio, reason 포함"
+    )
+
+    def __str__(self):
+        return f"UserReport {self.user.id} - {self.created_at}"
+    
+    def get_tendency_label(self):
+        """전체 성향을 문자열로 변환하는 메서드"""
+        if self.user_overall_tendency < 0.15:
+            return "보수(극우)"
+        elif self.user_overall_tendency < 0.35:
+            return "보수(우파)"
+        elif self.user_overall_tendency < 0.45:
+            return "중도(중도 우파)"
+        elif self.user_overall_tendency < 0.55:
+            return "중도"
+        elif self.user_overall_tendency < 0.65:
+            return "중도(중도 좌파)"
+        elif self.user_overall_tendency < 0.85:
+            return "진보(좌파)"
+        else:
+            return "진보(극좌)"
+    
+    class Meta:
+        db_table = "user_reports"
+        ordering = ['-created_at'] # 최신순 정렬
+        verbose_name = "사용자 보고서"
+        verbose_name_plural = "사용자 보고서들"
+        unique_together = ['user', 'survey_attempt_id']
+#endregion
+
+
+#region 10 politician_reports
+class PoliticianReport(models.Model):
+    # id 자동 생성
+    # id = models.BigAutoField(primary_key=True)
+
     # 정치인 리포트용
     politician = models.ForeignKey(
         Politician,
-        null=True, blank=True,
         on_delete=models.CASCADE,
         related_name='reports',
         verbose_name="정치인",
@@ -657,22 +735,9 @@ class Report(models.Model):
         verbose_name="보고서 전문"
     )
     
-    # 전체 성향 (0~100%)
-    ratio = models.IntegerField(
-        verbose_name="전체 성향 비율",
-        help_text="0~100% 사이의 값"
-    )
-
-    # 적합한 정당 랭킹
-    parties_rank = models.JSONField(
-        null=True,
-        blank=True,
-        verbose_name="정당 랭킹",
-        help_text="rank, picture, name, ratio, reason 포함"
-    )
-    
     # 적합한 정치인 TOP 10
     politicians_top = models.JSONField(
+        default=list,
         null=True,
         blank=True,
         verbose_name="상위 정치인 TOP 10",
@@ -681,6 +746,7 @@ class Report(models.Model):
     
     # 적합한 정치인 BOTTOM 10
     politicians_bottom = models.JSONField(
+        default=list,
         null=True,
         blank=True,
         verbose_name="하위 정치인 BOTTOM 10",
@@ -688,52 +754,20 @@ class Report(models.Model):
     )
 
     def __str__(self):
-        time_str = self.created_at.strftime('%Y-%m-%d %H:%M:%S')
-        if self.user:
-            return f"User Report {self.user.id} - {time_str}"
-        elif self.politician:
-            return f"Politician Report {self.politician.str_id} - {self.politician.name} - {time_str}"
-        else:
-            return f"Report {self.id} - {time_str}"
+        return f"PoliticianReport {self.politician.name} - {self.created_at}"
         
-    def clean(self):
-        from django.core.exceptions import ValidationError
-
-        # 보고서 전문 검증
-        if not self.full_text.strip():
-            raise ValidationError("보고서 전문은 필수입니다.")
-    
-        # 전체 성향 범위 검증(0~100)
-        if self.ratio < 0 or self.ratio > 100:
-            raise ValidationError("비율은 0~100 사이의 값이어야 합니다.")
-        
-        # XOR 조건: 사용자, 정치인 중 하나만
-        if not self.user and not self.politician:
-            raise ValidationError("사용자 또는 정치인 중 하나는 반드시 설정되어야 합니다.")
-        if self.user and self.politician:
-            raise ValidationError("사용자와 정치인을 동시에 설정할 수 없습니다.")
-    
     class Meta:
-        db_table = "reports"
+        db_table = "politician_reports"
         ordering = ['-created_at'] # 최신순 정렬
-        verbose_name = "분석 리포트"
-        verbose_name_plural = "분석 리포트들"
-        constraints = [
-            models.CheckConstraint(
-                check=(
-                    models.Q(user__isnull=False, politician__isnull=True) |
-                    models.Q(user__isnull=True, politician__isnull=False)
-                ),
-                name='report_must_have_exactly_one_user_or_politician'
-            )
-        ]
+        verbose_name = "정치인 보고서"
+        verbose_name_plural = "정치인 보고서들"
 #endregion
 
-#region 10 tone
+#region 11 tone
 class Tone(models.Model):
     # id는 Django에서 자동으로 생성되므로 별도로 정의할 필요 없음
     # 본회의 발언
-    name = models.CharField(30, verbose_name="정치인 이름")
+    name = models.CharField(max_length=30, verbose_name="정치인 이름")
 
     speech = models.TextField(
         verbose_name="본회의 발언"
@@ -748,7 +782,7 @@ class Tone(models.Model):
         verbose_name_plural = "정치인 말투들"
 #endregion
 
-#region 11 챗봇 이전 대화 기록 (DEPRECATED?)
+#region 12 챗봇 이전 대화 기록 (DEPRECATED?)
 class Chat(models.Model):
     user = models.ForeignKey(
         User,
@@ -771,8 +805,11 @@ class Chat(models.Model):
         verbose_name="대화 내용"
     )
 
+    # def __str__(self):
+    #     return f"{self.name} - {len(self.speech)}" # 이거 수정해야 됨
     def __str__(self):
-        return f"{self.name} - {len(self.speech)}"
+        user_info = f"User {self.user.id}" if self.user else "No User"
+        return f"Chat {user_info} - {self.created_at.strftime('%Y-%m-%d')}"
     
     class Meta:
         db_table = "chats"
