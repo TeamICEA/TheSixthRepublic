@@ -25,6 +25,7 @@ keys = {}
 with open("../keys.json") as f:
     keys = json.load(f)
 SECRET_KEY = keys["DJANGO_KEY"]
+GEMINI_API_KEY = keys["GEMINI_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True

@@ -542,7 +542,8 @@ class Stance(models.Model):
         on_delete=models.CASCADE,
         related_name='stances',
         verbose_name="국회의원",
-        db_column='politician_str_id' # db 필드명 바꿔야 함 ###
+        db_column='politician_str_id', # db 필드명 바꿔야 함 ###
+        to_field='str_id'
     )
 
     # 카테고리 (외래 키)
@@ -660,7 +661,7 @@ class UserReport(models.Model):
         null=True,
         blank=True,
         verbose_name="정당 랭킹",
-        help_text="rank, picture, name, ratio, reason 포함"
+        help_text="rank, logo, name, similarity, reason 포함"
     )
     
     # 적합한 정치인 TOP 10
@@ -669,7 +670,7 @@ class UserReport(models.Model):
         null=True,
         blank=True,
         verbose_name="상위 정치인 TOP 10",
-        help_text="rank, picture, name, birth, party, ratio, reason 포함"
+        help_text="rank, picture, name, birth, party, similarity, reason 포함"
     )
     
     # 적합한 정치인 BOTTOM 10
@@ -678,7 +679,7 @@ class UserReport(models.Model):
         null=True,
         blank=True,
         verbose_name="하위 정치인 BOTTOM 10",
-        help_text="rank, picture, name, birth, party, ratio, reason 포함"
+        help_text="rank, picture, name, birth, party, similarity, reason 포함"
     )
 
     def __str__(self):
@@ -741,7 +742,7 @@ class PoliticianReport(models.Model):
         null=True,
         blank=True,
         verbose_name="상위 정치인 TOP 10",
-        help_text="rank, picture, name, birth, party, ratio, reason 포함"
+        help_text="rank, picture, name, birth, party, similarity, reason 포함"
     )
     
     # 적합한 정치인 BOTTOM 10
@@ -750,7 +751,7 @@ class PoliticianReport(models.Model):
         null=True,
         blank=True,
         verbose_name="하위 정치인 BOTTOM 10",
-        help_text="rank, picture, name, birth, party, ratio, reason 포함"
+        help_text="rank, picture, name, birth, party, similarity, reason 포함"
     )
 
     def __str__(self):
