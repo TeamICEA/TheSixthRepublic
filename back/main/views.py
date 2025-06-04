@@ -799,7 +799,7 @@ def get_user_id(request):
 
 def SaveToCookie(response,request,new_report):
     #새 리포트를 기존 쿠키에 누적 저장, response: list[Response], 2페이지에서 검사 다 하면 실행됨
-    report: UserReport = write_report(response)
+    report: UserReport = UserReport.objects.order_by('-created_at').first()
     report.save()
 
 def ReportHistory(request):
