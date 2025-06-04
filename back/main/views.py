@@ -556,7 +556,7 @@ def IndividualPoliticians(request, str_id):
 def GoToChat(request,str_id:str):
     #챗봇 상대의 해당하는 정치인 id를 받아, 해당 정치인의 성향 등을 반영한 정보를 기반으로 랜더링
 
-    politician = load_politician(str_id)
+    politician = Politician.objects.get(id=id)
     user_text = "" # 유저의 메시지는 어디서 가져올 것인가?
 
     # 정치인의 무슨 데이터를 반영할 것인지, 이 중에 필요 없는 정보는 무엇인지 제외 필요

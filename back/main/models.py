@@ -929,6 +929,7 @@ class Chat(models.Model):
     )
 
     role = models.CharField(
+        max_length=30,
         verbose_name="봇 / 사용자의 답변 여부 (model, user)"
     )
 
