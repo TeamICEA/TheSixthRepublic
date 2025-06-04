@@ -598,7 +598,7 @@ class UserReport(models.Model):
         on_delete=models.CASCADE,
         related_name='reports',
         verbose_name="사용자",
-        db_column='user_id'
+        db_column='id'
     )
 
     # 설문 시도 ID (Response의 survey_attempt_id와 연결)
@@ -722,7 +722,7 @@ class PoliticianReport(models.Model):
         on_delete=models.CASCADE,
         related_name='reports',
         verbose_name="정치인",
-        db_column='politician_id'
+        db_column='id'
     )
 
     # 리포트 생성 시각
@@ -783,7 +783,7 @@ class Tone(models.Model):
         verbose_name_plural = "정치인 말투들"
 #endregion
 
-#region 12 챗봇 이전 대화 기록 (DEPRECATED?)
+#region 12 챗봇 이전 대화 기록
 class Chat(models.Model):
     user = models.ForeignKey(
         User,
@@ -804,6 +804,14 @@ class Chat(models.Model):
     # 대화 내용
     text = models.TextField(
         verbose_name="대화 내용"
+    )
+
+    role = models.CharField(
+        verbose_name="봇 / 사용자의 답변 여부 (model, user)"
+    )
+
+    token_count = models.IntegerField(
+        verbose_name="AI가 사용한 토큰 개수"
     )
 
     # def __str__(self):
