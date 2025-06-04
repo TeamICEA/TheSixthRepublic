@@ -1,113 +1,377 @@
-/* 4페이지 정치인 목록 스타일 */
+/* 4페이지 정치인 목록 - 피그마 디자인 정확 구현 */
 
-/* 정치인 사진 */
-.politician-photo {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid #dee2e6;
+/* 전체 컨테이너 */
+.politician-list-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    background-color: #f8f9fa;
+    min-height: 100vh;
 }
 
-/* 기본 프로필 이미지 */
-.placeholder-photo {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background-color: #e9ecef;
+/* 페이지 헤더 */
+.page-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.page-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 0;
+    letter-spacing: -0.5px;
+}
+
+/* 필터 및 검색 섹션 */
+.filter-search-section {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #6c757d;
-    border: 2px solid #dee2e6;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 30px;
+    gap: 20px;
 }
 
-/* 정당별 배지 색상 */
-.party-badge {
-    font-size: 0.85rem;
-    padding: 0.4rem 0.8rem;
-}
-
-.party-1 { background-color: #007bff; } /* 더불어민주당 */
-.party-2 { background-color: #dc3545; } /* 국민의힘 */
-.party-3 { background-color: #28a745; } /* 조국혁신당 */
-.party-4 { background-color: #ffc107; color: #000; } /* 개혁신당 */
-.party-5 { background-color: #17a2b8; } /* 진보당 */
-.party-6 { background-color: #6f42c1; } /* 기본소득당 */
-.party-7 { background-color: #fd7e14; } /* 새로운미래 */
-.party-0 { background-color: #6c757d; } /* 무소속 */
-
-/* 테이블 행 호버 효과 */
-.politician-row {
-    transition: background-color 0.2s ease;
-}
-
-.politician-row:hover {
-    background-color: #f8f9fa !important;
-    cursor: pointer;
-}
-
-/* 버튼 그룹 반응형 */
-.btn-group.flex-wrap {
+/* 필터 버튼 컨테이너 */
+.filter-buttons-container {
     display: flex;
     flex-wrap: wrap;
+    gap: 8px;
+    flex: 1;
 }
 
-.btn-group.flex-wrap .btn {
-    margin-bottom: 0.5rem;
-}
-
-/* 검색 결과 정보 */
-.alert-info {
-    border-left: 4px solid #007bff;
-}
-
-/* 페이지네이션 개선 */
-.pagination .page-link {
-    border-radius: 0.375rem;
-    margin: 0 0.125rem;
+.filter-button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #e9ecef;
+    color: #495057;
+    text-decoration: none;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
     border: 1px solid #dee2e6;
 }
 
-.pagination .page-item.active .page-link {
+.filter-button:hover {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+.filter-button.active {
+    background-color: #28a745;
+    color: white;
+    border-color: #28a745;
+}
+
+/* 검색 컨테이너 */
+.search-container {
+    flex-shrink: 0;
+    width: 300px;
+}
+
+.search-input-group {
+    display: flex;
+    border: 1px solid #ced4da;
+    border-radius: 25px;
+    overflow: hidden;
+    background-color: white;
+}
+
+.search-input {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    background: transparent;
+}
+
+.search-input::placeholder {
+    color: #6c757d;
+}
+
+.search-button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+.search-button:hover {
+    background-color: #0056b3;
+}
+
+/* 테이블 섹션 */
+.table-section {
+    background-color: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+}
+
+/* 정치인 테이블 */
+.politicians-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+}
+
+.politicians-table thead {
+    background-color: #f1f3f4;
+}
+
+.politicians-table th {
+    padding: 16px 12px;
+    text-align: center;
+    font-weight: 600;
+    color: #495057;
+    font-size: 14px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.politicians-table td {
+    padding: 14px 12px;
+    text-align: center;
+    border-bottom: 1px solid #f8f9fa;
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+/* 컬럼 너비 */
+.col-photo { width: 80px; }
+.col-name { width: 100px; }
+.col-hanja { width: 120px; }
+.col-birth { width: 80px; }
+.col-party { width: 120px; }
+.col-region { width: 150px; }
+.col-action { width: 80px; }
+
+/* 테이블 행 */
+.politician-row {
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+}
+
+.politician-row:hover {
+    background-color: #f8f9fa;
+}
+
+/* 정치인 사진 */
+.politician-photo {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e9ecef;
+}
+
+.photo-placeholder {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background-color: #e9ecef;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+    border: 2px solid #e9ecef;
+}
+
+/* 이름 컬럼 */
+.col-name {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+/* 한자 컬럼 */
+.col-hanja {
+    color: #6c757d;
+    font-style: italic;
+}
+
+/* 출생 컬럼 */
+.col-birth {
+    color: #495057;
+}
+
+/* 정당 컬럼 */
+.col-party {
+    font-weight: 500;
+    color: #495057;
+}
+
+/* 지역 컬럼 */
+.col-region {
+    color: #6c757d;
+}
+
+/* 찾기 버튼 */
+.detail-button {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid #007bff;
+    background-color: white;
+    color: #007bff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.detail-button:hover {
+    background-color: #007bff;
+    color: white;
+    transform: scale(1.05);
+}
+
+/* 빈 결과 */
+.empty-row {
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.empty-message {
+    color: #6c757d;
+}
+
+.empty-message p {
+    margin: 0 0 15px 0;
+    font-size: 16px;
+}
+
+.reset-link {
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: #6c757d;
+    color: white;
+    text-decoration: none;
+    border-radius: 20px;
+    font-size: 14px;
+    transition: background-color 0.2s ease;
+}
+
+.reset-link:hover {
+    background-color: #5a6268;
+    color: white;
+    text-decoration: none;
+}
+
+/* 페이지네이션 */
+.pagination-section {
+    display: flex;
+    justify-content: center;
+    margin-top: 40px;
+}
+
+.pagination-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pagination-btn {
+    display: inline-block;
+    padding: 8px 12px;
+    color: #007bff;
+    text-decoration: none;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    background-color: white;
+}
+
+.pagination-btn:hover {
+    background-color: #e9ecef;
+    color: #0056b3;
+    text-decoration: none;
+}
+
+.pagination-btn.active {
     background-color: #007bff;
     border-color: #007bff;
+    color: white;
+}
+
+.page-info {
+    margin: 0 15px;
+    color: #6c757d;
+    font-size: 14px;
 }
 
 /* 반응형 디자인 */
 @media (max-width: 768px) {
-    .table-responsive {
-        font-size: 0.875rem;
+    .politician-list-container {
+        padding: 20px 10px;
     }
     
-    .politician-photo,
-    .placeholder-photo {
-        width: 40px;
-        height: 40px;
+    .page-title {
+        font-size: 22px;
     }
     
-    .btn-group.flex-wrap {
+    .filter-search-section {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .search-container {
+        width: 100%;
+    }
+    
+    .filter-buttons-container {
         justify-content: center;
     }
     
-    .btn-group.flex-wrap .btn {
-        font-size: 0.875rem;
-        padding: 0.375rem 0.75rem;
+    .filter-button {
+        font-size: 13px;
+        padding: 8px 16px;
+    }
+    
+    .politicians-table {
+        font-size: 12px;
+    }
+    
+    .politicians-table th,
+    .politicians-table td {
+        padding: 8px 6px;
+    }
+    
+    .politician-photo,
+    .photo-placeholder {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .detail-button {
+        width: 30px;
+        height: 30px;
+        font-size: 12px;
     }
 }
 
 @media (max-width: 576px) {
-    .container-fluid {
-        padding: 0.5rem;
+    .col-hanja,
+    .col-birth {
+        display: none;
     }
     
-    h2 {
-        font-size: 1.5rem;
+    .col-region {
+        display: none;
     }
     
-    .table th,
-    .table td {
-        padding: 0.5rem 0.25rem;
-        font-size: 0.8rem;
+    .politicians-table th,
+    .politicians-table td {
+        padding: 10px 4px;
     }
 }
