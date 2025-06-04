@@ -78,6 +78,8 @@ class Question(models.Model):
     
     # 성향 점수 벡터 (1~5번 응답별 성향 점수)
     score_vector = models.JSONField(
+        blank=True,
+        null=True,
         verbose_name="성향 점수 벡터",
         help_text="1~5번 응답별 성향 점수 [매우동의, 동의, 보통, 비동의, 매우비동의] 순서"
     )
@@ -930,11 +932,15 @@ class Chat(models.Model):
 
     role = models.CharField(
         max_length=30,
+        null=True,
+        blank=True,
         verbose_name="봇 / 사용자의 답변 여부 (model, user)"
     )
 
     token_count = models.IntegerField(
-        verbose_name="AI가 사용한 토큰 개수"
+        verbose_name="AI가 사용한 토큰 개수",
+        null=True,
+        blank=True
     )
 
     # def __str__(self):
