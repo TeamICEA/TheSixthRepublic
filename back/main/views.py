@@ -12,6 +12,7 @@ from django.db.models import *
 from django.db.models.functions import *
 from .models import *
 from .models import *
+from django.http import Http404
 
 # Create your views here.
 CLEANR = re.compile('<.*?>')
@@ -383,6 +384,13 @@ def on_report_item_hover(item_type: int, id: int | str):
 #endregion
 
 
+#region 3 리포트 페이지 (석환)
+
+
+
+
+#endregion
+
 
 #region 4 정치인 목록 페이지
 def politician_detail(request, politician_id: int):
@@ -445,20 +453,50 @@ def politician_list(request):
 #endregion
 
 #region 5 개별 집중 분석 페이지
-def write_politician_report(id: str): #-> Report
-    # 정치인의 분석 결과 반환
-    pass
 
+# 정치인의 분석 결과 반환(해당하는 str_id 맞춰서 보고서 반환)
+def load_politician_report(id: str): #-> Report
+
+    #5의 메인 함수 파라미터 이용해서 politician 데이터 불러오기
+    politician=get_object_or_404(Politician,str_id=id)
+
+    #외래키 이용해서 PoliticianReport 테이블에서 일치하는 값 최신순 하나 가져오기
+    politician_report=(
+        PoliticianReport.objects
+        .filter(politician_id=politician)
+        .order_by('-created at')
+        .first()
+    )
+    #없다면 None Report 출력
+    if not politician_report:
+        raise Http404("None Report")
+    return politician_report.full_text
+
+
+# item_type: 1 => 적합한 정치인 TOP, 2 => 적합한 정치인 WORST
+# id => 정치인 id
+# 랭킹 아이템을 갖다 댈시 그에 맞는 이유 표시
 def on_preport_item_hover(item_type: int, id: str):
-    # item_type: 1 => 적합한 정치인 TOP, 2 => 적합한 정치인 WORST
-    # id => 정치인 id
-    # 랭킹 아이템을 갖다 댈시 그에 맞는 이유 표시
-    pass
+
+    politician=get_object_or_404(Politician,str_id=id)
+
+    politician_rank=(
+        PoliticianReport.objects
+        .filter(politician_id=politician)
+        .order_by('-created at')
+        .first()
+    )
+    if not politician_rank:
+        raise Http404("None rank")
+    if item_type==1:
+        return politician_rank.politicians_top
+    else:
+        return politician_rank.politicians_bottom
 
 def IndividualPoliticians(request, str_id):
     politician=get_object_or_404(Politician,str_id=str_id)
     #str_id와 같은 아이디, Politician에서 갖고오기
-    report=write_politician_report(str_id)
+    report=load_politician_report(str_id)
     #도우미함수 호출(리포트 작성 완성이 우선)
     best_rank=on_report_item_hover(1,str_id)
     wort_rank=on_report_item_hover(2,str_id)

@@ -19,6 +19,10 @@ urlpatterns = [
 
     # 몇 페이지인지 주석 써주세요.
     path('', views.index, name='index'),
+
+    #개별 정치인 분석 페이지지
     path('<str:str_id>/',views.IndividualPoliticians,name='IndividualPoliticians'),
+    
+    #랭킹 페이지지
     path('ranking/',views.PoliticianRanking,name='PoliticianRanking'),
 ]
