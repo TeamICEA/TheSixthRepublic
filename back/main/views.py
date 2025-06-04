@@ -4,7 +4,10 @@ import requests
 import json
 import re
 import random
+from datetime import timedelta
 from openai import OpenAI
+from google import genai
+from google.genai import types
 from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
 from django.core.paginator import Paginator
 from django.utils import timezone
@@ -20,6 +23,7 @@ keys = {}
 with open("../keys.json") as f:
     keys = json.load(f)
 openai_client = OpenAI(api_key=keys["OPENAI_KEY"])
+gemini_client = genai.Client(api_key=keys["GEMINI_KEY"])
 
 #region 1 메인 페이지
 def index(request):
@@ -533,17 +537,25 @@ def GoToChat(request,str_id:str):
         '본회의 출석률':politician.attendance_plenary
     }
     response = ManageChat(request, user_text, politician, poly_infos)
+    text = response[0]
 
-    context = { "response": response }
+    if text != "":
+        Chat.objects.create(user=get_user_id(), text=user_text, role="user", token_count=response[1])
+        Chat.objects.create(user=get_user_id(), text=response, role="model", token_count=response[1])
+    else:
+        text = "죄송합니다. 하루 토큰 사용량을 초과하였습니다. 내일 다시 시도해주세요."
+
+    context = { "response": text }
     return render(request, "main/chat.html", context)
 
-def ManageChat(request, user_text: str, politician: Politician, poly_infos: dict) -> str:
+def ManageChat(request, user_text: str, politician: Politician, poly_infos: dict) -> tuple[str, int]:
     #사용자의 메세지를 받아,정치인 스타일로 AI 응답 반환
     #응답 생성은 CreateResponse()호출로 이루어짐
     
-    prompt = ""
+    prompt = []
     system = ""
     TONE_COUNT = 5
+    TOKEN_LIMIT = 15000
 
     speeches = Tone.objects.all()
     indicies = list(range(0, len(speeches)))
@@ -559,6 +571,35 @@ def ManageChat(request, user_text: str, politician: Politician, poly_infos: dict
         speech: Tone = speeches[index]
         speeches2.append(speech.speech)
 
+    history = Chat.objects.filter(
+        user=get_user_id(),
+        created_at__gte=timezone.now() - timedelta(hours=24)
+    ).order_by('-created_at')[:30]
+    total_tokens = 0
+
+    for chat in history:
+        prompt.append({
+            "role": chat.role,
+            "parts": [
+                {
+                    "text": chat.text
+                }
+            ]
+        })
+        total_tokens += chat.token_count
+
+    if total_tokens >= TOKEN_LIMIT:
+        return ("", 0)
+
+    prompt.append({
+            "role": "user",
+            "parts": [
+                {
+                    "text": user_text
+                }
+            ]
+        })
+
     info1 = "\n".join([f"{key}: {poly_infos[key]}" for key in poly_infos])
     info2 = "\n\n".join(speeches2)
     system = f"""너의 임무는 지금부터 대한민국에서 정치 활동을 하고 있는 국회의원 {politician.name}이 되는 거야.
@@ -573,27 +614,26 @@ def ManageChat(request, user_text: str, politician: Politician, poly_infos: dict
     --------------------
     
     넌 앞으로 성격, 말투, 외모, 지능 모두 {politician.name}인 척 말하고, 길게 말하지 마. 그리고 한국어로 말해."""
-    prompt = user_text
 
     ai_text = CreateResponse(prompt, system) # 로직 구현 필요
     # 문제점: 텍스트만 생성해야 하고, 딴 질문에는 답변하지 않아야 함. 그런 제한할 수 있는 기능이 있나?
 
     return ai_text
 
-def CreateResponse(prompt:str, system="")->str:
+def CreateResponse(prompt: str | list, system = "")-> tuple[str, int]: # (text, token_count)
     #정치인 말투에 맞게 응답을 만들어내는 AI 호출
-    messages = [{"role": "user", "content": prompt}]
+    config = None
 
     if system != "":
-        messages.append({"role": "system", "content": system})
+        config = types.GenerateContentConfig(system_instruction=system)
 
-    completion = openai_client.chat.completions.create(
-    model="gpt-4o-mini",
-    store=True,
-    messages=messages
+    response = gemini_client.models.generate_content(
+        model="gemini-2.5-flash-preview-05-20",
+        contents=prompt,
+        config=config
     )
-
-    return completion.choices[0].message.content
+    
+    return (response.text, response.usage_metadata.total_token_count)
 #endreigon
 
 
@@ -681,14 +721,14 @@ def get_user_id(request):
 
 def SaveToCookie(response,request,new_report):
     #새 리포트를 기존 쿠키에 누적 저장, response: list[Response], 2페이지에서 검사 다 하면 실행됨
-    report: Report = write_report(response)
+    report: UserReport = write_report(response)
     report.save()
 
 def ReportHistory(request):
     #쿠키에서 리포트 목록을 가져와 템플릿에 랜더링
     id = get_user_id()
-    responses = Report.objects.filter(user_id=id)
-    responses2: dict[list[Report]] = {}
+    responses = UserReport.objects.filter(user_id=id)
+    responses2: dict[list[UserReport]] = {}
 
     for response in responses:
         if responses2[response.created_at] is None:
@@ -711,9 +751,9 @@ def ReportHistory(request):
             context["reports"].append({
                 "rank": i + 1,
                 "date": report.created_at,
-                "party": report.parties[0]["name"],
+                "party": report.parties_rank[0]["name"],
                 "politician": report.politicians_top[0]["name"],
-                "ratio": report.ratio
+                "ratio": report.user_overall_tendency
             })
             i += 1
     
