@@ -270,6 +270,20 @@ def question_page(request, page_num):
                 survey_attempt_id=current_survey_session,
                 user=current_user
             ).update(survey_completed_at=timezone.now())
+
+            # 2. 4-3 함수 호출 - 사용자 벡터 계산 + 보고서 생성
+            from main.utils import process_survey_completion
+    
+            result = process_survey_completion(
+                current_survey_session, 
+                current_user.id
+            )
+    
+            if result['success']:
+                print(f"사용자 보고서 생성 완료: UserReport ID {result['user_report_id']}")
+            else:
+                print(f"보고서 생성 실패: {result['error_message']}")
+                # 실패해도 결과 페이지로 이동 (기본 결과라도 보여주기)
             
             if 'current_survey_session_id' in request.session:
                 del request.session['current_survey_session_id']

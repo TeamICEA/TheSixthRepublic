@@ -1487,31 +1487,603 @@ def generate_user_rankings_with_reasons(survey_attempt_id, user_id):
 #endregion
 
 #region 3-7. 사용자 보고서 생성
+def generate_user_report_content(survey_attempt_id, user_id):
+    """
+    사용자 분석 보고서 LLM 생성
+    
+    특정 사용자의 설문 결과를 바탕으로 정치성향 분석 보고서를 Gemini 2.5 Flash로 생성합니다.
+    UserReport 테이블에 저장된 벡터 데이터를 활용하되, 랭킹은 3-4, 3-5 함수를 직접 호출하여 생성합니다.
+    생성된 보고서는 TextField에 저장할 수 있는 텍스트 형태로 반환됩니다.
+    
+    Args:
+        survey_attempt_id: 설문 시도 ID (UUID)
+        user_id: 사용자 ID (UUID)
+    
+    Returns:
+        str: 생성된 보고서 전문 (실패 시 None)
+    """
+    try:
+        # 1. UserReport 데이터 조회
+        user_report = UserReport.objects.get(
+            user_id=user_id, 
+            survey_attempt_id=survey_attempt_id
+        )
+        
+        # 필수 데이터 검증
+        if not user_report.user_final_vector or user_report.user_overall_tendency is None:
+            print(f"사용자 {user_id} 설문 {survey_attempt_id}의 벡터 데이터가 없습니다")
+            return None
+        
+        # 2. 카테고리 정보 조회 (벡터 성분별 분석용)
+        categories = Category.objects.all().order_by('id')[:10]
+        category_names = [cat.name for cat in categories]
+        
+        # 3. 정당 및 정치인 유사도 계산 (3-4, 3-5 함수 직접 호출)
+        party_similarities = calculate_user_party_similarities(survey_attempt_id, user_id)
+        politician_similarities = calculate_user_politician_similarities(survey_attempt_id, user_id)
+        
+        if not party_similarities or not politician_similarities:
+            print(f"사용자 {user_id} 유사도 계산 실패")
+            return None
+        
+        # 4. 사용자 데이터 준비 (이유 생성용)
+        user_data = {
+            'overall_tendency': user_report.user_overall_tendency,
+            'bias': user_report.user_bias,
+            'tendency_vector': user_report.user_tendency_vector,
+            'weight_vector': user_report.user_weight_vector,
+            'final_vector': user_report.user_final_vector
+        }
+        
+        # 5. 상위 정당 및 정치인 선별 (보고서에 포함할 데이터)
+        top_parties = party_similarities[:3] if len(party_similarities) >= 3 else party_similarities
+        top_politicians = politician_similarities[:3] if len(politician_similarities) >= 3 else politician_similarities
+        bottom_politicians = politician_similarities[-3:] if len(politician_similarities) >= 3 else politician_similarities
+        
+        # 6. 사용자 보고서 생성 프롬프트 구성
+        report_prompt = f"""당신은 정치성향 분석 전문가입니다. 다음 데이터를 바탕으로 사용자의 정치성향 분석 보고서를 **정식 보고서 스타일**로 작성해주세요.
 
+## 사용자 정치성향 분석 정보
+- 전체 정치성향: {user_data['overall_tendency']:.2f} (0: 보수, 1: 진보)
+- 성향 일관성(표준편차): {user_data['bias']:.2f if user_data['bias'] else '정보없음'}
+- 사용자 성향 벡터: {user_data['tendency_vector']}
+- 사용자 가중치 벡터: {user_data['weight_vector']}
+- 정치 분야: {category_names}
+
+## 정당 매칭 결과 (상위 3개)
+{chr(10).join([f"- {p['name']}: {p['percentage']}% 유사" for p in top_parties])}
+
+## 정치인 매칭 결과
+### 유사한 정치인 TOP 3:
+{chr(10).join([f"- {p['name']} ({p['party']}): {p['percentage']}% 유사" for p in top_politicians])}
+
+### 차이나는 정치인 BOTTOM 3:
+{chr(10).join([f"- {p['name']} ({p['party']}): {p['percentage']}% 유사" for p in bottom_politicians])}
+
+## 보고서 작성 방식
+보고서는 총 5개의 문단으로 구성하며, 각 문단은 **줄글 형식의 자연스러운 서술체**로 작성하세요.
+각 문단 앞에는 반드시 번호와 제목을 붙이세요.
+
+## 보고서 구조 및 내용 지침
+
+1. **정치성향 개요**
+   - 전체 정치성향 점수({user_data['overall_tendency']:.2f})와 그 의미 설명
+   - 보수-진보 스펙트럼에서의 위치와 특성 분석
+   - 성향 일관성(표준편차 {user_data['bias']:.2f if user_data['bias'] else '정보없음'})을 통한 정치적 스타일 평가
+
+2. **세부 영역별 정치 철학**
+   - 10개 분야({', '.join(category_names)})별 정치적 입장과 성향 분석
+   - 성향벡터 {user_data['tendency_vector']}를 바탕으로 각 분야에서의 구체적 입장 설명
+   - 가중치벡터 {user_data['weight_vector']}를 통한 관심도와 중요도 분석
+   - 특히 관심도가 높은 분야(가중치 7.0 이상)와 낮은 분야(가중치 3.0 이하)를 구분하여 설명
+
+3. **정당 적합도 분석**
+   - 상위 3개 정당({', '.join([p['name'] for p in top_parties])})과의 유사도 분석
+   - 각 정당과의 구체적 일치점과 차이점을 벡터 비교를 통해 설명
+   - 객관적이고 균형잡힌 분석 제공
+
+4. **유사한 정치인 분석**
+   - 유사한 정치인 TOP 3({', '.join([p['name'] for p in top_politicians])})과의 매칭 분석
+   - 각 정치인과의 구체적 유사점을 벡터 성분별로 분석
+   - 유사도 점수를 포함하여 설명
+   - 정치적 성향이나 접근 방식에서의 공통점 강조
+
+5. **차이나는 정치인 분석**
+   - 차이나는 정치인 BOTTOM 3({', '.join([p['name'] for p in bottom_politicians])})과의 차이점 분석
+   - 정치적 스펙트럼에서의 차이점을 벡터 성분별로 분석
+   - 다양한 정치적 관점의 가치를 인정하는 관점 유지
+   - 존중하는 어조로 정치적 다양성의 의미 설명
+
+## 작성 지침
+- 모든 설명은 **객관적이고 중립적인 어조**로 작성
+- 사용자에 대한 가치 판단이나 편향된 평가 금지
+- 구체적 데이터와 수치를 근거로 한 분석만 제시
+- **정치적 다양성과 민주주의 가치를 존중**하는 관점 유지
+- 문체는 **줄글 형식의 전문 보고서**로 작성
+- 각 문단은 최소 3-4문장 이상으로 구성하여 충분한 분석 제공
+- 사용자가 이해하기 쉽도록 친근하면서도 전문적인 어조 유지
+
+보고서를 작성해주세요:"""
+        
+        # 7. Gemini 2.5 Flash API 호출하여 보고서 생성
+        report_content = call_gemini_api(report_prompt, max_tokens=2000)
+        
+        # 8. 생성된 보고서 검증
+        if not report_content or len(report_content.strip()) < 100:
+            print(f"사용자 {user_id} 설문 {survey_attempt_id} 보고서 생성 실패 - 내용이 너무 짧음")
+            return None
+        
+        print(f"사용자 {user_id} 설문 {survey_attempt_id} 보고서 생성 완료")
+        print(f"보고서 길이: {len(report_content)}자")
+        
+        return report_content.strip()
+        
+    except UserReport.DoesNotExist:
+        print(f"사용자 {user_id} 설문 {survey_attempt_id}의 UserReport가 없습니다")
+        return None
+    except Exception as e:
+        print(f"사용자 {user_id} 보고서 생성 중 오류 발생: {e}")
+        return None
 #endregion
 
 #region 3-8. 사용자 보고서 저장
-
+def save_user_report(survey_attempt_id, user_id):
+    """
+    UserReport 테이블에 보고서, 랭킹, 이유 저장
+    
+    3-3, 3-6, 3-7 함수에서 계산된 모든 결과를 UserReport 테이블에 저장합니다.
+    벡터 데이터, 랭킹 데이터, 보고서 내용이 모두 포함됩니다.
+    
+    Args:
+        survey_attempt_id: 설문 시도 ID (UUID)
+        user_id: 사용자 ID (UUID)
+    
+    Returns:
+        UserReport: 저장된 보고서 객체 (실패 시 None)
+    """
+    try:
+        # 1. 3-3 함수에서 계산된 UserReport 조회 (벡터 데이터만 있는 상태)
+        user_report = UserReport.objects.get(
+            user_id=user_id,
+            survey_attempt_id=survey_attempt_id
+        )
+        
+        # 필수 데이터 검증
+        if not user_report.user_final_vector or user_report.user_overall_tendency is None:
+            print(f"사용자 {user_id} 설문 {survey_attempt_id}의 벡터 데이터가 없습니다")
+            return None
+        
+        # 2. 3-6 함수 실행 - 랭킹 생성 (이유 포함)
+        rankings = generate_user_rankings_with_reasons(survey_attempt_id, user_id)
+        if not rankings:
+            print(f"사용자 {user_id} 설문 {survey_attempt_id} 랭킹 생성 실패")
+            return None
+        
+        # 3. 3-7 함수 실행 - 보고서 생성
+        report_content = generate_user_report_content(survey_attempt_id, user_id)
+        if not report_content:
+            print(f"사용자 {user_id} 설문 {survey_attempt_id} 보고서 생성 실패")
+            return None
+        
+        # 4. UserReport 테이블에 모든 데이터 저장
+        user_report.full_text = report_content
+        user_report.parties_rank = rankings['parties_rank']
+        user_report.politicians_top = rankings['politicians_top']
+        user_report.politicians_bottom = rankings['politicians_bottom']
+        
+        # 한 번에 모든 필드 업데이트
+        user_report.save(update_fields=[
+            'full_text', 
+            'parties_rank', 
+            'politicians_top', 
+            'politicians_bottom'
+        ])
+        
+        # 5. 저장 결과 확인 및 통계 출력
+        print(f"사용자 {user_id} 설문 {survey_attempt_id} 보고서 저장 완료")
+        print(f"저장된 데이터:")
+        print(f"- 보고서 길이: {len(report_content)}자")
+        print(f"- 정당 랭킹: {len(rankings['parties_rank'])}개")
+        print(f"- 유사한 정치인 TOP: {len(rankings['politicians_top'])}명")
+        print(f"- 차이나는 정치인 BOTTOM: {len(rankings['politicians_bottom'])}명")
+        print(f"- 생성 시각: {user_report.created_at}")
+        
+        return user_report
+        
+    except UserReport.DoesNotExist:
+        print(f"사용자 {user_id} 설문 {survey_attempt_id}의 UserReport가 없습니다")
+        print("3-3 함수(calculate_user_final_vectors)를 먼저 실행해야 합니다")
+        return None
+    except Exception as e:
+        print(f"사용자 {user_id} 보고서 저장 중 오류 발생: {e}")
+        return None
 #endregion
 
 
 # 4단계: 통합 실행 함수들
 #region 4-1. 정당 전체 처리
 def process_all_parties():
-    """모든 정당의 최종벡터, 전체성향, 편향성 계산"""
-    pass
+    """
+    모든 정당의 최종벡터, 전체성향, 편향성 계산
+    
+    무소속(id=0)을 제외한 모든 정당에 대해 1-1 함수를 실행하여
+    성향벡터와 가중치벡터로부터 최종벡터, 전체성향, 편향성을 계산합니다.
+    성향벡터와 가중치벡터가 이미 존재하는 정당만 처리합니다.
+    
+    Returns:
+        dict: 처리 결과 통계
+            - total_parties: 전체 정당 수
+            - processed_parties: 처리된 정당 수
+            - skipped_parties: 건너뛴 정당 수
+            - success_rate: 성공률 (%)
+    """
+    try:
+        print("=== 정당 전체 처리 시작 ===")
+        
+        # 무소속을 제외한 모든 정당 조회
+        all_parties = Party.objects.exclude(id=0)
+        total_count = all_parties.count()
+        
+        if total_count == 0:
+            print("처리할 정당이 없습니다")
+            return {
+                'total_parties': 0,
+                'processed_parties': 0,
+                'skipped_parties': 0,
+                'success_rate': 0.0
+            }
+        
+        print(f"총 {total_count}개 정당 처리 시작")
+        
+        # 1-1 함수 실행
+        processed_count = calculate_party_final_from_existing_vectors()
+        skipped_count = total_count - processed_count
+        success_rate = (processed_count / total_count) * 100 if total_count > 0 else 0.0
+        
+        # 처리 결과 통계
+        result = {
+            'total_parties': total_count,
+            'processed_parties': processed_count,
+            'skipped_parties': skipped_count,
+            'success_rate': round(success_rate, 1)
+        }
+        
+        print("=== 정당 전체 처리 완료 ===")
+        print(f"- 전체 정당: {total_count}개")
+        print(f"- 처리 완료: {processed_count}개")
+        print(f"- 건너뜀: {skipped_count}개")
+        print(f"- 성공률: {success_rate:.1f}%")
+        
+        return result
+        
+    except Exception as e:
+        print(f"정당 전체 처리 중 오류 발생: {e}")
+        return {
+            'total_parties': 0,
+            'processed_parties': 0,
+            'skipped_parties': 0,
+            'success_rate': 0.0
+        }
 #endregion
 
 #region 4-2. 정치인 전체 처리
 def process_all_politicians():
-    """모든 정치인의 벡터 계산 + 보고서 생성"""
-    pass
+    """
+    모든 정치인의 벡터 계산 + 보고서 생성
+    
+    모든 정치인에 대해 2단계 함수들을 순차적으로 실행하여
+    성향벡터 계산, 가중치벡터 설정, 최종 계산, 보고서 생성까지 완료합니다.
+    각 단계별로 성공/실패 통계를 제공합니다.
+    
+    Returns:
+        dict: 처리 결과 통계
+            - total_politicians: 전체 정치인 수
+            - tendency_calculated: 성향벡터 계산 완료 수
+            - weight_assigned: 가중치벡터 할당 완료 수
+            - final_calculated: 최종 계산 완료 수
+            - reports_generated: 보고서 생성 완료 수
+            - success_rate: 전체 성공률 (%)
+    """
+    try:
+        print("=== 정치인 전체 처리 시작 ===")
+        
+        # 전체 정치인 수 확인
+        total_count = Politician.objects.count()
+        
+        if total_count == 0:
+            print("처리할 정치인이 없습니다")
+            return {
+                'total_politicians': 0,
+                'tendency_calculated': 0,
+                'weight_assigned': 0,
+                'final_calculated': 0,
+                'reports_generated': 0,
+                'success_rate': 0.0
+            }
+        
+        print(f"총 {total_count}명 정치인 처리 시작")
+        
+        # 2-1. 정치인 성향벡터 계산
+        print("\n[1/4] 정치인 성향벡터 계산 중...")
+        tendency_count = calculate_politician_tendency_from_stances()
+        
+        # 2-2. 정치인 가중치벡터 설정
+        print("\n[2/4] 정치인 가중치벡터 설정 중...")
+        weight_count = set_politician_weight_from_party()
+        
+        # 2-3. 정치인 최종 계산
+        print("\n[3/4] 정치인 최종 계산 중...")
+        final_count = calculate_politician_final_vectors()
+        
+        # 2-7. 정치인 보고서 생성 (최종벡터가 있는 정치인만)
+        print("\n[4/4] 정치인 보고서 생성 중...")
+        report_count = 0
+        
+        # 최종벡터가 계산된 정치인들만 보고서 생성
+        politicians_with_vectors = Politician.objects.filter(
+            final_vector__isnull=False,
+            overall_tendency__isnull=False
+        )
+        
+        for politician in politicians_with_vectors:
+            try:
+                report = save_politician_report(politician.id)
+                if report:
+                    report_count += 1
+                    if report_count % 10 == 0:  # 10명마다 진행상황 출력
+                        print(f"보고서 생성 진행: {report_count}/{politicians_with_vectors.count()}")
+            except Exception as e:
+                print(f"정치인 {politician.id}({politician.name}) 보고서 생성 실패: {e}")
+                continue
+        
+        # 전체 성공률 계산 (최종 계산까지 완료된 비율)
+        success_rate = (final_count / total_count) * 100 if total_count > 0 else 0.0
+        
+        # 처리 결과 통계
+        result = {
+            'total_politicians': total_count,
+            'tendency_calculated': tendency_count,
+            'weight_assigned': weight_count,
+            'final_calculated': final_count,
+            'reports_generated': report_count,
+            'success_rate': round(success_rate, 1)
+        }
+        
+        print("=== 정치인 전체 처리 완료 ===")
+        print(f"- 전체 정치인: {total_count}명")
+        print(f"- 성향벡터 계산: {tendency_count}명")
+        print(f"- 가중치벡터 할당: {weight_count}명")
+        print(f"- 최종 계산: {final_count}명")
+        print(f"- 보고서 생성: {report_count}명")
+        print(f"- 전체 성공률: {success_rate:.1f}%")
+        
+        return result
+        
+    except Exception as e:
+        print(f"정치인 전체 처리 중 오류 발생: {e}")
+        return {
+            'total_politicians': 0,
+            'tendency_calculated': 0,
+            'weight_assigned': 0,
+            'final_calculated': 0,
+            'reports_generated': 0,
+            'success_rate': 0.0
+        }
 #endregion
 
 #region 4-3. 사용자 설문 완료 처리
-
+def process_survey_completion(survey_attempt_id, user_id):
+    """
+    설문 완료 시 사용자 벡터 계산 + 보고서 생성
+    
+    사용자가 설문조사를 완료했을 때 3단계 함수들을 순차적으로 실행하여
+    성향벡터 계산, 가중치벡터 계산, 최종 계산, 랭킹 생성, 보고서 생성까지 완료합니다.
+    views.py의 question_page 함수에서 마지막 페이지 제출 시 호출됩니다.
+    
+    Args:
+        survey_attempt_id: 설문 시도 ID (UUID)
+        user_id: 사용자 ID (UUID)
+    
+    Returns:
+        dict: 처리 결과 통계
+            - success: 전체 성공 여부
+            - user_report_id: 생성된 UserReport ID (성공 시)
+            - tendency_calculated: 성향벡터 계산 성공 여부
+            - weight_calculated: 가중치벡터 계산 성공 여부
+            - final_calculated: 최종 계산 성공 여부
+            - rankings_generated: 랭킹 생성 성공 여부
+            - report_generated: 보고서 생성 성공 여부
+            - error_message: 오류 메시지 (실패 시)
+    """
+    try:
+        print(f"=== 사용자 설문 완료 처리 시작: {user_id} / {survey_attempt_id} ===")
+        
+        # 1. 사용자 및 설문 데이터 검증
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            error_msg = f"사용자 {user_id}를 찾을 수 없습니다"
+            print(error_msg)
+            return {
+                'success': False,
+                'error_message': error_msg,
+                'tendency_calculated': False,
+                'weight_calculated': False,
+                'final_calculated': False,
+                'rankings_generated': False,
+                'report_generated': False
+            }
+        
+        # 완료된 응답이 있는지 확인
+        completed_responses = Response.objects.filter(
+            survey_attempt_id=survey_attempt_id,
+            user_id=user_id,
+            survey_completed_at__isnull=False
+        )
+        
+        if not completed_responses.exists():
+            error_msg = f"설문 {survey_attempt_id}의 완료된 응답이 없습니다"
+            print(error_msg)
+            return {
+                'success': False,
+                'error_message': error_msg,
+                'tendency_calculated': False,
+                'weight_calculated': False,
+                'final_calculated': False,
+                'rankings_generated': False,
+                'report_generated': False
+            }
+        
+        print(f"완료된 응답 수: {completed_responses.count()}개")
+        
+        # 2. 3-1: 사용자 성향벡터 계산
+        print("\n[1/5] 사용자 성향벡터 계산 중...")
+        tendency_vector = calculate_user_tendency_from_responses(survey_attempt_id, user_id)
+        tendency_calculated = tendency_vector is not None
+        
+        if not tendency_calculated:
+            error_msg = "사용자 성향벡터 계산 실패"
+            print(error_msg)
+            return {
+                'success': False,
+                'error_message': error_msg,
+                'tendency_calculated': False,
+                'weight_calculated': False,
+                'final_calculated': False,
+                'rankings_generated': False,
+                'report_generated': False
+            }
+        
+        # 3. 3-2: 사용자 가중치벡터 계산
+        print("\n[2/5] 사용자 가중치벡터 계산 중...")
+        weight_vector = calculate_user_weight_from_responses(survey_attempt_id, user_id)
+        weight_calculated = weight_vector is not None
+        
+        if not weight_calculated:
+            error_msg = "사용자 가중치벡터 계산 실패"
+            print(error_msg)
+            return {
+                'success': False,
+                'error_message': error_msg,
+                'tendency_calculated': True,
+                'weight_calculated': False,
+                'final_calculated': False,
+                'rankings_generated': False,
+                'report_generated': False
+            }
+        
+        # 4. 3-3: 사용자 최종 계산 (UserReport 생성)
+        print("\n[3/5] 사용자 최종 계산 중...")
+        user_report = calculate_user_final_vectors(survey_attempt_id, user_id)
+        final_calculated = user_report is not None
+        
+        if not final_calculated:
+            error_msg = "사용자 최종 계산 실패"
+            print(error_msg)
+            return {
+                'success': False,
+                'error_message': error_msg,
+                'tendency_calculated': True,
+                'weight_calculated': True,
+                'final_calculated': False,
+                'rankings_generated': False,
+                'report_generated': False
+            }
+        
+        # 5. 3-8: 사용자 보고서 저장 (랭킹 생성 + 보고서 생성 + 저장)
+        print("\n[4/5] 사용자 랭킹 및 보고서 생성 중...")
+        final_report = save_user_report(survey_attempt_id, user_id)
+        report_generated = final_report is not None
+        
+        if not report_generated:
+            error_msg = "사용자 보고서 생성 실패"
+            print(error_msg)
+            return {
+                'success': False,
+                'error_message': error_msg,
+                'tendency_calculated': True,
+                'weight_calculated': True,
+                'final_calculated': True,
+                'rankings_generated': False,
+                'report_generated': False
+            }
+        
+        # 6. 성공 결과 반환
+        result = {
+            'success': True,
+            'user_report_id': final_report.id,
+            'tendency_calculated': True,
+            'weight_calculated': True,
+            'final_calculated': True,
+            'rankings_generated': True,
+            'report_generated': True,
+            'error_message': None
+        }
+        
+        print(f"\n=== 사용자 설문 완료 처리 성공 ===")
+        print(f"- UserReport ID: {final_report.id}")
+        print(f"- 전체성향: {user_report.user_overall_tendency:.3f}")
+        print(f"- 편향성: {user_report.user_bias:.3f if user_report.user_bias else 'None'}")
+        print(f"- 생성 시각: {final_report.created_at}")
+        
+        return result
+        
+    except Exception as e:
+        error_msg = f"사용자 설문 완료 처리 중 오류 발생: {e}"
+        print(error_msg)
+        return {
+            'success': False,
+            'error_message': error_msg,
+            'tendency_calculated': False,
+            'weight_calculated': False,
+            'final_calculated': False,
+            'rankings_generated': False,
+            'report_generated': False
+        }
 #endregion
 
 #region 4-4. 전체 시스템 업데이트
-
+def update_all_system():
+    """
+    정당 -> 정치인 -> 정치인 보고서 순서로 전체 업데이트
+    
+    시스템 초기화나 정기적인 전체 업데이트 시 사용합니다.
+    의존성 순서를 보장하여 안전하게 모든 데이터를 계산합니다.
+    
+    Returns:
+        dict: 전체 처리 결과 통계
+    """
+    try:
+        print("=== 전체 시스템 업데이트 시작 ===")
+        
+        # 1. 정당 전체 처리
+        print("\n[1/2] 정당 전체 처리 중...")
+        party_result = process_all_parties()
+        
+        # 2. 정치인 전체 처리 (벡터 계산 + 보고서 생성)
+        print("\n[2/2] 정치인 전체 처리 중...")
+        politician_result = process_all_politicians()
+        
+        # 3. 전체 결과 통계
+        total_result = {
+            'parties': party_result,
+            'politicians': politician_result,
+            'success': True
+        }
+        
+        print("\n=== 전체 시스템 업데이트 완료 ===")
+        print(f"- 정당 처리: {party_result['processed_parties']}/{party_result['total_parties']}")
+        print(f"- 정치인 처리: {politician_result['final_calculated']}/{politician_result['total_politicians']}")
+        print(f"- 보고서 생성: {politician_result['reports_generated']}개")
+        
+        return total_result
+        
+    except Exception as e:
+        print(f"전체 시스템 업데이트 중 오류 발생: {e}")
+        return {
+            'parties': {'processed_parties': 0, 'total_parties': 0},
+            'politicians': {'final_calculated': 0, 'total_politicians': 0, 'reports_generated': 0},
+            'success': False,
+            'error': str(e)
+        }
 #endregion
