@@ -15,7 +15,7 @@ from django.db import transaction
 from django.db.models import *
 from django.db.models.functions import *
 from .models import *
-from .utils import get_user_id, process_survey_completion
+from .utils import process_survey_completion
 from django.http import Http404
 
 # Create your views here.
