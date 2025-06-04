@@ -797,11 +797,6 @@ def get_user_id(request):
     user_uuid = request.session.get('user_uuid')
     return user_uuid
 
-def SaveToCookie(response,request,new_report):
-    #새 리포트를 기존 쿠키에 누적 저장, response: list[Response], 2페이지에서 검사 다 하면 실행됨
-    report: UserReport = UserReport.objects.order_by('-created_at').first()
-    report.save()
-
 def ReportHistory(request):
     #쿠키에서 리포트 목록을 가져와 템플릿에 랜더링
     id = get_user_id()
