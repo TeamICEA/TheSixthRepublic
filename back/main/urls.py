@@ -8,8 +8,8 @@ urlpatterns = [
     path('questions/<int:page_num>/', views.question_page, name='question_page'),
     path('result/', views.result_page, name='result_page'),
 
-    # 3 리포트 페이지
-
+    # 3 리포트 페이지(석환)
+    path('latestreport/<str:uuid>',views.ShowUserReport,name='latestreport_page'),
 
     # 4 정치인 목록 페이지
     path('politicians/', views.politician_list, name='politician_list'),

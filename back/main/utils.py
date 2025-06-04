@@ -1497,11 +1497,15 @@ def generate_user_rankings_with_reasons(survey_attempt_id, user_id):
 
 # 4단계: 통합 실행 함수들
 #region 4-1. 정당 전체 처리
-
+def process_all_parties():
+    """모든 정당의 최종벡터, 전체성향, 편향성 계산"""
+    pass
 #endregion
 
 #region 4-2. 정치인 전체 처리
-
+def process_all_politicians():
+    """모든 정치인의 벡터 계산 + 보고서 생성"""
+    pass
 #endregion
 
 #region 4-3. 사용자 설문 완료 처리
