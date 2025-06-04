@@ -325,72 +325,84 @@ def question_page(request, page_num):
 
 
 #region 3 리포트 페이지
-def result_page(request):
-    # 유저의 대답을 기반으로 UI에 표시 후 렌더링
-    responses = Response.objects.filter(user_id=get_user_id()).order_by('-survey_completed_at')
-    responses2: list[Response] = [] # 가장 최근 진행한 유저의 대답 리스트
-    created_at: DateTimeField = None
+# def result_page(request):
+#     # 유저의 대답을 기반으로 UI에 표시 후 렌더링
+#     responses = Response.objects.filter(user_id=get_user_id()).order_by('-survey_completed_at')
+#     responses2: list[Response] = [] # 가장 최근 진행한 유저의 대답 리스트
+#     created_at: DateTimeField = None
 
-    for response in responses:
-        if created_at is None:
-            created_at = response.survey_completed_at
-        if created_at == response.survey_completed_at:
-            responses2.append(response)
-        else:
-            break
+#     for response in responses:
+#         if created_at is None:
+#             created_at = response.survey_completed_at
+#         if created_at == response.survey_completed_at:
+#             responses2.append(response)
+#         else:
+#             break
 
-    # 구현 미완성
+#     # 구현 미완성
     
 
-    return render(request, 'main/result.html')
+#     return render(request, 'main/result.html')
 
-def load_all_politicians() -> list[Politician]:
-    # 국회의원 리스트를 DB에서 불러온 후 반환
-    return Politician.objects.all()
+# def load_all_politicians() -> list[Politician]:
+#     # 국회의원 리스트를 DB에서 불러온 후 반환
+#     return Politician.objects.all()
 
-def load_all_politicians_simple() -> list[PoliticianSimple]:
-    # 국회의원의 기본 데이터 리스트를 DB에서 불러온 후 반환
-    politicians = Politician.objects.values("id", "name", "hanja_name", "party_id", "birthdate", "address")
-    politicians2 = []
+# def load_all_politicians_simple() -> list[PoliticianSimple]:
+#     # 국회의원의 기본 데이터 리스트를 DB에서 불러온 후 반환
+#     politicians = Politician.objects.values("id", "name", "hanja_name", "party_id", "birthdate", "address")
+#     politicians2 = []
 
-    for politician in politicians:
-        politician2 = PoliticianSimple()
-        politician2.id = politician["id"]
-        politician2.name = politician["name"]
-        politician2.hanja_name = politician["hanja_name"]
-        politician2.party_id = politician["party_id"]
-        politician2.birthdate = politician["birthdate"]
-        politician2.address = politician["address"]
+#     for politician in politicians:
+#         politician2 = PoliticianSimple()
+#         politician2.id = politician["id"]
+#         politician2.name = politician["name"]
+#         politician2.hanja_name = politician["hanja_name"]
+#         politician2.party_id = politician["party_id"]
+#         politician2.birthdate = politician["birthdate"]
+#         politician2.address = politician["address"]
 
-        politicians2.append(politician2)
+#         politicians2.append(politician2)
     
-    return politician2
+#     return politician2
 
-def load_politician(id: str) -> Politician:
-    # 국회의원 ID를 기반으로 DB에서 불러온 후 반환
-    return Politician.objects.get(id=id)
+# def load_politician(id: str) -> Politician:
+#     # 국회의원 ID를 기반으로 DB에서 불러온 후 반환
+#     return Politician.objects.get(id=id)
 
-def load_all_parties() -> list[Party]:
-    # 정당 리스트를 DB에서 불러온 후 반환
-    return Politician.objects.all()
+# def load_all_parties() -> list[Party]:
+#     # 정당 리스트를 DB에서 불러온 후 반환
+#     return Politician.objects.all()
 
-def write_report(responses: list[Response]):
-    # 유저 응답이 담긴 리스트를 기반으로 분석
-    # 유저의 리포트를 기반으로 정당과 정치인 적합도까지 점수화 후 해당 데이터 반환
-    response = CreateResponse()
-    pass
+# def write_report(responses: list[Response]):
+#     # 유저 응답이 담긴 리스트를 기반으로 분석
+#     # 유저의 리포트를 기반으로 정당과 정치인 적합도까지 점수화 후 해당 데이터 반환
+#     response = CreateResponse()
+#     pass
 
-def on_report_item_hover(item_type: int, id: int | str):
-    # item_type: 1 => 적합한 정당, 2 => 적합한 정치인 TOP, 3 => 적합한 정치인 WORST
-    # id => 정치인 또는 정당 id
-    # 랭킹 아이템을 갖다 댈시 그에 맞는 이유 표시
-    pass
-#endregion
+# def on_report_item_hover(item_type: int, id: int | str):
+#     # item_type: 1 => 적합한 정당, 2 => 적합한 정치인 TOP, 3 => 적합한 정치인 WORST
+#     # id => 정치인 또는 정당 id
+#     # 랭킹 아이템을 갖다 댈시 그에 맞는 이유 표시
+#     pass
+# #endregion
 
 
 #region 3 리포트 페이지 (석환)
+def ShowUserReport(request,uuid:str):
+    user_id=get_object_or_404(User,user=uuid)
+    latest_report=UserReport.objects.filter(user=user_id).order_by("-created_at").first()
 
+    if latest_report is None:
+        raise Http404("None report")
 
+    context={
+        'report':latest_report.fulltext,
+        'parties_rank':latest_report.parties_rank,
+        'politicians_top':latest_report.politicians_top,
+        'politicians_bottom':latest_report.politicians_bottom,
+    }
+    return render(request,'main/user_report.html',context)
 
 
 #endregion
@@ -480,7 +492,7 @@ def load_politician_report(id: str): #-> Report
 # item_type: 1 => 적합한 정치인 TOP, 2 => 적합한 정치인 WORST
 # id => 정치인 id
 # 랭킹 아이템을 갖다 댈시 그에 맞는 이유 표시
-def on_preport_item_hover(item_type: int, id: str):
+def on_report_item_hover(item_type: int, id: str):
 
     politician=get_object_or_404(Politician,str_id=id)
 
