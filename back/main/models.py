@@ -105,25 +105,44 @@ class Question(models.Model):
     def __str__(self):
         return f"{self.id}. {self.question_text[:50]}..."
     
-    def get_score_for_answer(self, answer_value):
+    def get_score_for_answer(self, answer_value, answer_text=None):
         """
-        특정 답변(1~5)에 대한 성향 점수 반환
+        특정 답변에 대한 성향 점수 반환 (서술형 답변 고려)
         
         Args:
             answer_value: 사용자 답변 (1~5)
+            answer_text: 서술형 답변 (선택사항)
         
         Returns:
             float: 해당 답변의 성향 점수 (0~1)
         """
         try:
+            if self.question_type == 'urgent':
+                # 중요 현안 질문은 성향 측정 안 함
+                return 0.5
+            
+            # 정치 성향 질문 처리
             if 1 <= answer_value <= 5:
-                if self.question_type == 'urgent':
-                    # 중요 현안 질문은 성향 측정 안 함 (모든 답변이 중립)
-                    return 0.5
-                else:
-                    # 정치 성향 질문만 score_vector 사용
-                    return self.score_vector[answer_value - 1]
+                base_score = self.score_vector[answer_value - 1]
+                
+                # 서술형 답변이 있으면 LLM으로 보정
+                if answer_text and answer_text.strip():
+                    # utils 함수 호출 (순환 import 방지를 위해 지연 import)
+                    from .utils import analyze_text_tendency_with_llm
+                    
+                    text_score = analyze_text_tendency_with_llm(
+                        answer_text, 
+                        self.category.name
+                    )
+                    
+                    # 객관식 점수와 서술형 점수의 가중평균 (7:3 비율)
+                    final_score = (base_score * 0.7) + (text_score * 0.3)
+                    return final_score
+                
+                return base_score
+            
             return 0.5
+            
         except (IndexError, TypeError):
             return 0.5
     
@@ -254,8 +273,8 @@ class Response(models.Model):
         return f"{completed_time} - {self.user} - Q{self.question.id} ({self.get_answer_display()})"
     
     def get_tendency_score(self):
-        """동적으로 성향 점수 계산"""
-        return self.question.get_score_for_answer(self.answer)
+        """동적으로 성향 점수 계산 (서술형 답변 포함)"""
+        return self.question.get_score_for_answer(self.answer, self.answer_text)
     
     def get_weight_score(self):
         """동적으로 가중치 점수 계산"""
