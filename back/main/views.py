@@ -436,8 +436,7 @@ def ShowUserReport(request,uuid:str):
 #endregion
 
 
-#region 4 정치인 목록 페이지
-def politician_detail(request, politician_id: int):
+def politician_detail(request, politician_id: int): # 이 함수 뭐임? 5페이지 함수 아닌가?
     """개별 정치인 상세 페이지"""
     # select_related로 정당 정보도 함께 가져와서 쿼리 최적화
     politician = get_object_or_404(
@@ -450,6 +449,8 @@ def politician_detail(request, politician_id: int):
     }
     return render(request, 'main/politician_detail.html', context)
 
+
+#region 4 정치인 목록 페이지
 def politician_list(request):
     """정치인 목록 페이지 (검색 및 필터링 포함)"""
     # GET 파라미터 받기
@@ -486,11 +487,15 @@ def politician_list(request):
     ).order_by('id')
     # 템플릿에서 전체 버튼 추가로 총 9개
     
+     # 첫 번째 정당 이름 미리 계산
+    first_party_name = parties_for_buttons.first().name if parties_for_buttons.exists() else "정당"
+
     context = {
         'page_obj': page_obj,
         'name_query': name_query,
         'party_query': party_query,
         'parties_for_buttons': parties_for_buttons,  # 9개 버튼용
+        'first_party_name': first_party_name, 
         'total_count': politicians.count(),
     }
     return render(request, 'main/politician_list.html', context)

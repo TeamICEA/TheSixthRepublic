@@ -1,0 +1,266 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}정치인 목록 - 정치 성향 분석{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- 페이지 제목 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="text-center mb-4">정치인별 기본 데이터 & 정치인의 성향 리포트</h2>
+        </div>
+    </div>
+    
+    <!-- 검색 및 필터 영역 -->
+    <div class="row mb-4">
+        <!-- 정당별 필터 버튼 -->
+        <div class="col-md-8 mb-3">
+            <div class="btn-group flex-wrap" role="group" aria-label="정당 필터">
+                <!-- 전체 버튼 -->
+                <a href="{% url 'politician_list' %}" 
+                   class="btn {% if not party_query %}btn-success{% else %}btn-outline-success{% endif %} me-2 mb-2">
+                    전체
+                </a>
+                
+                <!-- 정당별 버튼 -->
+                {% for party in parties_for_buttons %}
+                <a href="?party={{ party.id }}{% if name_query %}&name={{ name_query }}{% endif %}" 
+                   class="btn {% if party_query == party.id|stringformat:'s' %}btn-success{% else %}btn-outline-success{% endif %} me-2 mb-2">
+                    {{ party.name }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- 이름 검색 -->
+        <div class="col-md-4 mb-3">
+            <form method="get" class="d-flex">
+                {% if party_query %}
+                <input type="hidden" name="party" value="{{ party_query }}">
+                {% endif %}
+                
+                <input type="text" 
+                       name="name" 
+                       class="form-control me-2" 
+                       placeholder="이름 검색"
+                       value="{{ name_query }}">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> 찾기
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 검색 결과 정보 -->
+    {% if name_query or party_query %}
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                {% if name_query and party_query %}
+                    "{{ name_query }}" 이름으로 {{ first_party_name }} 정당에서 검색한 결과: 총 {{ total_count }}명
+                {% elif name_query %}
+                    "{{ name_query }}" 이름으로 검색한 결과: 총 {{ total_count }}명
+                {% elif party_query %}
+                    {% for party in parties_for_buttons %}
+                        {% if party.id|stringformat:"s" == party_query %}
+                            {{ party.name }} 정당 소속: 총 {{ total_count }}명
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- 정치인 목록 테이블 -->
+    <div class="row">
+        <div class="col-12">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="80px">사진</th>
+                            <th width="120px">이름</th>
+                            <th width="120px">한자</th>
+                            <th width="80px">출생</th>
+                            <th width="120px">정당</th>
+                            <th>지역</th>
+                            <th width="100px">찾기</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for politician in page_obj %}
+                        <tr class="politician-row" data-politician-id="{{ politician.id }}">
+                            <td class="text-center">
+                                {% if politician.pic_link %}
+                                <img src="{{ politician.pic_link }}" 
+                                     alt="{{ politician.name }}" 
+                                     class="politician-photo"
+                                     onerror="this.src='{% static 'main/images/default-profile.png' %}'">
+                                {% else %}
+                                <div class="placeholder-photo">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong>{{ politician.name }}</strong>
+                            </td>
+                            <td class="text-muted">
+                                {{ politician.hanja_name|default:"정보없음" }}
+                            </td>
+                            <td>
+                                {% if politician.birthdate %}
+                                    {{ politician.birthdate.year }}
+                                {% else %}
+                                    정보없음
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge party-badge party-{{ politician.party.id }}">
+                                    {{ politician.party.name }}
+                                </span>
+                            </td>
+                            <td>
+                                {{ politician.address|truncatechars:30|default:"정보없음" }}
+                            </td>
+                            <td class="text-center">
+                                <a href="{% url 'IndividualPoliticians' politician.str_id %}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-search"></i> 상세보기
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-5">
+                                <i class="fas fa-search mb-3" style="font-size: 3rem; opacity: 0.3;"></i>
+                                <br>
+                                검색 결과가 없습니다.
+                                {% if name_query or party_query %}
+                                <br>
+                                <a href="{% url 'politician_list' %}" class="btn btn-sm btn-outline-secondary mt-2">
+                                    전체 목록 보기
+                                </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 페이지네이션 -->
+    {% if page_obj.has_other_pages %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <nav aria-label="정치인 목록 페이지네이션">
+                <ul class="pagination justify-content-center">
+                    <!-- 처음 페이지 -->
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if name_query %}&name={{ name_query }}{% endif %}{% if party_query %}&party={{ party_query }}{% endif %}">
+                            <i class="fas fa-angle-double-left"></i> 처음
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if name_query %}&name={{ name_query }}{% endif %}{% if party_query %}&party={{ party_query }}{% endif %}">
+                            <i class="fas fa-angle-left"></i> 이전
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    <!-- 페이지 번호들 -->
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}{% if name_query %}&name={{ name_query }}{% endif %}{% if party_query %}&party={{ party_query }}{% endif %}">
+                                {{ num }}
+                            </a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    <!-- 다음 페이지 -->
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if name_query %}&name={{ name_query }}{% endif %}{% if party_query %}&party={{ party_query }}{% endif %}">
+                            다음 <i class="fas fa-angle-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if name_query %}&name={{ name_query }}{% endif %}{% if party_query %}&party={{ party_query }}{% endif %}">
+                            마지막 <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- 총 결과 수 표시 -->
+    <div class="row mt-3">
+        <div class="col-12 text-center text-muted">
+            <small>
+                총 {{ page_obj.paginator.count }}명의 정치인 중 
+                {{ page_obj.start_index }}-{{ page_obj.end_index }}번째 표시
+            </small>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 테이블 행 클릭 시 상세 페이지로 이동
+document.addEventListener('DOMContentLoaded', function() {
+    const rows = document.querySelectorAll('.politician-row');
+    
+    rows.forEach(function(row) {
+        row.addEventListener('click', function(e) {
+            // 버튼 클릭은 제외
+            if (e.target.closest('.btn')) {
+                return;
+            }
+            
+            const politicianId = this.dataset.politicianId;
+            const politician = this.querySelector('strong').textContent;
+            
+            // 5페이지로 이동 (str_id 필요)
+            // 실제로는 politician.str_id를 사용해야 함
+            window.location.href = `/politicians/${politicianId}/`;
+        });
+        
+        // 마우스 오버 효과
+        row.addEventListener('mouseenter', function() {
+            this.style.cursor = 'pointer';
+            this.style.backgroundColor = '#f8f9fa';
+        });
+        
+        row.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = '';
+        });
+    });
+});
+
+// 검색 폼 개선
+document.querySelector('form').addEventListener('submit', function(e) {
+    const nameInput = this.querySelector('input[name="name"]');
+    if (nameInput.value.trim() === '') {
+        e.preventDefault();
+        nameInput.focus();
+        alert('검색할 이름을 입력해주세요.');
+    }
+});
+</script>
+{% endblock %}

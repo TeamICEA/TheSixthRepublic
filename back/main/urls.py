@@ -13,6 +13,8 @@ urlpatterns = [
 
     # 4 정치인 목록 페이지
     path('politicians/', views.politician_list, name='politician_list'),
+    
+    # 얜 뭐지?
     path('politicians/<int:politician_id>/', views.politician_detail, name='politician_detail'),
 
     # 5 개별 정치인 분석 페이지

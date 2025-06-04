@@ -1,0 +1,113 @@
+/* 4페이지 정치인 목록 스타일 */
+
+/* 정치인 사진 */
+.politician-photo {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #dee2e6;
+}
+
+/* 기본 프로필 이미지 */
+.placeholder-photo {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+    border: 2px solid #dee2e6;
+}
+
+/* 정당별 배지 색상 */
+.party-badge {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+}
+
+.party-1 { background-color: #007bff; } /* 더불어민주당 */
+.party-2 { background-color: #dc3545; } /* 국민의힘 */
+.party-3 { background-color: #28a745; } /* 조국혁신당 */
+.party-4 { background-color: #ffc107; color: #000; } /* 개혁신당 */
+.party-5 { background-color: #17a2b8; } /* 진보당 */
+.party-6 { background-color: #6f42c1; } /* 기본소득당 */
+.party-7 { background-color: #fd7e14; } /* 새로운미래 */
+.party-0 { background-color: #6c757d; } /* 무소속 */
+
+/* 테이블 행 호버 효과 */
+.politician-row {
+    transition: background-color 0.2s ease;
+}
+
+.politician-row:hover {
+    background-color: #f8f9fa !important;
+    cursor: pointer;
+}
+
+/* 버튼 그룹 반응형 */
+.btn-group.flex-wrap {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.btn-group.flex-wrap .btn {
+    margin-bottom: 0.5rem;
+}
+
+/* 검색 결과 정보 */
+.alert-info {
+    border-left: 4px solid #007bff;
+}
+
+/* 페이지네이션 개선 */
+.pagination .page-link {
+    border-radius: 0.375rem;
+    margin: 0 0.125rem;
+    border: 1px solid #dee2e6;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+    
+    .politician-photo,
+    .placeholder-photo {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .btn-group.flex-wrap {
+        justify-content: center;
+    }
+    
+    .btn-group.flex-wrap .btn {
+        font-size: 0.875rem;
+        padding: 0.375rem 0.75rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .container-fluid {
+        padding: 0.5rem;
+    }
+    
+    h2 {
+        font-size: 1.5rem;
+    }
+    
+    .table th,
+    .table td {
+        padding: 0.5rem 0.25rem;
+        font-size: 0.8rem;
+    }
+}
