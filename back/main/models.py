@@ -62,26 +62,128 @@ class Question(models.Model):
         verbose_name="질문 번호"
     )
     
-    # 질문 카테고리 (외래 키)(장고가 자동으로 _id도 생성)
+    # 질문 카테고리 (외래 키)
     category = models.ForeignKey(
         Category,
-        on_delete=models.CASCADE, # (필수) 카테고리 삭제 시 질문도 함께 삭제
-        related_name='questions', # Category에서 역참조 할 때 사용
+        on_delete=models.CASCADE,
+        related_name='questions',
         verbose_name="질문 카테고리",
-        db_column='category_id' # DB 컬럼명을 명시적으로 저장
+        db_column='category_id'
     )
 
-    # 질문 내용 (텍스트)
-    text = models.TextField(
+    # 질문 내용
+    question_text = models.TextField(
         verbose_name="질문 내용"
+    )
+    
+    # 성향 점수 벡터 (1~5번 응답별 성향 점수)
+    score_vector = models.JSONField(
+        verbose_name="성향 점수 벡터",
+        help_text="1~5번 응답별 성향 점수 [매우동의, 동의, 보통, 비동의, 매우비동의] 순서"
+    )
+    
+    # 질문 해설 (보고서 작성용)
+    explanation = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="질문 해설",
+        help_text="보고서 작성 시 LLM 프롬프트에 포함될 질문의 의미와 배경 설명"
+    )
+    
+    # 질문 타입 (정치 성향 vs 중요 현안)
+    QUESTION_TYPE_CHOICES = [
+        ('political', '정치 성향'),
+        ('urgent', '중요 현안'),
+    ]
+    question_type = models.CharField(
+        max_length=20,
+        choices=QUESTION_TYPE_CHOICES,
+        default='political',
+        verbose_name="질문 타입"
     )
 
     def __str__(self):
-        return f"{self.id}. {self.text[:50]}..."  # 앞 50자만 표시
+        return f"{self.id}. {self.question_text[:50]}..."
+    
+    def get_score_for_answer(self, answer_value):
+        """
+        특정 답변(1~5)에 대한 성향 점수 반환
+        
+        Args:
+            answer_value: 사용자 답변 (1~5)
+        
+        Returns:
+            float: 해당 답변의 성향 점수 (0~1)
+        """
+        try:
+            if 1 <= answer_value <= 5:
+                if self.question_type == 'urgent':
+                    # 중요 현안 질문은 성향 측정 안 함 (모든 답변이 중립)
+                    return 0.5
+                else:
+                    # 정치 성향 질문만 score_vector 사용
+                    return self.score_vector[answer_value - 1]
+            return 0.5
+        except (IndexError, TypeError):
+            return 0.5
+    
+    def get_weight_for_answer(self, answer_value, answer_text=None):
+        """
+        특정 답변에 대한 가중치 반환
+        
+        Args:
+            answer_value: 사용자 답변 (1~5)
+            answer_text: 서술형 답변 (선택사항)
+        
+        Returns:
+            float: 해당 답변의 가중치
+        """
+        try:
+            # 서술형 답변에서 1~10 자연수가 있으면 우선 사용
+            if answer_text and answer_text.strip():
+                # 서술형 답변에서 숫자 추출 시도
+                import re
+                numbers = re.findall(r'\b([1-9]|10)\b', answer_text.strip())
+                if numbers:
+                    weight_value = int(numbers[0])  # 첫 번째 숫자 사용
+                    return float(weight_value)
+            
+            # 서술형 답변에 숫자가 없으면 질문 타입에 따라 가중치 결정
+            if self.question_type == 'urgent':
+                # 중요 현안 질의: 매우중요-10, 중요-8, 보통-5, 덜중요-3, 안중요-1
+                weight_mapping = {1: 10.0, 2: 8.0, 3: 5.0, 4: 3.0, 5: 1.0}
+                return weight_mapping.get(answer_value, 5.0)
+            else:
+                # 정치 성향 질의: 모든 답변에 동일한 가중치 5.0
+                return 5.0
+                
+        except Exception as e:
+            # 오류 시 기본 가중치 반환
+            return 5.0
+    
+    def validate_score_vector(self):
+        """
+        score_vector의 유효성 검증
+        
+        Returns:
+            bool: 유효성 검증 결과
+        """
+        if not isinstance(self.score_vector, list):
+            return False
+        
+        if len(self.score_vector) != 5:
+            return False
+        
+        # 모든 값이 0~1 범위인지 확인
+        for score in self.score_vector:
+            if not isinstance(score, (int, float)) or not (0 <= score <= 1):
+                return False
+        
+        return True
     
     class Meta:
-        db_table = "questions"  # 테이블 이름 지정
-        ordering = ['id']    # id 순으로 정렬
+        db_table = "questions"
+        ordering = ['id']
         verbose_name = "설문 질문"
         verbose_name_plural = "설문 질문들"
 #endregion
@@ -116,39 +218,32 @@ class Response(models.Model):
     
     # 질문 (Question 모델과의 외래키 관계)
     question = models.ForeignKey(
-        Question,  # Question 모델을 문자열로 참조
+        Question,
         on_delete=models.CASCADE,
         related_name='responses',
         verbose_name="질문",
         db_column='question_id'
     )
     
-    # 객관식 답변 (1~5)
+    # 객관식 답변 (1~5로 통일)
     ANSWER_CHOICES = [
-        (1, '매우비동의'),
-        (2, '비동의'),
+        (1, '매우동의/매우중요'),
+        (2, '동의/중요'),
         (3, '보통'),
-        (4, '동의'),
-        (5, '매우동의')
+        (4, '비동의/덜중요'),
+        (5, '매우비동의/안중요')
     ]
     
-    # 객관식 답변
     answer = models.IntegerField(
         choices=ANSWER_CHOICES,
         verbose_name="객관식 답변"
     )
     
-    # 서술형 답변
+    # 서술형 답변 (가중치 입력 가능)
     answer_text = models.TextField(
         blank=True,
-        verbose_name="서술형 답변"
-    )
-    
-    # 답변 성향 점수 (0~1)
-    tendency_score = models.FloatField(
-        default=0.5,
-        verbose_name="답변 성향 점수",
-        help_text="0~1 사이의 값으로 답변의 성향을 나타냅니다"
+        verbose_name="서술형 답변",
+        help_text="1~10의 자연수를 입력하면 해당 숫자가 가중치로 사용됩니다"
     )
 
     def __str__(self):
@@ -158,12 +253,20 @@ class Response(models.Model):
             completed_time = "진행중"
         return f"{completed_time} - {self.user} - Q{self.question.id} ({self.get_answer_display()})"
     
+    def get_tendency_score(self):
+        """동적으로 성향 점수 계산"""
+        return self.question.get_score_for_answer(self.answer)
+    
+    def get_weight_score(self):
+        """동적으로 가중치 점수 계산"""
+        return self.question.get_weight_for_answer(self.answer, self.answer_text)
+    
     class Meta:
         db_table = "responses"
-        ordering = ['survey_completed_at', 'id'] # 옛날 것부터 (오름차순)
+        ordering = ['survey_completed_at', 'id']
         verbose_name = "설문 응답"
         verbose_name_plural = "설문 응답들"
-        unique_together = ['survey_attempt_id', 'user', 'question'] # 세션별 중복 응답 방지
+        unique_together = ['survey_attempt_id', 'user', 'question']
 #endregion
 
 
@@ -598,7 +701,7 @@ class UserReport(models.Model):
         on_delete=models.CASCADE,
         related_name='reports',
         verbose_name="사용자",
-        db_column='user_id'
+        db_column='id'
     )
 
     # 설문 시도 ID (Response의 survey_attempt_id와 연결)
@@ -722,7 +825,7 @@ class PoliticianReport(models.Model):
         on_delete=models.CASCADE,
         related_name='reports',
         verbose_name="정치인",
-        db_column='politician_id'
+        db_column='id'
     )
 
     # 리포트 생성 시각
@@ -783,7 +886,7 @@ class Tone(models.Model):
         verbose_name_plural = "정치인 말투들"
 #endregion
 
-#region 12 챗봇 이전 대화 기록 (DEPRECATED?)
+#region 12 챗봇 이전 대화 기록
 class Chat(models.Model):
     user = models.ForeignKey(
         User,
@@ -804,6 +907,14 @@ class Chat(models.Model):
     # 대화 내용
     text = models.TextField(
         verbose_name="대화 내용"
+    )
+
+    role = models.CharField(
+        verbose_name="봇 / 사용자의 답변 여부 (model, user)"
+    )
+
+    token_count = models.IntegerField(
+        verbose_name="AI가 사용한 토큰 개수"
     )
 
     # def __str__(self):
