@@ -720,7 +720,7 @@ class UserReport(models.Model):
         on_delete=models.CASCADE,
         related_name='reports',
         verbose_name="사용자",
-        db_column='id'
+        db_column='user_id'
     )
 
     # 설문 시도 ID (Response의 survey_attempt_id와 연결)
@@ -728,7 +728,7 @@ class UserReport(models.Model):
         verbose_name="설문 시도 ID"
     )
 
-    # 리포트 생성 시각 (Response의 survey_completed_at과 연결)
+    # 리포트 생성 시각 (Response의 survey_completed_at과 연결?)
     created_at = models.DateTimeField(
         auto_now_add=True,
         verbose_name="리포트 생성 시각"
@@ -844,7 +844,7 @@ class PoliticianReport(models.Model):
         on_delete=models.CASCADE,
         related_name='reports',
         verbose_name="정치인",
-        db_column='id'
+        db_column='politician_id'
     )
 
     # 리포트 생성 시각

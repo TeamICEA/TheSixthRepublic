@@ -855,6 +855,52 @@ def save_politician_report(politician_id):
         return None
 #endregion
 
+#region 이건 어디에 끼워넣어야 하지?
+def analyze_text_tendency_with_llm(answer_text, category_name):
+    """
+    서술형 답변에서 LLM을 통해 성향 점수 계산
+    
+    Args:
+        answer_text: 서술형 답변 텍스트
+        category_name: 해당 카테고리 이름
+    
+    Returns:
+        float: 0~1 사이의 성향 점수 (실패 시 0.5)
+    """
+    if not answer_text or not answer_text.strip():
+        return 0.5  # 텍스트가 없으면 중립
+    
+    prompt = f"""다음 {category_name} 분야에 대한 의견을 분석하여 정치성향을 0~1 사이의 점수로 평가해주세요.
+
+의견: "{answer_text.strip()}"
+
+평가 기준:
+- 0.0~0.2: 매우 보수적
+- 0.2~0.4: 보수적  
+- 0.4~0.6: 중도
+- 0.6~0.8: 진보적
+- 0.8~1.0: 매우 진보적
+
+{category_name} 분야의 특성을 고려하여 객관적으로 평가해주세요.
+
+점수 (0.0~1.0):"""
+    
+    try:
+        response = call_gemini_api(prompt, max_tokens=50)
+        # 응답에서 숫자 추출
+        import re
+        numbers = re.findall(r'0\.\d+|1\.0|0|1', response)
+        if numbers:
+            score = float(numbers[0])
+            return max(0.0, min(1.0, score))  # 0~1 범위로 제한
+        return 0.5
+    except:
+        return 0.5
+
+#endregion
+
+
+
 # 3단계: 사용자 설문조사 로직
 #region 3-1. 사용자 성향벡터 계산
 
