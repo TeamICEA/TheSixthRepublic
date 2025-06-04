@@ -11,10 +11,11 @@ from google.genai import types
 from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
 from django.core.paginator import Paginator
 from django.utils import timezone
+from django.db import transaction
 from django.db.models import *
 from django.db.models.functions import *
 from .models import *
-from .models import *
+from .utils import get_user_id, process_survey_completion
 from django.http import Http404
 
 # Create your views here.
@@ -94,203 +95,10 @@ def on_news_click(reqeust, button_name: str):
 
 
 
-
 #region 2 질문 페이지
 # 질문을 5개씩 보여주고, 응답을 저장하고, 마지막엔 결과 페이지로 이동
-def question_page(request, page_num):
-    """
-    설문 질문 페이지 - 5개씩 질문을 보여주고 응답을 저장
-    """
-    QUESTIONS_PER_PAGE = 5
-    
-    # 1. Django 세션이 없으면 생성 (브라우저 식별용)
-    user_uuid = get_user_id(request)
-    
-    # 3. User UUID가 없으면 새로운 사용자 생성
-    if not user_uuid:
-        new_user = User.objects.create(
-            tendency_vector=[0.5] * 10,  # 기본값: 10차원 벡터
-            weight_vector=[1.0] * 10,    # 기본값: 10차원 벡터
-            final_vector=[0.5] * 10,     # 기본값: 10차원 벡터
-        )
-        user_uuid = str(new_user.id)
-        request.session['user_uuid'] = user_uuid
-    
-    # 4. User 객체 가져오기
-    current_user = User.objects.get(id=user_uuid)
-    
-    # 5. 진행 중인 설문의 survey_attempt_id 확인
-    current_survey_session = request.session.get('current_survey_session_id')
-    
-    # 6. 전체 질문 가져오기 (ID 순서대로)
-    all_questions = Question.objects.all().order_by('id')
-    
-    # 7. Django Paginator로 페이지 나누기
-    paginator = Paginator(all_questions, QUESTIONS_PER_PAGE)
-    total_pages = paginator.num_pages
-    
-    # 8. 페이지 번호 유효성 검사
-    if page_num < 1:
-        return redirect('question_page', page_num=1)
-    elif page_num > total_pages:
-        return redirect('result_page')
-    
-    # 9. 현재 페이지의 질문들 가져오기
-    try:
-        page_obj = paginator.get_page(page_num)
-        questions = page_obj.object_list
-    except:
-        return redirect('question_page', page_num=1)
-    
-    # 10. 진행 중인 설문이 있고, GET 요청이면 적절한 페이지로 리다이렉트
-    if current_survey_session and request.method == 'GET':
-        # 답변하지 않은 첫 번째 질문 찾기
-        answered_questions = Response.objects.filter(
-            survey_attempt_id=current_survey_session,
-            user=current_user,
-            survey_completed_at__isnull=True
-        ).values_list('question_id', flat=True)
-        
-        if answered_questions:
-            # 모든 질문 ID 가져오기
-            all_question_ids = list(Question.objects.values_list('id', flat=True).order_by('id'))
-            
-            # 답변하지 않은 첫 번째 질문 찾기
-            next_unanswered_question = None
-            for q_id in all_question_ids:
-                if q_id not in answered_questions:
-                    next_unanswered_question = q_id
-                    break
-            
-            if next_unanswered_question:
-                # 다음 답변할 질문이 속한 페이지 계산
-                next_page = ((next_unanswered_question - 1) // QUESTIONS_PER_PAGE) + 1
-                if page_num != next_page:
-                    return redirect('question_page', page_num=next_page)
-    
-    # 11. POST 요청 처리 (사용자가 답변을 제출했을 때)
-    if request.method == 'POST':
-        # 12. 필수 답변 검사
-        missing_answers = []
-        for question in questions:
-            answer = request.POST.get(f'question_{question.id}')
-            if not answer:  # 객관식 답변이 없으면
-                missing_answers.append(question.id)
-        
-        if missing_answers:
-            # 오류가 있으면 현재 페이지 다시 표시
-            # 기존 응답 불러오기 (오류 발생 시에도 이전 답변 표시)
-            responses = {}
-            responses_text = {}
-            
-            # current_survey_session이 있든 없든 기존 응답 찾기
-            if current_survey_session:
-                existing_responses = Response.objects.filter(
-                    survey_attempt_id=current_survey_session,
-                    user=current_user,
-                    question__in=questions
-                ).select_related('question')
-            else:
-                # current_survey_session이 없으면 미완료 응답 중에서 찾기
-                existing_responses = Response.objects.filter(
-                    user=current_user,
-                    survey_completed_at__isnull=True,
-                    question__in=questions
-                ).select_related('question')
-            
-            responses = {r.question.id: r.answer for r in existing_responses}
-            responses_text = {r.question.id: r.answer_text for r in existing_responses if r.answer_text}
-            
-            context = {
-                'questions': questions,
-                'page_num': page_num,
-                'total_pages': total_pages,
-                'responses': responses,
-                'responses_text': responses_text,
-                'is_first_page': page_num == 1,
-                'is_last_page': page_num == total_pages,
-                'prev_page': page_num - 1 if page_num > 1 else None,
-                'next_page': page_num + 1 if page_num < total_pages else None,
-                'answer_choices': Response.ANSWER_CHOICES,
-                'error_message': '모든 질문에 답변해주세요.',
-                'missing_questions': missing_answers,
-            }
-            return render(request, 'main/question_page.html', context)
-        
-        # 13. 진행 중인 설문 session_id가 없으면 새로 생성 또는 기존 것 찾기
-        if not current_survey_session:
-            # 기존 미완료 응답이 있는지 확인
-            existing_incomplete = Response.objects.filter(
-                user=current_user,
-                survey_completed_at__isnull=True
-            ).first()
-            
-            if existing_incomplete:
-                # 기존 미완료 설문이 있으면 그 survey_attempt_id 사용
-                current_survey_session = existing_incomplete.survey_attempt_id
-                request.session['current_survey_session_id'] = str(current_survey_session)
-            else:
-                # 완전히 새로운 설문 시작
-                current_survey_session = uuid.uuid4()
-                request.session['current_survey_session_id'] = str(current_survey_session)
-        
-        # 14. 각 질문의 답변 저장
-        for question in questions:
-            answer = request.POST.get(f'question_{question.id}')
-            answer_text = request.POST.get(f'question_text_{question.id}')
-            
-            if answer:
-                try:
-                    answer_int = int(answer)
-                    if 1 <= answer_int <= 5:
-                        response_defaults = {
-                            'answer': answer_int,
-                            'tendency_score': 0.5,
-                            'survey_completed_at': timezone.now() if page_num == total_pages else None
-                        }
-                        
-                        if answer_text and answer_text.strip():
-                            response_defaults['answer_text'] = answer_text.strip()
-                        
-                        Response.objects.update_or_create(
-                            survey_attempt_id=current_survey_session,
-                            user=current_user,
-                            question=question,
-                            defaults=response_defaults
-                        )
-                except ValueError:
-                    continue
-        
-        # 15. 페이지 이동 처리
-        if page_num < total_pages:
-            return redirect('question_page', page_num=page_num + 1)
-        else:
-            # 설문 완료 처리
-            Response.objects.filter(
-                survey_attempt_id=current_survey_session,
-                user=current_user
-            ).update(survey_completed_at=timezone.now())
-
-            # 2. 4-3 함수 호출 - 사용자 벡터 계산 + 보고서 생성
-            from main.utils import process_survey_completion
-    
-            result = process_survey_completion(
-                current_survey_session, 
-                current_user.id
-            )
-    
-            if result['success']:
-                print(f"사용자 보고서 생성 완료: UserReport ID {result['user_report_id']}")
-            else:
-                print(f"보고서 생성 실패: {result['error_message']}")
-                # 실패해도 결과 페이지로 이동 (기본 결과라도 보여주기)
-            
-            if 'current_survey_session_id' in request.session:
-                del request.session['current_survey_session_id']
-            
-            return redirect('result_page')
-    
-    # 16. GET 요청 처리 - 기존 응답 불러오기
+def get_existing_responses(current_survey_session, current_user, questions):
+    """기존 응답 조회 헬퍼 함수"""
     responses = {}
     responses_text = {}
     
@@ -309,31 +117,237 @@ def question_page(request, page_num):
             survey_completed_at__isnull=True,
             question__in=questions
         ).select_related('question')
-        
-        # 만약 미완료 응답이 있다면 그 session_id를 현재 세션으로 설정
-        if existing_responses.exists():
-            first_response = existing_responses.first()
-            current_survey_session = first_response.survey_attempt_id
-            request.session['current_survey_session_id'] = str(current_survey_session)
     
     responses = {r.question.id: r.answer for r in existing_responses}
     responses_text = {r.question.id: r.answer_text for r in existing_responses if r.answer_text}
     
-    # 17. 템플릿에 전달할 데이터 준비
-    context = {
-        'questions': questions,
-        'page_num': page_num,
-        'total_pages': total_pages,
-        'responses': responses,
-        'responses_text': responses_text,
-        'is_first_page': page_num == 1,
-        'is_last_page': page_num == total_pages,
-        'prev_page': page_num - 1 if page_num > 1 else None,
-        'next_page': page_num + 1 if page_num < total_pages else None,
-        'answer_choices': Response.ANSWER_CHOICES,
-    }
+    return responses, responses_text
+
+def question_page(request, page_num):
+    """
+    설문 질문 페이지 - 5개씩 질문을 보여주고 응답을 저장
+    """
+    QUESTIONS_PER_PAGE = 5
     
-    return render(request, 'main/question_page.html', context)
+    try:
+        # 1. 사용자 UUID 처리
+        user_uuid = get_user_id(request)
+        
+        if not user_uuid:
+            # User 모델은 UUID만 가지는 단순한 모델
+            new_user = User.objects.create()
+            user_uuid = str(new_user.id)
+            request.session['user_uuid'] = user_uuid
+        
+        # 2. User 객체 가져오기 (예외 처리 추가)
+        try:
+            current_user = User.objects.get(id=user_uuid)
+        except User.DoesNotExist:
+            # 세션에 있는 UUID가 유효하지 않은 경우 새로 생성
+            new_user = User.objects.create()
+            user_uuid = str(new_user.id)
+            request.session['user_uuid'] = user_uuid
+            current_user = new_user
+        
+        # 3. 질문 데이터 처리
+        all_questions = Question.objects.all().order_by('id')
+        if not all_questions.exists():
+            return render(request, 'main/error.html', {
+                'error_message': '설문 질문이 없습니다.'
+            })
+        
+        # 4. Django Paginator로 페이지 나누기
+        paginator = Paginator(all_questions, QUESTIONS_PER_PAGE)
+        total_pages = paginator.num_pages
+        
+        # 5. 페이지 번호 유효성 검사
+        if page_num < 1:
+            return redirect('question_page', page_num=1)
+        elif page_num > total_pages:
+            return redirect('result_page')
+        
+        # 6. 현재 페이지의 질문들 가져오기
+        try:
+            page_obj = paginator.get_page(page_num)
+            questions = page_obj.object_list
+        except:
+            return redirect('question_page', page_num=1)
+        
+        # 7. 진행 중인 설문의 survey_attempt_id 확인
+        current_survey_session = request.session.get('current_survey_session_id')
+        
+        # 8. 진행 중인 설문이 있고, GET 요청이면 적절한 페이지로 리다이렉트
+        if current_survey_session and request.method == 'GET':
+            # 답변하지 않은 첫 번째 질문 찾기
+            answered_questions = Response.objects.filter(
+                survey_attempt_id=current_survey_session,
+                user=current_user,
+                survey_completed_at__isnull=True
+            ).values_list('question_id', flat=True)
+            
+            if answered_questions:
+                # 모든 질문 ID 가져오기
+                all_question_ids = list(Question.objects.values_list('id', flat=True).order_by('id'))
+                
+                # 답변하지 않은 첫 번째 질문 찾기
+                next_unanswered_question = None
+                for q_id in all_question_ids:
+                    if q_id not in answered_questions:
+                        next_unanswered_question = q_id
+                        break
+                
+                if next_unanswered_question:
+                    # 다음 답변할 질문이 속한 페이지 계산
+                    next_page = ((next_unanswered_question - 1) // QUESTIONS_PER_PAGE) + 1
+                    if page_num != next_page:
+                        return redirect('question_page', page_num=next_page)
+        
+        # 9. POST 요청 처리 (사용자가 답변을 제출했을 때)
+        if request.method == 'POST':
+            # 10. 필수 답변 검사
+            missing_answers = []
+            for question in questions:
+                answer = request.POST.get(f'question_{question.id}')
+                if not answer:  # 객관식 답변이 없으면
+                    missing_answers.append(question.id)
+            
+            if missing_answers:
+                # 오류가 있으면 현재 페이지 다시 표시
+                responses, responses_text = get_existing_responses(
+                    current_survey_session, current_user, questions
+                )
+                
+                context = {
+                    'questions': questions,
+                    'page_num': page_num,
+                    'total_pages': total_pages,
+                    'responses': responses,
+                    'responses_text': responses_text,
+                    'is_first_page': page_num == 1,
+                    'is_last_page': page_num == total_pages,
+                    'prev_page': page_num - 1 if page_num > 1 else None,
+                    'next_page': page_num + 1 if page_num < total_pages else None,
+                    'answer_choices': Response.ANSWER_CHOICES,
+                    'error_message': '모든 질문에 답변해주세요.',
+                    'missing_questions': missing_answers,
+                }
+                return render(request, 'main/question_page.html', context)
+            
+            # 11. 진행 중인 설문 session_id가 없으면 새로 생성 또는 기존 것 찾기
+            if not current_survey_session:
+                # 기존 미완료 응답이 있는지 확인
+                existing_incomplete = Response.objects.filter(
+                    user=current_user,
+                    survey_completed_at__isnull=True
+                ).first()
+                
+                if existing_incomplete:
+                    # 기존 미완료 설문이 있으면 그 survey_attempt_id 사용
+                    current_survey_session = existing_incomplete.survey_attempt_id
+                    request.session['current_survey_session_id'] = str(current_survey_session)
+                else:
+                    # 완전히 새로운 설문 시작
+                    current_survey_session = uuid.uuid4()
+                    request.session['current_survey_session_id'] = str(current_survey_session)
+            
+            # 12. 각 질문의 답변 저장 (최적화된 방식)
+            with transaction.atomic():
+                responses_to_create = []
+                responses_to_update = []
+                
+                for question in questions:
+                    answer = request.POST.get(f'question_{question.id}')
+                    answer_text = request.POST.get(f'question_text_{question.id}')
+                    
+                    if answer:
+                        try:
+                            answer_int = int(answer)
+                            if 1 <= answer_int <= 5:
+                                # 기존 응답 확인
+                                existing_response = Response.objects.filter(
+                                    survey_attempt_id=current_survey_session,
+                                    user=current_user,
+                                    question=question
+                                ).first()
+                                
+                                if existing_response:
+                                    existing_response.answer = answer_int
+                                    if answer_text and answer_text.strip():
+                                        existing_response.answer_text = answer_text.strip()
+                                    responses_to_update.append(existing_response)
+                                else:
+                                    new_response = Response(
+                                        survey_attempt_id=current_survey_session,
+                                        user=current_user,
+                                        question=question,
+                                        answer=answer_int,
+                                        answer_text=answer_text.strip() if answer_text and answer_text.strip() else ''
+                                    )
+                                    responses_to_create.append(new_response)
+                        except ValueError:
+                            continue
+                
+                # 벌크 저장
+                if responses_to_create:
+                    Response.objects.bulk_create(responses_to_create)
+                if responses_to_update:
+                    Response.objects.bulk_update(responses_to_update, ['answer', 'answer_text'])
+            
+            # 13. 페이지 이동 처리
+            if page_num < total_pages:
+                return redirect('question_page', page_num=page_num + 1)
+            else:
+                # 설문 완료 처리
+                # 1. 모든 응답에 완료 시각 설정
+                Response.objects.filter(
+                    survey_attempt_id=current_survey_session,
+                    user=current_user
+                ).update(survey_completed_at=timezone.now())
+                
+                # 2. 4-3 함수 호출 - 사용자 벡터 계산 + 보고서 생성
+                result = process_survey_completion(
+                    current_survey_session, 
+                    current_user.id
+                )
+                
+                if result['success']:
+                    print(f"사용자 보고서 생성 완료: UserReport ID {result['user_report_id']}")
+                else:
+                    print(f"보고서 생성 실패: {result['error_message']}")
+                    # 실패해도 결과 페이지로 이동 (기본 결과라도 보여주기)
+                
+                # 3. 세션 정리
+                if 'current_survey_session_id' in request.session:
+                    del request.session['current_survey_session_id']
+                
+                return redirect('result_page')
+        
+        # 14. GET 요청 처리 - 기존 응답 불러오기
+        responses, responses_text = get_existing_responses(
+            current_survey_session, current_user, questions
+        )
+        
+        # 15. 템플릿에 전달할 데이터 준비
+        context = {
+            'questions': questions,
+            'page_num': page_num,
+            'total_pages': total_pages,
+            'responses': responses,
+            'responses_text': responses_text,
+            'is_first_page': page_num == 1,
+            'is_last_page': page_num == total_pages,
+            'prev_page': page_num - 1 if page_num > 1 else None,
+            'next_page': page_num + 1 if page_num < total_pages else None,
+            'answer_choices': Response.ANSWER_CHOICES,
+        }
+        
+        return render(request, 'main/question_page.html', context)
+        
+    except Exception as e:
+        print(f"question_page 오류: {e}")
+        return render(request, 'main/error.html', {
+            'error_message': '시스템 오류가 발생했습니다.'
+        })
 #endregion
 
 
