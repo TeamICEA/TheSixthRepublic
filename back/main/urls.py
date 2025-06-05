@@ -31,8 +31,4 @@ urlpatterns = [
 
     # 몇 페이지인지 주석 써주세요.
     path('', views.index, name='index'),
-
-    
-    
-    
 ]

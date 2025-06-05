@@ -666,7 +666,7 @@ class Stance(models.Model):
         on_delete=models.CASCADE,
         related_name='stances',
         verbose_name="국회의원",
-        db_column='politician_str_id', # db 필드명 바꿔야 함 ###
+        db_column='str_id',
         to_field='str_id'
     )
 
@@ -909,6 +909,7 @@ class Tone(models.Model):
 
 #region 12 챗봇 이전 대화 기록
 class Chat(models.Model):
+    # id는 Django에서 자동으로 생성되므로 별도로 정의할 필요 없음
     user = models.ForeignKey(
         User,
         null=True,
