@@ -58,7 +58,11 @@ def calculate_party_final_from_existing_vectors():
         
         for party in parties:
             # 성향벡터와 가중치벡터가 모두 존재하는지 확인
-            if party.tendency_vector and party.weight_vector:
+            print("HMM")
+            print(type(party.tendency_vector))
+            print(type(party.weight_vector))
+            if party.tendency_vector and party.weight_vector: # 여기가 문제!!!!!!!
+                print("HMM2")
                 # numpy 배열로 변환
                 tendency = np.array(party.tendency_vector)
                 weight = np.array(party.weight_vector)
@@ -66,12 +70,14 @@ def calculate_party_final_from_existing_vectors():
                 
                 # 가중치 합이 0보다 큰 경우에만 계산
                 if weight_sum > 0:
+                    print("OKAY")
                     # 1. 최종벡터 계산 (성향벡터 * 가중치벡터, 원소별 곱셈)
                     final_vector = tendency * weight
+                    print("OKAY2")
                     
                     # 2. 전체성향 계산 (최종벡터의 합 / 가중치 합)
                     overall_tendency = np.sum(final_vector) / weight_sum
-                    
+                    print("OKAY3")
                     # 3. 편향성 계산 (가중표준편차)
                     bias = None
                     if weight_sum > 1:  # 표본 분산을 위해 분모가 1보다 커야 함
