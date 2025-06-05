@@ -513,7 +513,7 @@ def load_politician_report(id: str): #-> Report
     politician_report=(
         PoliticianReport.objects
         .filter(politician_id=politician)
-        .order_by('-created at')
+        .order_by('-created_at')
         .first()
     )
     #없다면 None Report 출력
