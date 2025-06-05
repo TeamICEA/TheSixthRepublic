@@ -4,6 +4,12 @@ from pgvector.django import VectorField
 from django.utils import timezone
 from django.core.validators import MinValueValidator, MaxValueValidator
 
+class JSONFieldV2(models.JSONField):
+    def from_db_value(self, value, expression, connection):
+        if isinstance(value, dict) or isinstance(value, list):
+            return value
+        return super().from_db_value(value, expression, connection)
+
 #region 1 users
 class User(models.Model):
     # 유저 ID (UUID4, pk)
@@ -77,7 +83,7 @@ class Question(models.Model):
     )
     
     # 성향 점수 벡터 (1~5번 응답별 성향 점수)
-    score_vector = models.JSONField(
+    score_vector = JSONFieldV2(
         blank=True,
         null=True,
         verbose_name="성향 점수 벡터",
@@ -780,7 +786,7 @@ class UserReport(models.Model):
     )
 
     # 적합한 정당 랭킹
-    parties_rank = models.JSONField(
+    parties_rank = JSONFieldV2(
         default=list,
         null=True,
         blank=True,
@@ -789,7 +795,7 @@ class UserReport(models.Model):
     )
     
     # 적합한 정치인 TOP 10
-    politicians_top = models.JSONField(
+    politicians_top = JSONFieldV2(
         default=list,
         null=True,
         blank=True,
@@ -798,7 +804,7 @@ class UserReport(models.Model):
     )
     
     # 적합한 정치인 BOTTOM 10
-    politicians_bottom = models.JSONField(
+    politicians_bottom = JSONFieldV2(
         default=list,
         null=True,
         blank=True,
@@ -861,7 +867,7 @@ class PoliticianReport(models.Model):
     )
     
     # 적합한 정치인 TOP 10
-    politicians_top = models.JSONField(
+    politicians_top = JSONFieldV2(
         default=list,
         null=True,
         blank=True,
@@ -870,7 +876,7 @@ class PoliticianReport(models.Model):
     )
     
     # 적합한 정치인 BOTTOM 10
-    politicians_bottom = models.JSONField(
+    politicians_bottom = JSONFieldV2(
         default=list,
         null=True,
         blank=True,

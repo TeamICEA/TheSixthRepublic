@@ -181,7 +181,7 @@ class Migration(migrations.Migration):
                 ('position_score', models.FloatField(default=0.5, help_text='0~1 사이의 값으로 입장을 나타냅니다', verbose_name='발언 점수')),
                 ('source_url', models.URLField(blank=True, max_length=500, null=True, verbose_name='뉴스 URL 주소')),
                 ('category', models.ForeignKey(db_column='category_id', on_delete=django.db.models.deletion.CASCADE, related_name='stances', to='main.category', verbose_name='카테고리')),
-                ('politician', models.ForeignKey(db_column='politician_str_id', on_delete=django.db.models.deletion.CASCADE, related_name='stances', to='main.politician', verbose_name='국회의원')),
+                ('politician', models.ForeignKey(db_column='str_id', on_delete=django.db.models.deletion.CASCADE, related_name='stances', to='main.politician', verbose_name='국회의원')),
             ],
             options={
                 'verbose_name': '정치인 발언',
