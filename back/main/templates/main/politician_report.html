@@ -1,5 +1,5 @@
 {% extends 'main/base.html' %}
-{% block title %}정치인 집중 분석{% endblock %}
+{% block title %}개별 정치인 집중 분석{% endblock %}
 {% block content %}
 <div class="politician_report">
      <!-- 페이지 제목 -->
@@ -11,24 +11,24 @@
     <!-- 텍스트 정보 영역 -->
     <div class="profile-info">
       <dl>
-        <dt>{{name}}</dt><dd></dd>
+        <dt><h3>{{name}}</h3></dt><dd></dd>
         <dt>재선여부</dt><dd>{{reelected}}</dd>
         <dt>한자</dt><dd>{{hanja}}</dd>
         <dt>성별</dt><dd>{{gender}}</dd>
         <dt>생년월일</dt><dd>{{birth}}</dd>
         <dt>정당</dt><dd>{{party}}</dd>
         <dt>선거구</dt><dd>{{election_name}}</dd>
-        <dt>위원회</dt><dd>{{comittees}}</dd>
+        <dt>위원회</dt><dd>{{committees}}</dd>
         <dt>의원실 주소</dt><dd>{{address}}</dd>
         <dt>이메일</dt><dd>{{email}}</dd>
         <dt>전화</dt><dd>{{tel}}</dd>
       </dl>
-      <a href="#" class="chat-button">{{name}} 봇과 대화하기 →</a>
     </div>
 
     <!-- 사진 영역 -->
     <div class="profile-img-box">
       <img src="{{pic}}" alt="{{name}} 사진">
+    <a href="#" class="chat-button">{{name}} 봇과 대화하기 →</a>
     </div>
 
       <!-- 학력 및 경력사항 -->
@@ -73,9 +73,9 @@
                     </thead>
                     <!--여기부터 본셀-->
                     <tbody>
-                        {% for politician in best_rank |slice":10" %}
+                        {% for politician in best_rank|slice:":10" %}
                     <tr>
-                        <td>{{politician.rank+1}}</td>
+                        <td>{{ politician.rank }}</td>
                         <td><img src="{{politician.picture}}"/></td> 
                         <td>{{politician.name}}</td>
                         <td>{{politician.birth}}</td>
@@ -91,7 +91,7 @@
             <div class="right-box">
                 <h3 class="reason-title">주요 이유</h3>
                 <div class="reason">
-                {% for politician in best_rank |slice:":10" %}
+                {% for politician in best_rank|slice:":10" %}
             <p>
                 {{politician.reason}}
             </p>
@@ -119,9 +119,9 @@
                     </thead>
                     <!--여기부터 본셀-->
                     <tbody>
-                        {% for politician in worst_rank |slice":10" %}
+                        {% for politician in worst_rank|slice:":10" %}
                     <tr>
-                        <td>{{politician.rank+1}}</td>
+                        <td>{{ politician.rank }}</td>
                         <td><img src="{{politician.picture}}"/></td> 
                         <td>{{politician.name}}</td>
                         <td>{{politician.birth}}</td>
@@ -137,7 +137,7 @@
             <div class="right-box">
                 <h3 class="reason-title">주요 이유</h3>
                 <div class="reason">
-                {% for politician in wort_rank |slice:":10" %}
+                {% for politician in worst_rank|slice:":10" %}
             <p>
                 {{politician.reason}}
             </p>

@@ -37,7 +37,7 @@
                     <tbody>
                         {% for party in parties_rank%}
                     <tr>
-                        <td>{{party.rank+1}}</td>
+                        <td>{{ politician.rank }}</td>
                         <td><img src="{{party.logo}}"/></td> 
                         <td>{{party.name}}</td>
                         <td>{{party.percentage}}</td>
@@ -79,9 +79,9 @@
                     </thead>
                     <!--여기부터 본셀-->
                     <tbody>
-                        {% for politician in politicians_top |slice":10" %}
+                        {% for politician in politicians_top |slice:":10" %}
                     <tr>
-                        <td>{{politician.rank+1}}</td>
+                        <td>{{ politician.rank }}</td>
                         <td><img src="{{politician.picture}}"/></td> 
                         <td>{{politician.name}}</td>
                         <td>{{politician.birth}}</td>
@@ -127,7 +127,7 @@
                     <tbody>
                         {% for politician in politicians_bottom |slice":10" %}
                     <tr>
-                        <td>{{politician.rank+1}}</td>
+                        <td>{{politician.rank}}</td>
                         <td><img src="{{politician.picture}}"/></td> 
                         <td>{{politician.name}}</td>
                         <td>{{politician.birth}}</td>
