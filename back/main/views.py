@@ -745,13 +745,14 @@ def PoliticianRanking(request):
         age=ExpressionWrapper(
             Value(current_year)-ExtractYear('birthdate'),
             output_field=IntegerField()
-        )
+        ),
+        curr_assets_int=Cast('curr_assets', IntegerField())
     )
 
     #정렬 기준 설정(정렬 필드)
     sort_fields={
         'reelected':'-reelected_count',
-        'curr_assets':'-curr_assets',
+        'curr_assets':'-curr_assets_int',
         'birthdate':'-age',
         'attendance':'-attendance_plenary',
         'election_gap':'-election_gap',
@@ -784,7 +785,7 @@ def PoliticianRanking(request):
         'sort_by':sort_by
     }
 
-    return render(request,'politician_ranking.html',context)
+    return render(request,'main/politician_ranking.html',context)
 #endregion
 
 

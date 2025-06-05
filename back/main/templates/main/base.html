@@ -12,6 +12,8 @@
     
     {% load static %}
     <link rel="stylesheet" href="{% static 'main/css/style.css' %}">
+    
+    {% block extra_css %}{% endblock %}
 </head>
 <body style="margin: 0; padding: 0; background-color: #f8f9fa;">
     <!-- 메인 콘텐츠 -->

@@ -1,0 +1,121 @@
+/* 전체 페이지 정렬 */
+.politician-ranking {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 30px 20px;
+  font-family: 'Noto Sans KR', sans-serif;
+  background-color: #f8fff8;
+}
+
+/* 제목 */
+.page-header h1 {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 30px;
+}
+
+/* 필터 버튼 */
+.ranking_filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.ranking_filters a {
+  padding: 10px 18px;
+  background-color: #dfffe0;
+  border-radius: 20px;
+  text-decoration: none;
+  color: #333;
+  font-weight: bold;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  transition: background-color 0.2s;
+}
+
+.ranking_filters a.active {
+  background-color: #a3e5a3;
+  color: white;
+}
+
+/* 랭킹 테이블 박스 */
+.ranking-table {
+  background-color: #e0ffe0;
+  padding: 24px;
+  border-radius: 16px;
+}
+
+.ranking-table h3 {
+  margin-top: 0;
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+/* 테이블 스타일 */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+th, td {
+  text-align: center;
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+}
+
+th {
+  background-color: #c5f5c5;
+  font-weight: bold;
+}
+
+img {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+/* 페이지네이션 */
+/* 페이지네이션 */
+.pagination {
+  margin-top: 30px;
+  text-align: center;
+   justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px; /* 버튼 사이 간격 */
+}
+
+.pagination a,
+.pagination strong,
+.pagination .disabled {
+  display: inline-block;
+  margin: 0 4px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-weight: bold;
+  min-width: 36px;
+  text-align: center;
+  text-decoration: none;
+}
+
+/* 일반 링크 */
+.pagination a {
+  background-color: #e0ffe0;
+  color: black;
+}
+
+/* 현재 페이지 */
+.pagination strong {
+  background-color: #a3e5a3;
+  color: white;
+}
+
+/* 비활성 버튼 */
+.pagination .disabled {
+  background-color: #eee;
+  color: #aaa;
+  cursor: not-allowed;
+}

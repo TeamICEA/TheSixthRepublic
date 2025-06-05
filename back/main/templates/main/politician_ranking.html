@@ -1,0 +1,104 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}개별 정치인 집중 분석{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'main/css/politician_ranking.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="politician-ranking">
+     <!-- 페이지 제목 -->
+    <div class="page-header">
+        <h1>랭킹 페이지</h1>
+    </div>
+
+    <!--필터-->
+    <div class="ranking_filters">
+    <a href="?sort=reelected" class="{% if sort_by == 'reelected' %}active{% endif %}">다선</a>
+    <a href="?sort=curr_assets" class="{% if sort_by == 'curr_assets' %}active{% endif %}">재산 총액</a>
+    <a href="?sort=attendance" class="{% if sort_by == 'attendance' %}active{% endif %}">출석률</a>
+    <a href="?sort=election_gap" class="{% if sort_by == 'election_gap' %}active{% endif %}">투표 격차</a>
+    <a href="?sort=birthdate" class="{% if sort_by == 'birthdate' %}active{% endif %}">나이</a>
+    </div>
+
+    <!-- 랭킹테이블 -->
+    <div class="ranking-table">
+        <h3>{% if sort_by == 'reelected' %}다선 랭킹
+            {% elif sort_by == 'curr_assets' %}재산 랭킹
+            {% elif sort_by == 'birthdate' %}나이 랭킹
+            {% elif sort_by == 'attendance' %}출석률 랭킹
+            {% else %}투표 격차 랭킹
+            {% endif %}
+        </h3>
+        
+        <table>
+        <thead>
+            <tr>
+                <th>순위</th>
+                <th>사진</th>
+                <th>이름</th>
+                <th>출생</th>
+                <th>정당</th>
+                <th>{% if sort_by == 'reelected' %}당선 수
+                    {% elif sort_by == 'curr_assets' %}재산 총액
+                    {% elif sort_by == 'birthdate' %}나이
+                    {% elif sort_by == 'attendance' %}출석률
+                    {% else %}투표 격차
+                    {% endif %}
+                </th>
+          </tr>        
+        </thead>
+
+        <tbody>
+            {% for politician in politicians %}
+            <tr>
+            <td>{{ forloop.counter|add:politicians.start_index|add:"-1" }}</td>
+            <td><img src="{{ politician.pic_link }}" alt="{{ politician.name }}"></td>
+            <td>{{ politician.name }}</td>
+            <td>{{ politician.birthdate|date:"Y" }}</td>
+            <td>{{ politician.party }}</td>
+            <td>{% if sort_by == 'reelected' %} {{ politician.reelected_count }}
+                    {% elif sort_by == 'curr_assets' %} {{ politician.curr_assets}}
+                    {% elif sort_by == 'birthdate' %} {{ politician.age }}
+                    {% elif sort_by == 'attendance' %} {{ politician.attendance_plenary }}
+                    {% else %} {{ politician.election_gap }}
+                    {% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        </table>
+    </div>
+
+
+    <!--페이지네이션-->
+        <div class="pagination">
+      {% if politicians.has_previous %}
+        <a href="?sort={{ sort_by }}&page={{ politicians.previous_page_number }}">이전</a>
+            {% else %}
+            <span class="disabled">이전</span>
+        {% endif %}
+
+      {% for num in politicians.paginator.page_range %}
+        {% if politicians.number == num %}
+          <strong>{{ num }}</strong>
+        {% else %}
+          <a href="?sort={{ sort_by }}&page={{ num }}">{{ num }}</a>
+        {% endif %}
+      {% endfor %}
+
+      {% if politicians.has_next %}
+        <a href="?sort={{ sort_by }}&page={{ page_obj.next_page_number }}">다음</a>
+        {% else %}
+        <span class="disabled">다음</span>
+      {% endif %}
+    </div>
+
+    </div>  <!--politician-ranking-->
+
+
+
+
+
+
+{% endblock %}

@@ -1,0 +1,204 @@
+/*석환
+/* 기본 구조 */
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background-color: #f9f9f9;
+  margin: 0;
+  padding: 40px 20px;
+}
+
+.politician_report {
+  max-width: 800px;
+  margin: auto;
+}
+
+/* 페이지 헤더 */
+.page-header h1 {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 24px;
+}
+
+/* 프로필 박스 전체 */
+.profile-container {
+  display: flex;
+  align-items:stretch;
+  background-color: #e0ffe0;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+/* 왼쪽 텍스트 */
+.profile-info {
+  flex: 1 1 300px;
+    display: flex;
+  flex-direction: column;
+}
+
+.profile-info dl {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0;
+}
+
+.profile-info dt {
+  width: 100px;
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+.profile-info dd {
+  margin: 0 0 6px 0;
+  width: calc(100% - 100px);
+}
+
+/* 오른쪽 사진 */
+.profile-img-box {
+ flex: 1 1 80px; /* info와 같은 flex 값 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;   /* img를 세로 가운데 정렬 */
+}
+
+.profile-img-box img {
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: cover; /* 비율 유지하면서 꽉 채우기 */
+  border-radius: 10px;
+  border: 4px solid #ccf0cc;}
+
+/* 채팅 버튼 */
+.chat-button {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 10px 68px;
+  background-color: #dff7df;
+  border-radius: 6px;
+  font-weight: bold;
+  text-decoration: none;
+  color: #000;
+  box-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+  transition: 0.2s;
+  width:100%;
+  text-align:center;
+}
+.chat-button:hover {
+  background-color: #cdeccc;
+}
+
+/* 학력 및 경력사항 */
+.history-box {
+  background-color: #dcfcdc;
+  border-radius: 10px;
+  padding: 20px;
+  margin: 20px 0;
+}
+
+.history-box h3 {
+  margin-top: 0;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.history-innerbox {
+  background: #fff;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* 리포트 박스 */
+.outer-box {
+  background-color: #e0ffe0;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.report-title,
+.ranking-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+/* 리포트 내부 박스 */
+.inner-box {
+  background-color: #f3f3f3;
+  border: 2px solid #a3d3ff;
+  border-radius: 8px;
+  padding: 20px;
+  min-height: 160px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* 랭킹 레이아웃 */
+.left-box {
+  float: left;
+  width: 64%;
+}
+
+.right-box {
+  float: right;
+  width: 33%;
+  background-color: #f3f3f3;
+  border-radius: 8px;
+  padding: 15px;
+  min-height: 160px;
+  max-height: 580px;
+  overflow-y:auto;
+  box-sizing: border-box;
+}
+
+.reason-title {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.reason {
+  font-size: 14px;
+  color: #333;
+  line-height: 1.5;
+}
+
+/* 테이블 스타일 */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+th, td {
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid #ccc;
+}
+
+th {
+  background-color: #c5f5c5;
+  font-weight: bold;
+}
+
+table img {
+  width: 30px;
+  height: auto;
+  border-radius: 4px;
+}
+
+/* clearfix */
+.outer-box::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+
+
+
+
+/*랭킹 페이지

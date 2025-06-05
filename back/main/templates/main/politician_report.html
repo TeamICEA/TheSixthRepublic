@@ -1,5 +1,10 @@
 {% extends 'main/base.html' %}
+{% load static %}
 {% block title %}개별 정치인 집중 분석{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'main/css/politician_report.css' %}">
+{% endblock %}
+
 {% block content %}
 <div class="politician_report">
      <!-- 페이지 제목 -->
