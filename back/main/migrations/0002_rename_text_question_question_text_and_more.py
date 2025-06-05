@@ -68,7 +68,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='stance',
             name='politician',
-            field=models.ForeignKey(db_column='politician_str_id', on_delete=django.db.models.deletion.CASCADE, related_name='stances', to='main.politician', to_field='str_id', verbose_name='국회의원'),
+            field=models.ForeignKey(db_column='str_id', on_delete=django.db.models.deletion.CASCADE, related_name='stances', to='main.politician', to_field='str_id', verbose_name='국회의원'),
         ),
         migrations.AlterField(
             model_name='userreport',
