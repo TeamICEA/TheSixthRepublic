@@ -4,6 +4,8 @@ from .models import *
 import json
 import requests
 from django.conf import settings
+from google import genai
+from google.genai import types
 
 import uuid
 from django.utils import timezone
@@ -58,11 +60,7 @@ def calculate_party_final_from_existing_vectors():
         
         for party in parties:
             # 성향벡터와 가중치벡터가 모두 존재하는지 확인
-            print("HMM")
-            print(type(party.tendency_vector))
-            print(type(party.weight_vector))
-            if party.tendency_vector and party.weight_vector: # 여기가 문제!!!!!!!
-                print("HMM2")
+            if party.tendency_vector.all() and party.weight_vector.all():
                 # numpy 배열로 변환
                 tendency = np.array(party.tendency_vector)
                 weight = np.array(party.weight_vector)
@@ -70,14 +68,12 @@ def calculate_party_final_from_existing_vectors():
                 
                 # 가중치 합이 0보다 큰 경우에만 계산
                 if weight_sum > 0:
-                    print("OKAY")
                     # 1. 최종벡터 계산 (성향벡터 * 가중치벡터, 원소별 곱셈)
                     final_vector = tendency * weight
-                    print("OKAY2")
-                    
+
                     # 2. 전체성향 계산 (최종벡터의 합 / 가중치 합)
                     overall_tendency = np.sum(final_vector) / weight_sum
-                    print("OKAY3")
+
                     # 3. 편향성 계산 (가중표준편차)
                     bias = None
                     if weight_sum > 1:  # 표본 분산을 위해 분모가 1보다 커야 함
@@ -133,7 +129,7 @@ def calculate_politician_tendency_from_stances():
         for politician in politicians:
             # 해당 정치인의 모든 발언 조회
             stances = Stance.objects.filter(politician=politician).select_related('category')
-            
+
             if not stances.exists():
                 # 발언이 아예 없는 정치인은 중립 벡터로 설정
                 default_vector = [0.5] * 10
@@ -142,7 +138,7 @@ def calculate_politician_tendency_from_stances():
                 processed_count += 1
                 print(f"정치인 '{politician.name}' - 발언 없음, 기본값 설정")
                 continue
-            
+
             # 카테고리별로 발언 점수 그룹화
             category_scores = {}
             
@@ -215,7 +211,7 @@ def set_politician_weight_from_party():
                     # 소속 정당의 가중치벡터 가져오기
                     party = politician.party
                     
-                    if party.weight_vector:
+                    if party.weight_vector.any():
                         # 정당의 가중치벡터를 정치인에게 할당
                         politician.weight_vector = party.weight_vector
                         politician.save(update_fields=['weight_vector'])
@@ -263,7 +259,7 @@ def calculate_politician_final_vectors():
         
         for politician in politicians:
             # 성향벡터와 가중치벡터가 모두 존재하는지 확인
-            if politician.tendency_vector and politician.weight_vector:
+            if politician.tendency_vector.all() and politician.weight_vector.all():
                 # numpy 배열로 변환
                 tendency = np.array(politician.tendency_vector)
                 weight = np.array(politician.weight_vector)
@@ -374,7 +370,7 @@ def calculate_politician_similarities(politician_id):
         target_politician = Politician.objects.get(id=politician_id)
         
         # 대상 정치인의 최종벡터 존재 여부 확인
-        if not target_politician.final_vector:
+        if not target_politician.final_vector.any():
             print(f"정치인 {politician_id}({target_politician.name})의 최종벡터가 없습니다")
             return []
         
@@ -430,6 +426,12 @@ def calculate_politician_similarities(politician_id):
 #endregion
 
 #region Gemini 2.5 Flash API 호출 함수
+keys = {}
+with open("../keys.json") as f:
+    keys = json.load(f)
+
+gemini_client = genai.Client(api_key=keys["GEMINI_KEY"])
+
 def call_gemini_api(prompt, max_tokens=500):
     """
     Gemini 2.5 Flash API 호출 함수 (thinking 기능 없이)
@@ -444,6 +446,14 @@ def call_gemini_api(prompt, max_tokens=500):
     Returns:
         str: LLM 응답 텍스트
     """
+
+    response = gemini_client.models.generate_content(
+        model="gemini-2.0-flash", # gemini-2.5-flash-preview-05-20
+        contents=prompt,
+        config=types.GenerateContentConfig(max_output_tokens=max_tokens)
+    )
+    return response.text
+
     try:
         # settings.py에서 Gemini API 키 가져오기
         api_key = getattr(settings, 'GEMINI_API_KEY', None)
@@ -480,7 +490,7 @@ def call_gemini_api(prompt, max_tokens=500):
         
         # Gemini API 호출
         response = requests.post(
-            f'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key={api_key}',
+            f'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}',
             headers=headers,
             json=data,
             timeout=30
@@ -556,11 +566,11 @@ def generate_politician_rankings_with_reasons(politician_id):
 
 {target_politician.name} ({target_politician.party.name})
 - 전체성향: {target_data['overall_tendency']:.2f} (0: 보수, 1: 진보)
-- 성향벡터: {target_politician.tendency_vector}
+- 성향벡터: {np.array2string(target_politician.tendency_vector)}
 
 {other_politician.name} ({other_politician.party.name})
 - 전체성향: {other_politician.overall_tendency:.2f}
-- 성향벡터: {other_politician.tendency_vector}
+- 성향벡터: {np.array2string(other_politician.tendency_vector)}
 
 카테고리: {category_names}
 유사도: {politician_data['similarity']:.1%}
@@ -686,7 +696,7 @@ def generate_politician_report_content(politician_id):
         target_politician = Politician.objects.get(id=politician_id)
         
         # 필수 데이터 검증
-        if not target_politician.final_vector or target_politician.overall_tendency is None:
+        if not target_politician.final_vector.any() or target_politician.overall_tendency is None:
             print(f"정치인 {politician_id}({target_politician.name})의 벡터 데이터가 없습니다")
             return None
         
@@ -713,8 +723,8 @@ def generate_politician_report_content(politician_id):
 - 이름: {target_politician.name}
 - 소속정당: {target_politician.party.name}
 - 전체 정치성향: {target_politician.overall_tendency:.2f} (0: 보수, 1: 진보)
-- 성향 일관성(표준편차): {target_politician.bias:.2f if target_politician.bias else '정보없음'}
-- 정치인 성향 벡터: {target_politician.tendency_vector}
+- 성향 일관성(표준편차): {target_politician.bias if target_politician.bias else '정보없음'}
+- 정치인 성향 벡터: {np.array2string(target_politician.tendency_vector)}
 - 정치 분야: {category_names}
 
 ## 다른 정치인과의 비교 데이터
@@ -737,7 +747,7 @@ def generate_politician_report_content(politician_id):
 
 2. **세부 영역별 정치 철학**
    - 10개 분야({', '.join(category_names)})별 정치적 입장과 성향 분석
-   - 성향벡터 {target_politician.tendency_vector}를 바탕으로 각 분야에서의 구체적 입장 설명
+   - 성향벡터 {np.array2string(target_politician.tendency_vector)}를 바탕으로 각 분야에서의 구체적 입장 설명
    - 다른 정치인들과 구별되는 독특한 관점이나 접근 방식
 
 3. **유사한 정치인과의 공통점**
@@ -802,7 +812,7 @@ def save_politician_report(politician_id):
         target_politician = Politician.objects.get(id=politician_id)
         
         # 필수 데이터 검증
-        if not target_politician.final_vector or target_politician.overall_tendency is None:
+        if not target_politician.final_vector.any() or target_politician.overall_tendency is None:
             print(f"정치인 {politician_id}({target_politician.name})의 벡터 데이터가 없습니다")
             return None
         
@@ -1551,7 +1561,7 @@ def generate_user_report_content(survey_attempt_id, user_id):
 
 ## 사용자 정치성향 분석 정보
 - 전체 정치성향: {user_data['overall_tendency']:.2f} (0: 보수, 1: 진보)
-- 성향 일관성(표준편차): {user_data['bias']:.2f if user_data['bias'] else '정보없음'}
+- 성향 일관성(표준편차): {user_data['bias'] if user_data['bias'] else '정보없음'}
 - 사용자 성향 벡터: {user_data['tendency_vector']}
 - 사용자 가중치 벡터: {user_data['weight_vector']}
 - 정치 분야: {category_names}
@@ -1575,7 +1585,7 @@ def generate_user_report_content(survey_attempt_id, user_id):
 1. **정치성향 개요**
    - 전체 정치성향 점수({user_data['overall_tendency']:.2f})와 그 의미 설명
    - 보수-진보 스펙트럼에서의 위치와 특성 분석
-   - 성향 일관성(표준편차 {user_data['bias']:.2f if user_data['bias'] else '정보없음'})을 통한 정치적 스타일 평가
+   - 성향 일관성(표준편차 {user_data['bias'] if user_data['bias'] else '정보없음'})을 통한 정치적 스타일 평가
 
 2. **세부 영역별 정치 철학**
    - 10개 분야({', '.join(category_names)})별 정치적 입장과 성향 분석

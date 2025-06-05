@@ -666,7 +666,7 @@ class Stance(models.Model):
         on_delete=models.CASCADE,
         related_name='stances',
         verbose_name="국회의원",
-        db_column='politician_str_id', # db 필드명 바꿔야 함 ###
+        db_column='str_id', # db 필드명 바꿔야 함 ###
         to_field='str_id'
     )
 
