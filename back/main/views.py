@@ -510,16 +510,12 @@ def load_politician_report(id: str): #-> Report
     politician=get_object_or_404(Politician,str_id=id)
 
     #외래키 이용해서 PoliticianReport 테이블에서 일치하는 값 최신순 하나 가져오기
-    politician_report=(
-        PoliticianReport.objects
-        .filter(politician_id=politician)
-        .order_by('-created_at')
-        .first()
-    )
+    politician_report = PoliticianReport.objects.filter(politician_id=politician.id).order_by('-created_at')
+
     #없다면 None Report 출력
-    if not politician_report:
+    if not politician_report.exists():
         raise Http404("None Report")
-    return politician_report.full_text
+    return politician_report.first().full_text
 
 
 # item_type: 1 => 적합한 정치인 TOP, 2 => 적합한 정치인 WORST
@@ -560,7 +556,7 @@ def IndividualPoliticians(request, str_id):
         'reelected':politician.reelected,
         'party':politician.party,
         'gender':politician.gender,
-        'comittees':politician.comittees or '위원회 없음',
+        'committees':politician.committees or '위원회 없음',
         'address':politician.address,
         'email':politician.email or '이메일 없음',
         'tel':politician.tel or '전화번호 없음',
