@@ -532,7 +532,7 @@ def on_report_item_hover(item_type: int, id: str):
     politician_rank=(
         PoliticianReport.objects
         .filter(politician_id=politician)
-        .order_by('-created at')
+        .order_by('-created_at')
         .first()
     )
     if not politician_rank:
@@ -566,11 +566,11 @@ def IndividualPoliticians(request, str_id):
         'tel':politician.tel or '전화번호 없음',
         'profile':politician.profile,
         'pic':politician.pic_link,
-        'book':politician.book or '저서 없음',
+        'book':politician.books or '저서 없음',
         'curr_assets':politician.curr_assets,
         'boja':politician.boja,
         'top_secretary':politician.top_secretary,
-        'secretary':politician.secretatry,
+        'secretary':politician.secretary,
         'bill_approved':politician.bill_approved,
         'election_name':politician.election_name,
         'election_type':politician.election_type,

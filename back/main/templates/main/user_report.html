@@ -1,0 +1,162 @@
+{% extends 'main/base.html' %}
+{% block title %}성향 분석 결과{% endblock %}
+{% block content %}
+<div class="latest_report">
+     <!-- 페이지 제목 -->
+    <div class="page-header">
+        <h1>성향 분석 결과</h1>
+    </div>
+
+    <!--정치 성향 분석 리포트 박스-->
+    <div class="outer-box">
+        <h3 class="report-title">나의 정치 성향 분석 리포트</h3>
+        <!--내부 박스-->
+        <div class="inner-box">
+            <!--DB에서 데이터 갖고 와서 채워주기(리포트)-->
+            {{report}}
+        </div>
+
+        </div>  <!--정치 성향 분석 리포트 박스 섹션 끝끝-->
+
+        <!--랭킹/이유박스-->
+        <div class="outer-box">
+            <h3 class="ranking-title">나와 적합한 정당 랭킹</h3>
+            <!--좌측 랭킹 박스-->
+            <div class="left-box">
+                <table>
+                    <!--구분을 위한 행 정보-->
+                    <thead>
+                    <tr>
+                        <th>순위</th>
+                        <th>로고</th>  
+                        <th>이름</th>   
+                        <th>적합도</th> 
+                    </tr>
+                    </thead>
+                    <!--여기부터 본셀-->
+                    <tbody>
+                        {% for party in parties_rank%}
+                    <tr>
+                        <td>{{party.rank+1}}</td>
+                        <td><img src="{{party.logo}}"/></td> 
+                        <td>{{party.name}}</td>
+                        <td>{{party.percentage}}</td>
+                    </tr>
+                    {%endfor%}
+                    </tbody>
+                </table>
+
+            </div>  <!--left box-->
+            <!--설명 박스-->
+            <div class="right-box">
+                <h3 class="reason-title">주요 이유</h3>
+                <div class="reason">
+                    {%for party in parties_rank%}
+                    <p>{{party.reason}}</p>
+                    {%endfor%}
+                </div>
+                
+            </div>
+
+        </div>  <!--outerbox-->
+
+        <!--랭킹/이유박스-->
+        <div class="outer-box">
+            <h3 class="ranking-title">나와 적합한 정치인 랭킹 Top 10</h3>
+            <!--좌측 랭킹 박스-->
+            <div class="left-box">
+                <table>
+                    <!--구분을 위한 행 정보-->
+                    <thead>
+                    <tr>
+                        <th>순위</th>
+                        <th>사진</th>
+                        <th>이름</th>  
+                        <th>출생</th>
+                        <th>정당</th>   
+                        <th>적합도</th> 
+                    </tr>
+                    </thead>
+                    <!--여기부터 본셀-->
+                    <tbody>
+                        {% for politician in politicians_top |slice":10" %}
+                    <tr>
+                        <td>{{politician.rank+1}}</td>
+                        <td><img src="{{politician.picture}}"/></td> 
+                        <td>{{politician.name}}</td>
+                        <td>{{politician.birth}}</td>
+                        <td>{{politician.party}}</td>
+                        <td>{{politician.percentage}}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+
+            </div>
+            <!--설명 박스-->
+            <div class="right-box">
+                <h3 class="reason-title">주요 이유</h3>
+                <div class="reason">
+                {% for politician in politicians_top |slice:":10" %}
+            <p>
+                {{politician.reason}}
+            </p>
+            {% endfor %}
+        </div>
+            </div>
+        </div>
+
+        <!--랭킹/이유박스-->
+        <div class="outer-box">
+            <h3 class="ranking-title">나와 적합한 정치인 랭킹 Worst 10</h3>
+            <!--좌측 랭킹 박스-->
+            <div class="left-box">
+                <table>
+                    <!--구분을 위한 행 정보-->
+                    <thead>
+                    <tr>
+                        <th>순위</th>
+                        <th>사진</th>
+                        <th>이름</th>  
+                        <th>출생</th>
+                        <th>정당</th>   
+                        <th>적합도</th> 
+                    </tr>
+                    </thead>
+                    <!--여기부터 본셀-->
+                    <tbody>
+                        {% for politician in politicians_bottom |slice":10" %}
+                    <tr>
+                        <td>{{politician.rank+1}}</td>
+                        <td><img src="{{politician.picture}}"/></td> 
+                        <td>{{politician.name}}</td>
+                        <td>{{politician.birth}}</td>
+                        <td>{{politician.party}}</td>
+                        <td>{{politician.percentage}}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+
+            </div>
+            <!--설명 박스-->
+            <div class="right-box">
+                <h3 class="reason-title">주요 이유</h3>
+                <div class="reason">
+                {% for politician in politicians_bottom |slice:":10" %}
+            <p>
+                {{politician.reason}}
+            </p>
+            {% endfor %}
+        </div>
+            </div>
+        </div>
+
+    </div>  <!--latest report-->
+
+
+
+
+
+
+{% endblock %}
