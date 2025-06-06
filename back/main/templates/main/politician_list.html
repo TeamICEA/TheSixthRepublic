@@ -25,7 +25,6 @@
                     {% else %}
                         정당별
                     {% endif %}
-                    <!-- Font Awesome 화살표 제거 -->
                 </button>
                 <ul class="dropdown-menu" aria-labelledby="partyDropdown">
                     <li>
@@ -99,7 +98,7 @@
             </thead>
             <tbody>
                 {% for politician in page_obj %}
-                <tr onclick="window.location='{% url 'politician_report' politician.str_id %}';" style="cursor: pointer;">
+                <tr onclick="window.location.href='{% url 'politician_report' politician.str_id %}';" style="cursor: pointer;">
                     <td>
                         {% if politician.pic_link %}
                             <img src="{{ politician.pic_link }}" alt="{{ politician.name }} 사진" class="politician-photo">
@@ -139,7 +138,7 @@
         </table>
     </div>
     
-    <!-- 페이지네이션 (피그마 디자인 적용) -->
+    <!-- 페이지네이션 (초록계열 색상 적용) -->
     {% if page_obj.has_other_pages %}
     <div class="pagination-section">
         <div class="pagination-wrapper">
@@ -183,7 +182,7 @@
 
 {% block scripts %}
 <script>
-// 드롭다운 기능 (Font Awesome 화살표 제거로 애니메이션 코드도 단순화)
+// 드롭다운 기능
 document.addEventListener('DOMContentLoaded', function() {
     const dropdownToggle = document.getElementById('partyDropdown');
     const dropdownMenu = dropdownToggle.nextElementSibling;
