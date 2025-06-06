@@ -30,7 +30,7 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 0 20px;
-    height: 70px; /* 피그마에 맞는 높이 */
+    height: 70px;
 }
 
 /* 로고 섹션 */
@@ -61,7 +61,7 @@ body {
     display: flex;
     margin: 0;
     padding: 0;
-    gap: 40px; /* 메뉴 간 간격 증가 */
+    gap: 40px;
 }
 
 .nav-item {
@@ -70,23 +70,23 @@ body {
 
 .nav-item a {
     display: block;
-    padding: 20px 30px; /* 패딩 조정으로 클릭 영역 확보 */
-    color: #2E7D32; /* 진한 녹색 텍스트 */
+    padding: 20px 30px;
+    color: #2E7D32;
     text-decoration: none;
     font-size: 16px;
     font-weight: 500;
     transition: all 0.2s ease;
-    border-radius: 8px; /* 살짝 둥근 모서리 */
+    border-radius: 8px;
     background-color: transparent;
 }
 
 .nav-item a:hover {
-    background-color: #C8E6C9; /* 연한 녹색 호버 */
-    color: #1B5E20; /* 더 진한 녹색 */
+    background-color: #C8E6C9;
+    color: #1B5E20;
 }
 
 .nav-item.nav-active a {
-    background-color: #4CAF50; /* 활성 상태 녹색 */
+    background-color: #4CAF50;
     color: white;
     font-weight: 600;
 }
@@ -94,12 +94,12 @@ body {
 /* 헤더 오른쪽 영역 */
 .header-right {
     flex-shrink: 0;
-    width: 120px; /* 로고와 균형 맞추기 */
+    width: 120px;
 }
 
 /* 메인 콘텐츠 */
 .main-content {
-    margin-top: 70px; /* 헤더 높이만큼 여백 */
+    margin-top: 70px;
     min-height: calc(100vh - 70px);
 }
 
@@ -114,7 +114,7 @@ body {
 }
 
 .page-header {
-    text-align: center; /* 피그마에 맞게 중앙 정렬 */
+    text-align: center;
     margin-bottom: 30px;
 }
 
@@ -131,13 +131,13 @@ body {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 30px;
-    gap: 30px; /* 간격 증가 */
+    gap: 30px;
 }
 
-/* 정당별 드롭다운 필터 - 위치 조정 */
+/* 정당별 드롭다운 필터 - 브라우저 기본 화살표만 사용 */
 .filter-dropdown-container {
     flex-shrink: 0;
-    margin-left: 50px; /* 오른쪽으로 이동 */
+    margin-left: 50px;
 }
 
 .dropdown {
@@ -149,8 +149,8 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 10px 20px;
-    background-color: #B2E5C6; /* 피그마 색상 */
-    color: #2E7D32; /* 진한 녹색 텍스트 */
+    background-color: #B2E5C6;
+    color: #2E7D32;
     border: 1px solid #A5D6A7;
     border-radius: 8px;
     font-size: 14px;
@@ -159,11 +159,7 @@ body {
     transition: all 0.2s ease;
     min-width: 120px;
     text-align: left;
-    
-    /* 기본 드롭다운 화살표 제거 */
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
+    /* Font Awesome 화살표 관련 CSS 제거 */
 }
 
 .dropdown-toggle:hover {
@@ -171,16 +167,7 @@ body {
     border-color: #81C784;
 }
 
-.dropdown-toggle i {
-    margin-left: 10px;
-    font-size: 12px;
-    transition: transform 0.2s ease;
-    /* 오른쪽 화살표만 유지 */
-}
-
-.dropdown-toggle[aria-expanded="true"] i {
-    transform: rotate(180deg);
-}
+/* Font Awesome 화살표 관련 CSS 모두 제거 */
 
 .dropdown-menu {
     position: absolute;
@@ -227,14 +214,14 @@ body {
 /* 검색 컨테이너 - 피그마 색상 적용 + 크기/위치 조정 */
 .search-container {
     flex: 1;
-    max-width: 500px; /* 길이 증가 */
+    max-width: 500px;
     margin-left: auto;
-    margin-right: 50px; /* 왼쪽으로 이동 */
+    margin-right: 50px;
 }
 
 .search-input-wrapper {
     display: flex;
-    border: 2px solid #B2E5C6; /* 피그마 색상 */
+    border: 2px solid #B2E5C6;
     border-radius: 25px;
     overflow: hidden;
     background-color: white;
@@ -255,8 +242,8 @@ body {
 
 .search-button {
     padding: 12px 20px;
-    background-color: #B2E5C6; /* 피그마 색상 */
-    color: #2E7D32; /* 진한 녹색 텍스트 */
+    background-color: #B2E5C6;
+    color: #2E7D32;
     border: none;
     cursor: pointer;
     font-size: 14px;
@@ -265,7 +252,7 @@ body {
 }
 
 .search-button:hover {
-    background-color: #A5D6A7; /* 더 진한 녹색 */
+    background-color: #A5D6A7;
 }
 
 /* 검색 상태 표시 */
@@ -421,7 +408,7 @@ body {
     border-radius: 12px;
     border: 1px solid #E9ECEF;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    flex-wrap: wrap; /* 많은 페이지 번호 대응 */
+    flex-wrap: wrap;
     justify-content: center;
 }
 
@@ -430,8 +417,8 @@ body {
     display: inline-flex;
     align-items: center;
     padding: 10px 16px;
-    background-color: #B2E5C6; /* 피그마 색상 */
-    color: #2E7D32; /* 진한 녹색 텍스트 */
+    background-color: #B2E5C6;
+    color: #2E7D32;
     text-decoration: none;
     border-radius: 8px;
     font-size: 14px;
@@ -524,7 +511,7 @@ body {
     }
     
     .nav-list {
-        gap: 20px; /* 모바일에서 간격 줄임 */
+        gap: 20px;
     }
     
     .nav-item a {
