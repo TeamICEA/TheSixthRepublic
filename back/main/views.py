@@ -659,7 +659,8 @@ def load_politician_report(id: str): #-> Report
     #없다면 None Report 출력
     if not politician_report.exists():
         raise Http404("None Report")
-    return politician_report.first().full_text
+    
+    return politician_report.first().full_text.replace("**", "").replace("\\n", "\n").replace("'", "")
 
 
 # item_type: 1 => 적합한 정치인 TOP, 2 => 적합한 정치인 WORST
@@ -675,8 +676,16 @@ def on_report_item_hover(item_type: int, id: str):
         .order_by('-created_at')
         .first()
     )
+    
     if not politician_rank:
         raise Http404("None rank")
+    
+    print(politician_rank.politicians_top)
+    
+    for i in range(0, 10):
+        politician_rank.politicians_top[i]['reason'] = politician_rank.politicians_top[i]['reason'].replace("**", "").replace("\\n", "\n").replace("'", "")
+        politician_rank.politicians_bottom[i]['reason'] = politician_rank.politicians_bottom[i]['reason'].replace("**", "").replace("\\n", "\n").replace("'", "")
+
     if item_type==1:
         return politician_rank.politicians_top
     else:
