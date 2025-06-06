@@ -89,7 +89,7 @@
                     <tbody>
                         {% for politician in best_rank|slice:":10" %}
                         <div class="clickable-row"></div>
-                    <tr onclick="showReason(this,'reason-display-top')" data-reason="{{ politician.reason|escapejs }}">
+                    <tr onclick="showReason(this,'reason-display-top')" data-reason="{{ politician.reason|linebreaksbr }}">
                 
                         <td>{{ politician.rank }}</td>
                         <td>
@@ -146,7 +146,7 @@
                     <!--여기부터 본셀-->
                     <tbody>
                         {% for politician in worst_rank|slice:":10" %}
-                    <tr onclick="showReason(this,'reason-display-bottom')" data-reason="{{ politician.reason|escapejs }}">
+                    <tr onclick="showReason(this,'reason-display-bottom')" data-reason="{{ politician.reason|linebreaksbr }}">
                         <td>
                             {{ politician.rank }}</td>
                         <td>
@@ -192,7 +192,7 @@ function showReason(row, targetId) {
     const reason = row.getAttribute('data-reason');
     const target = document.getElementById(targetId);
     if (target) {
-        target.textContent = reason;
+        target.innerHTML = reason;
     }
 }
 </script>
