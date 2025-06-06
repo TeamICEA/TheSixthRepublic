@@ -808,7 +808,7 @@ def ManageChat(request, user_text: str, politician: Politician, poly_infos: dict
     prompt = []
     system = ""
     TONE_COUNT = 5
-    TOKEN_LIMIT = 30 * 10000 #AVAILABLE RESPONSE COUNT * TOKEN USED PER RESPONSE
+    TOKEN_LIMIT = 50 * 10000 #AVAILABLE RESPONSE COUNT * TOKEN USED PER RESPONSE
 
     speeches = Tone.objects.all()
     indicies = list(range(0, len(speeches)))
