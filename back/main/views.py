@@ -170,7 +170,7 @@ def add_news_articles(request):
         context[str(i)] = []
     
         for item in text_json["items"]:
-            title: str = re.sub(CLEANR, '', item["title"]).replace("&quot;", '"')
+            title: str = re.sub(CLEANR, '', item["title"]).replace("&quot;", '"').replace("&amp;", "&")
             link: str = item["link"]
             # description: str = re.sub(CLEANR, '', item["description"])
 
