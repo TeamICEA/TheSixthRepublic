@@ -140,8 +140,7 @@ def index(request):
         else: # 외부 url
             return on_news_click(request, redirect)
 
-    context = {}
-    return render(request,'main/index.html', context)
+    return add_news_articles(request)
 
 def go_home(request):
     # 로고 버튼을 누르면 메인 홈페이지로 리다이렉트
@@ -168,10 +167,10 @@ def add_news_articles(request):
             return
 
         text_json = json.loads(response.text)
-        context[category] = []
+        context[str(i)] = []
     
         for item in text_json["items"]:
-            title: str = re.sub(CLEANR, '', item["title"])
+            title: str = re.sub(CLEANR, '', item["title"]).replace("&quot;", '"')
             link: str = item["link"]
             # description: str = re.sub(CLEANR, '', item["description"])
 
