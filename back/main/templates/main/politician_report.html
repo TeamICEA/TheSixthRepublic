@@ -33,10 +33,11 @@
     <!-- 사진 영역 -->
     <div class="profile-img-box">
       <img src="{{pic}}" alt="{{name}} 사진">
-    <a href="#" class="chat-button">{{name}} 봇과 대화하기 →</a>
+    <a href="{% url 'chat' str_id %}" class="chat-button">{{name}} 봇과 대화하기 →</a>
     </div>
 
       <!-- 학력 및 경력사항 -->
+
     <div class="history-box">
     <h3>학력 및 경력사항</h3>
         <div class="history-innerbox">
@@ -62,7 +63,8 @@
         <!--랭킹/이유박스-->
         <div class="outer-box">
             <h3 class="ranking-title">{{name}}와 적합한 정치인 랭킹 Top 10</h3>
-            <!--좌측 랭킹 박스-->
+            
+            <div class="ranking-row"><!--좌측 랭킹 박스-->
             <div class="left-box">
                 <table>
                     <!--구분을 위한 행 정보-->
@@ -102,12 +104,14 @@
             </p>
             {% endfor %}
         </div>
+            </div>  <!--rightbox-->
             </div>
         </div>
 
         <!--랭킹/이유박스-->
         <div class="outer-box">
-            <h3 class="ranking-title">나와 적합한 정치인 랭킹 Worst 10</h3>
+            <h3 class="ranking-title">{{name}}와 적합한 정치인 랭킹 Bottom 10</h3>
+            <div class="ranking-row">
             <!--좌측 랭킹 박스-->
             <div class="left-box">
                 <table>
@@ -148,6 +152,7 @@
             </p>
             {% endfor %}
         </div>
+            </div>
             </div>
         </div>
 

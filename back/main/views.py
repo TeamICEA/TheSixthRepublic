@@ -572,7 +572,8 @@ def IndividualPoliticians(request, str_id):
         'election_type':politician.election_type,
         'politician_report':report,
         'best_rank':best_rank,
-        "worst_rank":wort_rank
+        "worst_rank":wort_rank,
+        "str_id":politician.str_id,
     }
 
     return render(request,'main/politician_report.html',context)
