@@ -1,0 +1,120 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}오류 발생{% endblock %}
+
+{% block content %}
+<div class="error-container">
+    <div class="error-content">
+        <h1 class="error-title">
+            <i class="fas fa-exclamation-triangle"></i>
+            오류가 발생했습니다
+        </h1>
+        
+        <div class="error-message">
+            {{ error_message|default:"시스템 오류가 발생했습니다." }}
+        </div>
+        
+        <div class="error-actions">
+            <a href="{% url 'index' %}" class="btn btn-primary">
+                <i class="fas fa-home"></i>
+                메인으로 돌아가기
+            </a>
+            <a href="{% url 'question_page' page_num=1 %}" class="btn btn-secondary">
+                <i class="fas fa-redo"></i>
+                설문 다시 시작
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+.error-container {
+    max-width: 600px;
+    margin: 100px auto;
+    padding: 40px;
+    text-align: center;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.error-title {
+    font-size: 24px;
+    color: #dc3545;
+    margin-bottom: 20px;
+}
+
+.error-title i {
+    margin-right: 10px;
+}
+
+.error-message {
+    font-size: 16px;
+    color: #6c757d;
+    margin-bottom: 30px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #dc3545;
+}
+
+.error-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #45a049;
+    color: white;
+    text-decoration: none;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+    color: white;
+    text-decoration: none;
+}
+
+@media (max-width: 768px) {
+    .error-container {
+        margin: 50px 20px;
+        padding: 30px 20px;
+    }
+    
+    .error-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .btn {
+        width: 100%;
+        max-width: 200px;
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}

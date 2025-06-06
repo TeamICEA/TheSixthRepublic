@@ -149,34 +149,44 @@ def question_page(request, page_num):
             request.session['user_uuid'] = user_uuid
             current_user = new_user
         
-        # 3. 질문 데이터 처리
+        # 3. 카테고리 확인
+        categories = Category.objects.all()
+        if not categories.exists():
+            return render(request, 'main/error.html', {
+                'error_message': '설문 카테고리가 없습니다.'
+            })
+        
+        # 4. 질문 데이터 처리
         all_questions = Question.objects.all().order_by('id')
         if not all_questions.exists():
             return render(request, 'main/error.html', {
                 'error_message': '설문 질문이 없습니다.'
             })
         
-        # 4. Django Paginator로 페이지 나누기
+        # 5. Django Paginator로 페이지 나누기
         paginator = Paginator(all_questions, QUESTIONS_PER_PAGE)
         total_pages = paginator.num_pages
         
-        # 5. 페이지 번호 유효성 검사
+        # 6. 진행률 계산
+        progress_percentage = (page_num / total_pages) * 100
+        
+        # 7. 페이지 번호 유효성 검사
         if page_num < 1:
             return redirect('question_page', page_num=1)
         elif page_num > total_pages:
             return redirect('result_page')
         
-        # 6. 현재 페이지의 질문들 가져오기
+        # 8. 현재 페이지의 질문들 가져오기
         try:
             page_obj = paginator.get_page(page_num)
             questions = page_obj.object_list
         except:
             return redirect('question_page', page_num=1)
         
-        # 7. 진행 중인 설문의 survey_attempt_id 확인
+        # 9. 진행 중인 설문의 survey_attempt_id 확인
         current_survey_session = request.session.get('current_survey_session_id')
         
-        # 8. 진행 중인 설문이 있고, GET 요청이면 적절한 페이지로 리다이렉트
+        # 10. 진행 중인 설문이 있고, GET 요청이면 적절한 페이지로 리다이렉트
         if current_survey_session and request.method == 'GET':
             # 답변하지 않은 첫 번째 질문 찾기
             answered_questions = Response.objects.filter(
@@ -202,9 +212,9 @@ def question_page(request, page_num):
                     if page_num != next_page:
                         return redirect('question_page', page_num=next_page)
         
-        # 9. POST 요청 처리 (사용자가 답변을 제출했을 때)
+        # 11. POST 요청 처리 (사용자가 답변을 제출했을 때)
         if request.method == 'POST':
-            # 10. 필수 답변 검사
+            # 12. 필수 답변 검사
             missing_answers = []
             for question in questions:
                 answer = request.POST.get(f'question_{question.id}')
@@ -217,10 +227,12 @@ def question_page(request, page_num):
                     current_survey_session, current_user, questions
                 )
                 
+                # 오류 시 context (첫 번째 context)
                 context = {
                     'questions': questions,
                     'page_num': page_num,
                     'total_pages': total_pages,
+                    'progress_percentage': progress_percentage,  # 추가
                     'responses': responses,
                     'responses_text': responses_text,
                     'is_first_page': page_num == 1,
@@ -233,7 +245,7 @@ def question_page(request, page_num):
                 }
                 return render(request, 'main/question_page.html', context)
             
-            # 11. 진행 중인 설문 session_id가 없으면 새로 생성 또는 기존 것 찾기
+            # 13. 진행 중인 설문 session_id가 없으면 새로 생성 또는 기존 것 찾기
             if not current_survey_session:
                 # 기존 미완료 응답이 있는지 확인
                 existing_incomplete = Response.objects.filter(
@@ -250,7 +262,7 @@ def question_page(request, page_num):
                     current_survey_session = uuid.uuid4()
                     request.session['current_survey_session_id'] = str(current_survey_session)
             
-            # 12. 각 질문의 답변 저장 (최적화된 방식)
+            # 14. 각 질문의 답변 저장 (최적화된 방식)
             with transaction.atomic():
                 responses_to_create = []
                 responses_to_update = []
@@ -293,7 +305,7 @@ def question_page(request, page_num):
                 if responses_to_update:
                     Response.objects.bulk_update(responses_to_update, ['answer', 'answer_text'])
             
-            # 13. 페이지 이동 처리
+            # 15. 페이지 이동 처리
             if page_num < total_pages:
                 return redirect('question_page', page_num=page_num + 1)
             else:
@@ -322,16 +334,17 @@ def question_page(request, page_num):
                 
                 return redirect('result_page')
         
-        # 14. GET 요청 처리 - 기존 응답 불러오기
+        # 16. GET 요청 처리 - 기존 응답 불러오기
         responses, responses_text = get_existing_responses(
             current_survey_session, current_user, questions
         )
         
-        # 15. 템플릿에 전달할 데이터 준비
+        # 17. 정상 시 context (두 번째 context - 최종 반환용)
         context = {
             'questions': questions,
             'page_num': page_num,
             'total_pages': total_pages,
+            'progress_percentage': progress_percentage,  # 추가
             'responses': responses,
             'responses_text': responses_text,
             'is_first_page': page_num == 1,
@@ -348,7 +361,7 @@ def question_page(request, page_num):
         return render(request, 'main/error.html', {
             'error_message': '시스템 오류가 발생했습니다.'
         })
-#endregion
+
 
 
 
