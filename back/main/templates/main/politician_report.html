@@ -32,7 +32,14 @@
 
     <!-- 사진 영역 -->
     <div class="profile-img-box">
+        {% if pic %}
       <img src="{{pic}}" alt="{{name}} 사진">
+                            {% else %}
+                            <div class="photo-placeholder1">
+                                <i class="fas fa-user" style="font-size: 200px"></i>
+                            </div>
+                        {% endif %}
+  
     <a href="{% url 'chat' str_id %}" class="chat-button">{{name}} 봇과 대화하기 →</a>
     </div>
 
@@ -81,9 +88,20 @@
                     <!--여기부터 본셀-->
                     <tbody>
                         {% for politician in best_rank|slice:":10" %}
-                    <tr>
+                    <tr onclick="showReason(this)" data-reason="{{ politician.reason|escapejs }}">
                         <td>{{ politician.rank }}</td>
-                        <td><img src="{{politician.picture}}"/></td> 
+                        <td>
+                            
+                            {% if politician.picture %}
+                            <img src="{{politician.picture}}" alt="{{ politician.name }} 사진"/>
+                            {% else %}
+                            <div class="photo-placeholder">
+                                <i class="fas fa-user"></i>
+                            </div>
+                        {% endif %}
+
+
+                        </td> 
                         <td>{{politician.name}}</td>
                         <td>{{politician.birth}}</td>
                         <td>{{politician.party}}</td>
@@ -97,12 +115,8 @@
             <!--설명 박스-->
             <div class="right-box">
                 <h3 class="reason-title">주요 이유</h3>
-                <div class="reason">
-                {% for politician in best_rank|slice:":10" %}
-            <p>
-                {{politician.reason}}
-            </p>
-            {% endfor %}
+                <div class="reason" id="reason-display">
+                    클릭한 정치인의 이유가 여기에 나타납니다.
         </div>
             </div>  <!--rightbox-->
             </div>
@@ -129,10 +143,25 @@
                     <!--여기부터 본셀-->
                     <tbody>
                         {% for politician in worst_rank|slice:":10" %}
-                    <tr>
-                        <td>{{ politician.rank }}</td>
-                        <td><img src="{{politician.picture}}"/></td> 
-                        <td>{{politician.name}}</td>
+                    <tr onclick="showReason(this)" data-reason="{{ politician.reason|escapejs }}">
+                        <td>
+                            {{ politician.rank }}</td>
+                        <td>
+                            
+                            
+                            
+                            {% if politician.picture %}
+                            <img src="{{politician.picture}}" alt="{{ politician.name }} 사진"/></td> 
+                                                    {% else %}
+                            <div class="photo-placeholder">
+                                <i class="fas fa-user"></i>
+                            </div>
+                        {% endif %}
+
+                        
+                        
+                        
+                            <td>{{politician.name}}</td>
                         <td>{{politician.birth}}</td>
                         <td>{{politician.party}}</td>
                         <td>{{politician.percentage}}</td>
@@ -145,12 +174,8 @@
             <!--설명 박스-->
             <div class="right-box">
                 <h3 class="reason-title">주요 이유</h3>
-                <div class="reason">
-                {% for politician in worst_rank|slice:":10" %}
-            <p>
-                {{politician.reason}}
-            </p>
-            {% endfor %}
+                <div class="reason" id="reason-display">
+                    클릭한 정치인의 이유가 여기에 나타납니다.
         </div>
             </div>
             </div>
@@ -159,6 +184,12 @@
     </div>  <!--latest report-->
 
 
+<script>
+function showReason(row) {
+    const reason = row.getAttribute('data-reason');
+    document.getElementById('reason-display').textContent = reason;
+}
+</script>
 
 
 

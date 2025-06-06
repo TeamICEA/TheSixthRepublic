@@ -62,7 +62,15 @@
             {% for politician in politicians %}
             <tr onclick="window.location.href='{% url 'politician_report' politician.str_id %}'" class="clickable-row">
             <td>{{ forloop.counter|add:politicians.start_index|add:"-1" }}</td>
-            <td><img src="{{ politician.pic_link }}" alt="{{ politician.name }}"></td>
+            <td>
+            {% if politician.pic_link %}
+              <img src="{{ politician.pic_link }}" alt="{{ politician.name }}">
+             {% else %}
+                            <div class="photo-placeholder">
+                                <i class="fas fa-user"></i>
+                            </div>
+                        {% endif %}
+            </td>
             <td>{{ politician.name }}</td>
             <td>{{ politician.birthdate|date:"Y" }}</td>
             <td>{{ politician.party }}</td>
