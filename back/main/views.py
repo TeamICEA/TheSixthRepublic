@@ -722,7 +722,7 @@ def CreateResponse(prompt: str | list, system = "")-> tuple[str, int]: # (text, 
 def PoliticianRanking(request):
 
     sort_by=request.GET.get('sort','reelected')
-
+    order=request.GET.get('order')
 
     #나이 계산을 위한 변수 current_year
     current_year=datetime.date.today().year
@@ -751,29 +751,31 @@ def PoliticianRanking(request):
 
     #정렬 기준 설정(정렬 필드)
     sort_fields={
-        'reelected':'-reelected_count',
-        'curr_assets':'-curr_assets_int',
-        'birthdate':'-age',
-        'attendance':'-attendance_plenary',
-        'election_gap':'-election_gap',
+        'reelected':'reelected_count',
+        'curr_assets':'curr_assets_int',
+        'birthdate':'age',
+        'attendance':'attendance_plenary',
+        'election_gap':'election_gap',
     }
 
+
     #기본 정렬 기준 설정(다선여부)
-    standard_order_field=sort_fields.get(sort_by,'-reelected_count')
+    standard_order_field=sort_fields.get(sort_by,'reelected_count')
 
     #null값 필드 지정정
     null_fields=['attendance','election_gap']
 
-    #null값 뒤로 빼서 정렬
-    if any(key in sort_by for key in null_fields):
-        if(standard_order_field.startswith('-')):
-            field=F(standard_order_field[1:]).desc(nulls_last=True)
-        else:
-            field=F(standard_order_field).asc(nulls_last=True)
-        politicians=politicians.order_by(field)
-    else:
-        politicians=politicians.order_by(standard_order_field)
 
+    #방향 기본값
+    is_asc=order=='asc'
+
+    # 정렬 로직 적용
+    if sort_by in null_fields:
+        field = F(standard_order_field).asc(nulls_last=True) if is_asc else F(standard_order_field).desc(nulls_last=True)
+        politicians = politicians.order_by(field)
+    else:
+        prefix = '' if is_asc else '-'
+        politicians = politicians.order_by(prefix + standard_order_field)        
     #페이지네이션
     paginator=Paginator(politicians,20)
     page_num=request.GET.get('page')
@@ -782,7 +784,8 @@ def PoliticianRanking(request):
     #넘겨줄 정보 만들기
     context={
         'politicians':page_obj,
-        'sort_by':sort_by
+        'sort_by':sort_by,
+        'order':'asc' if is_asc else 'desc',
     }
 
     return render(request,'main/politician_ranking.html',context)

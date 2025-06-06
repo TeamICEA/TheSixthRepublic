@@ -10,10 +10,11 @@
 <div class="politician-ranking">
      <!-- 페이지 제목 -->
     <div class="page-header">
-        <h1>랭킹 페이지</h1>
+        <h1>랭킹</h1>
     </div>
 
     <!--필터-->
+    <div class="filters-outerbox">
     <div class="ranking_filters">
     <a href="?sort=reelected" class="{% if sort_by == 'reelected' %}active{% endif %}">다선</a>
     <a href="?sort=curr_assets" class="{% if sort_by == 'curr_assets' %}active{% endif %}">재산 총액</a>
@@ -21,17 +22,24 @@
     <a href="?sort=election_gap" class="{% if sort_by == 'election_gap' %}active{% endif %}">투표 격차</a>
     <a href="?sort=birthdate" class="{% if sort_by == 'birthdate' %}active{% endif %}">나이</a>
     </div>
-
+</div>  <!--filters-outerbox-->
     <!-- 랭킹테이블 -->
     <div class="ranking-table">
-        <h3>{% if sort_by == 'reelected' %}다선 랭킹
+        <div class="ranking-header">
+            <div class="ranking-title">
+        <span class="ranking-name">
+            {% if sort_by == 'reelected' %}다선 랭킹
             {% elif sort_by == 'curr_assets' %}재산 랭킹
             {% elif sort_by == 'birthdate' %}나이 랭킹
             {% elif sort_by == 'attendance' %}출석률 랭킹
             {% else %}투표 격차 랭킹
             {% endif %}
-        </h3>
-        
+        </span>
+        <a class="sort-toggle" href="?sort={{ sort_by }}&order={% if order == 'asc' %}desc{% else %}asc{% endif %}">
+       {% if order == 'asc' %}↑{% else %}↓{% endif %}
+        </a>
+        </div>  <!--ranking-title-->
+        </div>  <!--ranking-header-->
         <table>
         <thead>
             <tr>
@@ -52,7 +60,7 @@
 
         <tbody>
             {% for politician in politicians %}
-            <tr>
+            <tr onclick="window.location.href='{% url 'politician_report' politician.str_id %}'" class="clickable-row">
             <td>{{ forloop.counter|add:politicians.start_index|add:"-1" }}</td>
             <td><img src="{{ politician.pic_link }}" alt="{{ politician.name }}"></td>
             <td>{{ politician.name }}</td>
@@ -68,13 +76,10 @@
             {% endfor %}
         </tbody>
         </table>
-    </div>
-
-
-    <!--페이지네이션-->
+            <!--페이지네이션-->
         <div class="pagination">
       {% if politicians.has_previous %}
-        <a href="?sort={{ sort_by }}&page={{ politicians.previous_page_number }}">이전</a>
+        <a href="?sort={{ sort_by }}&order={{ order }}&page={{ politicians.previous_page_number }}">이전</a>
             {% else %}
             <span class="disabled">이전</span>
         {% endif %}
@@ -83,16 +88,20 @@
         {% if politicians.number == num %}
           <strong>{{ num }}</strong>
         {% else %}
-          <a href="?sort={{ sort_by }}&page={{ num }}">{{ num }}</a>
+          <a href="?sort={{ sort_by }}&order={{ order }}&page={{ num }}">{{ num }}</a>
         {% endif %}
       {% endfor %}
 
       {% if politicians.has_next %}
-        <a href="?sort={{ sort_by }}&page={{ page_obj.next_page_number }}">다음</a>
+        <a href="?sort={{ sort_by }}&order={{ order }}&page={{ page_obj.next_page_number }}">다음</a>
         {% else %}
         <span class="disabled">다음</span>
       {% endif %}
+    </div>  <!--페이지네이션-->
+
     </div>
+
+
 
     </div>  <!--politician-ranking-->
 
