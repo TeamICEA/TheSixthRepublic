@@ -213,5 +213,8 @@ table img {
 
 
 
+.clickable-row {
+  cursor: pointer;
+}
 
 /*랭킹 페이지

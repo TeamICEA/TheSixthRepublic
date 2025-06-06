@@ -88,7 +88,9 @@
                     <!--여기부터 본셀-->
                     <tbody>
                         {% for politician in best_rank|slice:":10" %}
-                    <tr onclick="showReason(this)" data-reason="{{ politician.reason|escapejs }}">
+                        <div class="clickable-row"></div>
+                    <tr onclick="showReason(this,'reason-display-top')" data-reason="{{ politician.reason|escapejs }}">
+                
                         <td>{{ politician.rank }}</td>
                         <td>
                             
@@ -107,6 +109,7 @@
                         <td>{{politician.party}}</td>
                         <td>{{politician.percentage}}</td>
                     </tr>
+                    </div>
                     {% endfor %}
                     </tbody>
                 </table>
@@ -115,7 +118,7 @@
             <!--설명 박스-->
             <div class="right-box">
                 <h3 class="reason-title">주요 이유</h3>
-                <div class="reason" id="reason-display">
+                <div class="reason" id="reason-display-top">
                     클릭한 정치인의 이유가 여기에 나타납니다.
         </div>
             </div>  <!--rightbox-->
@@ -143,7 +146,7 @@
                     <!--여기부터 본셀-->
                     <tbody>
                         {% for politician in worst_rank|slice:":10" %}
-                    <tr onclick="showReason(this)" data-reason="{{ politician.reason|escapejs }}">
+                    <tr onclick="showReason(this,'reason-display-bottom')" data-reason="{{ politician.reason|escapejs }}">
                         <td>
                             {{ politician.rank }}</td>
                         <td>
@@ -174,7 +177,7 @@
             <!--설명 박스-->
             <div class="right-box">
                 <h3 class="reason-title">주요 이유</h3>
-                <div class="reason" id="reason-display">
+                <div class="reason" id="reason-display-bottom">
                     클릭한 정치인의 이유가 여기에 나타납니다.
         </div>
             </div>
@@ -185,9 +188,12 @@
 
 
 <script>
-function showReason(row) {
+function showReason(row, targetId) {
     const reason = row.getAttribute('data-reason');
-    document.getElementById('reason-display').textContent = reason;
+    const target = document.getElementById(targetId);
+    if (target) {
+        target.textContent = reason;
+    }
 }
 </script>
 
