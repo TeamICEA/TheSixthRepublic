@@ -27,6 +27,97 @@ with open("../keys.json") as f:
 openai_client = OpenAI(api_key=keys["OPENAI_KEY"])
 gemini_client = genai.Client(api_key=keys["GEMINI_KEY"])
 
+def get_user_id(request):
+    if not request.session.session_key:
+        request.session.create()
+    
+    # Django 세션에서 User UUID 가져오기
+    user_uuid = request.session.get('user_uuid')
+    return user_uuid
+
+def smart_survey_redirect(request):
+    """
+    베너의 '설문조사 보기' 버튼 클릭 시 상황에 따른 스마트 리다이렉트
+    
+    1. 리포트가 있으면 → 최신 리포트 보기
+    2. 리포트 없는데 설문 진행 중이면 → 설문 이어서하기
+    3. 아무것도 없으면 → 설문 시작하기
+    """
+    try:
+        # 1. 사용자 UUID 처리
+        user_uuid = get_user_id(request)
+        
+        if not user_uuid:
+            # 새 사용자면 설문 시작
+            new_user = User.objects.create()
+            user_uuid = str(new_user.id)
+            request.session['user_uuid'] = user_uuid
+            print(f"새 사용자 생성: {user_uuid} → 설문 시작")
+            return redirect('question_page', page_num=1)
+        
+        try:
+            current_user = User.objects.get(id=user_uuid)
+        except User.DoesNotExist:
+            # 유효하지 않은 UUID면 새로 생성
+            new_user = User.objects.create()
+            user_uuid = str(new_user.id)
+            request.session['user_uuid'] = user_uuid
+            current_user = new_user
+            print(f"사용자 재생성: {user_uuid} → 설문 시작")
+            return redirect('question_page', page_num=1)
+        
+        # 2. 완료된 리포트가 있는지 확인 (가장 최신)
+        latest_report = UserReport.objects.filter(
+            user=current_user
+        ).order_by('-created_at').first()
+        
+        if latest_report:
+            # 리포트가 있으면 최신 리포트 보기
+            print(f"사용자 {user_uuid} → 최신 리포트 보기 (ID: {latest_report.id})")
+            return redirect('user_report', uuid=user_uuid)
+        
+        # 3. 진행 중인 설문이 있는지 확인
+        incomplete_responses = Response.objects.filter(
+            user=current_user,
+            survey_completed_at__isnull=True
+        ).order_by('-id')
+        
+        if incomplete_responses.exists():
+            # 진행 중인 설문이 있으면 이어서하기
+            # 세션에 설문 ID 설정
+            first_response = incomplete_responses.first()
+            request.session['current_survey_session_id'] = str(first_response.survey_attempt_id)
+            
+            # 답변하지 않은 첫 번째 질문 찾기
+            answered_question_ids = incomplete_responses.values_list('question_id', flat=True)
+            all_question_ids = list(Question.objects.values_list('id', flat=True).order_by('id'))
+            
+            next_unanswered_question = None
+            for q_id in all_question_ids:
+                if q_id not in answered_question_ids:
+                    next_unanswered_question = q_id
+                    break
+            
+            if next_unanswered_question:
+                # 다음 답변할 질문이 속한 페이지 계산
+                next_page = ((next_unanswered_question - 1) // 5) + 1
+                print(f"사용자 {user_uuid} → 설문 이어서하기 (페이지 {next_page})")
+                return redirect('question_page', page_num=next_page)
+            else:
+                # 모든 질문에 답했는데 완료 처리가 안 된 경우 → 결과 페이지
+                print(f"사용자 {user_uuid} → 결과 페이지로 이동")
+                return redirect('result_page')
+        
+        # 4. 아무것도 없으면 새로운 설문 시작
+        print(f"사용자 {user_uuid} → 새 설문 시작")
+        return redirect('question_page', page_num=1)
+        
+    except Exception as e:
+        print(f"스마트 리다이렉트 오류: {e}")
+        # 오류 시 기본적으로 설문 시작
+        return redirect('question_page', page_num=1)
+
+
 #region 1 메인 페이지
 def index(request):
     redirect = request.GET.get('redirect')
@@ -207,9 +298,10 @@ def question_page(request, page_num):
                         break
                 
                 if next_unanswered_question:
-                    # 다음 답변할 질문이 속한 페이지 계산
                     next_page = ((next_unanswered_question - 1) // QUESTIONS_PER_PAGE) + 1
                     if page_num != next_page:
+                        # 베너에서 온 경우를 고려한 메시지 (선택사항)
+                        print(f"진행 중인 설문 감지: 페이지 {page_num} → {next_page}로 리다이렉트")
                         return redirect('question_page', page_num=next_page)
         
         # 11. POST 요청 처리 (사용자가 답변을 제출했을 때)
@@ -438,7 +530,7 @@ def ShowUserReport(request,uuid:str):
         raise Http404("None report")
 
     context={
-        'report':latest_report.fulltext,
+        'report':latest_report.full_text,
         'parties_rank':latest_report.parties_rank,
         'politicians_top':latest_report.politicians_top,
         'politicians_bottom':latest_report.politicians_bottom,
@@ -813,13 +905,13 @@ def PoliticianRanking(request):
 
 
 #region 8 지난 리포트 다시보기 페이지
-def get_user_id(request):
-    if not request.session.session_key:
-        request.session.create()
+# def get_user_id(request):
+#     if not request.session.session_key:
+#         request.session.create()
     
-    # 2. Django 세션에서 User UUID 가져오기 (사용자 식별용)
-    user_uuid = request.session.get('user_uuid')
-    return user_uuid
+#     # 2. Django 세션에서 User UUID 가져오기 (사용자 식별용)
+#     user_uuid = request.session.get('user_uuid')
+#     return user_uuid
 
 def ReportHistory(request):
     #쿠키에서 리포트 목록을 가져와 템플릿에 랜더링

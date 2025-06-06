@@ -4,6 +4,9 @@ from . import views
 urlpatterns = [
     #path('', views.index, name='index'),
 
+    # 스마트 설문 리다이렉트 (베너용)
+    path('survey/', views.smart_survey_redirect, name='smart_survey_redirect'),
+
     # 2 질문지 페이지
     path('questions/<int:page_num>/', views.question_page, name='question_page'),
     path('result/', views.result_page, name='result_page'),
