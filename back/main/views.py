@@ -713,7 +713,7 @@ def IndividualPoliticians(request, str_id):
         'address':politician.address,
         'email':politician.email or '이메일 없음',
         'tel':politician.tel or '전화번호 없음',
-        'profile':politician.profile,
+        'profile':politician.profile.replace("\\n", "\n").replace("&middot;", "·"),
         'pic':politician.pic_link,
         'book':politician.books or '저서 없음',
         'curr_assets':politician.curr_assets,
