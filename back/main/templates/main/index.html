@@ -1,10 +1,94 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-    장고 첫페이지!
-</body>
-</html>
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}정치 성향 분석 서비스{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'main/css/index.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="main-section">
+    <div class="main-banner">
+        <div class="main-banner-content">
+        <h1>
+            당신의 정치 성향을 분석하고<br>
+            리포트를 받아보세요.
+        </h1>
+        <button class="main-banner-btn">
+            바로 검사하러 가기 →
+        </button>
+        </div>
+    </div>
+    <div class="section-title">주요 뉴스</div>
+    <div class="news-section">
+        <!-- 정치 -->
+        <div class="news-column">
+        <h2>정치</h2>
+        <div class="news-list">
+            <div class="news-item">
+            <div class="news-img"></div>
+            <div class="news-text">뉴스 제목 및 요약 텍스트<br>(3~4줄)</div>
+            </div>
+            <div class="news-item">
+            <div class="news-img"></div>
+            <div class="news-text">뉴스 제목 및 요약 텍스트<br>(3~4줄)</div>
+            </div>
+            <div class="news-item">
+            <div class="news-img"></div>
+            <div class="news-text">뉴스 제목 및 요약 텍스트<br>(3~4줄)</div>
+            </div>
+        </div>
+        </div>
+        <!-- 경제 -->
+        <div class="news-column">
+        <h2>경제</h2>
+        <div class="news-list">
+            <div class="news-item">
+            <div class="news-img"></div>
+            <div class="news-text">뉴스 제목 및 요약 텍스트<br>(3~4줄)</div>
+            </div>
+            <div class="news-item">
+            <div class="news-img"></div>
+            <div class="news-text">뉴스 제목 및 요약 텍스트<br>(3~4줄)</div>
+            </div>
+            <div class="news-item">
+            <div class="news-img"></div>
+            <div class="news-text">뉴스 제목 및 요약 텍스트<br>(3~4줄)</div>
+            </div>
+        </div>
+        </div>
+        <!-- 글로벌 -->
+        <div class="news-column">
+        <h2>글로벌</h2>
+        <div class="news-list">
+            <div class="news-item">
+            <div class="news-img"></div>
+            <div class="news-text">뉴스 제목 및 요약 텍스트<br>(3~4줄)</div>
+            </div>
+            <div class="news-item">
+            <div class="news-img"></div>
+            <div class="news-text">뉴스 제목 및 요약 텍스트<br>(3~4줄)</div>
+            </div>
+            <div class="news-item">
+            <div class="news-img"></div>
+            <div class="news-text">뉴스 제목 및 요약 텍스트<br>(3~4줄)</div>
+            </div>
+        </div>
+        </div>
+        <!-- 사회 -->
+        <div class="news-column">
+        <h2>사회</h2>
+        <div class="news-list">
+            <div class="news-item">
+            <div class="news-img"></div>
+            <div class="news-text">뉴스 제목 및 요약 텍스트<br>(3~4줄)</div>
+            </div>
+            <div class="news-item">
+            <div class="news-img"></div>
+            <div class="news-text">뉴스 제목 및 요약 텍스트<br>(3~4줄)</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -728,7 +728,7 @@ class UserReport(models.Model):
         on_delete=models.CASCADE,
         related_name='reports',
         verbose_name="사용자",
-        db_column='user_id'
+        db_column='user'
     )
 
     # 설문 시도 ID (Response의 survey_attempt_id와 연결)

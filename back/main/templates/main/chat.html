@@ -1,0 +1,29 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}정치 성향 분석 서비스{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'main/css/chat.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="chat-container">
+<div class="chat-row">
+    <img class="profile-img" src="{{ profile_url }}" alt="프로필사진">
+    <div class="chat-bubble">
+    안녕하십니까, 이제부터 진짜 대한민국! 지금은 이재명입니다.
+    </div>
+</div>
+</div>
+
+<form class="chat-input-wrap" method="post" action="{% url 'chat_send' %}">
+{% csrf_token %}
+<div class="input-box-container">
+    <input class="chat-input-box" autocomplete="off" name="message" type="text" placeholder="무엇이든 물어보세요">
+    <button class="send-btn" type="submit">
+    <span class="send-arrow">&#8593;</span>
+    </button>
+</div>
+</form>
+{% endblock %}

@@ -1,0 +1,107 @@
+body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: #fff;
+    margin: 0;
+    padding: 0;
+}
+.nav-bar {
+    background: #d6f5e4;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+.nav-logo-box {
+    margin-left: 16px;
+    width: 200px;
+    height: 24px;
+    background: #b8efce;
+}
+.nav-menu {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: bold;
+}
+.nav-menu div {
+    margin: 0 48px;
+    cursor: pointer;
+}
+.container {
+    max-width: 1300px;
+    margin: 60px auto 0 auto;
+    padding: 0 32px;
+}
+h1 {
+    font-size: 2.2rem;
+    font-weight: bold;
+    margin-bottom: 32px;
+}
+.report-area {
+    background: #d6f5e4;
+    border-radius: 32px;
+    padding: 42px 32px;
+}
+.report-title {
+    font-size: 1.6rem;
+    font-weight: bold;
+    margin-bottom: 32px;
+}
+table.report-table {
+    background: transparent;
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 18px;
+}
+table.report-table thead th {
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-align: left;
+    padding-bottom: 8px;
+}
+table.report-table tbody tr {
+    transition: background 0.2s;
+}
+table.report-table tbody tr.button-row:hover,
+table.report-table tbody tr.button-row:focus {
+    background: #bbe9d3;
+    cursor: pointer;
+}
+table.report-table td, table.report-table th {
+    padding: 8px 10px;
+}
+
+/* 그래프 바 스타일 */
+.result-bar-container {
+    width: 220px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    background: transparent;
+    border-radius: 10px;
+}
+.result-bar {
+    height: 20px;
+    border-radius: 10px 0 0 10px;
+    display: inline-block;
+}
+.bar-red {
+    background: #e80000;
+}
+.bar-blue {
+    background: #1e30de;
+}
+.bar-green {
+    background: #90f3ae;
+    border-radius: 0 10px 10px 0;
+}
+.bar-text {
+    font-size: 1rem;
+    margin-left: 12px;
+    color: #545454;
+    min-width: 38px;
+}

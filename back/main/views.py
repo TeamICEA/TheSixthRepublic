@@ -491,7 +491,7 @@ def question_page(request, page_num):
 #region 3 리포트 페이지
 def result_page(request):
     # 유저의 대답을 기반으로 UI에 표시 후 렌더링
-    responses = Response.objects.filter(user_id=get_user_id()).order_by('-survey_completed_at')
+    responses = Response.objects.filter(user_id=get_user_id(request)).order_by('-survey_completed_at')
     responses2: list[Response] = [] # 가장 최근 진행한 유저의 대답 리스트
     created_at: DateTimeField = None
 
@@ -727,43 +727,50 @@ def IndividualPoliticians(request, str_id):
 def GoToChat(request,str_id:str):
     #챗봇 상대의 해당하는 정치인 id를 받아, 해당 정치인의 성향 등을 반영한 정보를 기반으로 랜더링
 
-    politician = Politician.objects.get(id=id)
-    user_text = "" # 유저의 메시지는 어디서 가져올 것인가?
+    politicians = Politician.objects.filter(str_id=str_id)
+    user_text = "" # 유저의 메시지는 어디서 가져올 것인가
+    text = "" # 답변변
+    
+    if politicians:
+        politician = politicians.first()
 
-    # 정치인의 무슨 데이터를 반영할 것인지, 이 중에 필요 없는 정보는 무엇인지 제외 필요
-    poly_infos = {
-        '이름':politician.name,
-        '한자명':politician.hanja_name,
-        '영문명':politician.english_name,
-        '직책':politician.job,
-        '생일':politician.birthdate,
-        '양력/음력':politician.birthdate_type,
-        '선수':politician.reelected,
-        '정당':politician.party,
-        '성별':politician.gender,
-        '위원회':politician.comittees or '위원회 없음',
-        '주소':politician.address,
-        '이메일':politician.email or '이메일 없음',
-        '전화번호':politician.tel or '전화번호 없음',
-        '경력':politician.profile,
-        '저서':politician.book or '저서 없음',
-        '현재 자산':politician.curr_assets,
-        '보좌관':politician.boja,
-        '수석비서관':politician.top_secretary,
-        '비서':politician.secretary,
-        '통과 법안':politician.bill_approved,
-        '선거구명':politician.election_name,
-        '선거구 구분':politician.election_type,
-        '득표격차':politician.election_gap,
-        '본회의 출석률':politician.attendance_plenary
-    }
-    response = ManageChat(request, user_text, politician, poly_infos)
-    text = response[0]
+        # 정치인의 무슨 데이터를 반영할 것인지, 이 중에 필요 없는 정보는 무엇인지 제외 필요
+        poly_infos = {
+            '이름':politician.name,
+            '한자명':politician.hanja_name,
+            '영문명':politician.english_name,
+            '직책':politician.job,
+            '생일':politician.birthdate,
+            '양력/음력':politician.birthdate_type,
+            '선수':politician.reelected,
+            '정당':politician.party,
+            '성별':politician.gender,
+            '위원회':politician.committees or '위원회 없음',
+            '주소':politician.address,
+            '이메일':politician.email or '이메일 없음',
+            '전화번호':politician.tel or '전화번호 없음',
+            '경력':politician.profile,
+            '저서':politician.books or '저서 없음',
+            '현재 자산':politician.curr_assets,
+            '보좌관':politician.boja,
+            '수석비서관':politician.top_secretary,
+            '비서':politician.secretary,
+            '통과 법안':politician.bill_approved,
+            '선거구명':politician.election_name,
+            '선거구 구분':politician.election_type,
+            '득표격차':politician.election_gap,
+            '본회의 출석률':politician.attendance_plenary
+        }
+        response = ManageChat(request, user_text, politician, poly_infos)
+        text = response[0]
 
-    if text != "":
-        Chat.objects.create(user=get_user_id(), text=user_text, role="user", token_count=response[1])
-        Chat.objects.create(user=get_user_id(), text=response, role="model", token_count=response[1])
+        if text != "":
+            Chat.objects.create(user=get_user_id(request), text=user_text, role="user", token_count=response[1])
+            Chat.objects.create(user=get_user_id(request), text=response, role="model", token_count=response[1])
     else:
+        text = "잘못된 접근입니다. 올바른 정치인을 선택 후 다시 시도해주세요."
+
+    if text == "":
         text = "죄송합니다. 하루 토큰 사용량을 초과하였습니다. 내일 다시 시도해주세요."
 
     context = { "response": text }
@@ -793,7 +800,7 @@ def ManageChat(request, user_text: str, politician: Politician, poly_infos: dict
         speeches2.append(speech.speech)
 
     history = Chat.objects.filter(
-        user=get_user_id(),
+        user=get_user_id(request),
         created_at__gte=timezone.now() - timedelta(hours=24)
     ).order_by('-created_at')[:30]
     total_tokens = 0
@@ -946,7 +953,7 @@ def PoliticianRanking(request):
 
 def ReportHistory(request):
     #쿠키에서 리포트 목록을 가져와 템플릿에 랜더링
-    id = get_user_id()
+    id = get_user_id(request)
     responses = UserReport.objects.filter(user_id=id)
     responses2: dict[list[UserReport]] = {}
 

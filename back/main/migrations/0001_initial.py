@@ -238,7 +238,7 @@ class Migration(migrations.Migration):
                 ('parties_rank', models.JSONField(blank=True, default=list, help_text='rank, picture, name, ratio, reason 포함', null=True, verbose_name='정당 랭킹')),
                 ('politicians_top', models.JSONField(blank=True, default=list, help_text='rank, picture, name, birth, party, ratio, reason 포함', null=True, verbose_name='상위 정치인 TOP 10')),
                 ('politicians_bottom', models.JSONField(blank=True, default=list, help_text='rank, picture, name, birth, party, ratio, reason 포함', null=True, verbose_name='하위 정치인 BOTTOM 10')),
-                ('user', models.ForeignKey(blank=True, db_column='user_id', null=True, on_delete=django.db.models.deletion.CASCADE, related_name='reports', to='main.user', verbose_name='사용자')),
+                ('user', models.ForeignKey(blank=True, db_column='user', null=True, on_delete=django.db.models.deletion.CASCADE, related_name='reports', to='main.user', verbose_name='사용자')),
             ],
             options={
                 'verbose_name': '사용자 보고서',
