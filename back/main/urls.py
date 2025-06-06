@@ -12,7 +12,7 @@ urlpatterns = [
     path('result/', views.result_page, name='result_page'),
 
     # 3 리포트 페이지(석환)
-    path('userreport/<str:uuid>',views.ShowUserReport,name='user_report'),
+    path('userreport',views.ShowUserReport,name='user_report'),
 
     # 4 정치인 목록 페이지
     path('politicians/', views.politician_list, name='politician_list'),

@@ -552,10 +552,18 @@ def result_page(request):
 
 
 #region 3 리포트 페이지 (석환)
-def ShowUserReport(request,uuid:str):
-    user_id=get_object_or_404(User,user=uuid)
-    latest_report=UserReport.objects.filter(user=user_id).order_by("-created_at").first()
+def ShowUserReport(request):
+    date = request.GET.get('date')
+    user_id = get_user_id(request)
 
+    if date is not None:
+        report = UserReport.objects.filter(user=user_id, created_at__gte=date).order_by("created_at").first()
+        return ShowUserReportBy(request, report)
+
+    latest_report=UserReport.objects.filter(user=user_id).order_by("-created_at").first()
+    return ShowUserReportBy(request, latest_report)
+    
+def ShowUserReportBy(request, latest_report: UserReport):
     if latest_report is None:
         raise Http404("None report")
 
@@ -566,7 +574,6 @@ def ShowUserReport(request,uuid:str):
         'politicians_bottom':latest_report.politicians_bottom,
     }
     return render(request,'main/user_report.html',context)
-
 
 #endregion
 
@@ -974,12 +981,15 @@ def ReportHistory(request):
             if i >= 10: # limit
                 break
 
+            ratio = int(round(report.user_overall_tendency, 0))
+
             context["reports"].append({
                 "rank": i + 1,
                 "date": report.created_at,
                 "party": report.parties_rank[0]["name"],
                 "politician": report.politicians_top[0]["name"],
-                "ratio": report.user_overall_tendency
+                "ratio": ratio,
+                "ratio2": 100 - ratio
             })
             i += 1
     

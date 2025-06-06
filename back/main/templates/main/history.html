@@ -15,6 +15,7 @@
         <div class="report-title">지난 리포트 다시 보기</div>
         <table class="report-table">
             <thead>
+                {% if reports.0.ratio %}
                 <tr>
                     <th>번호</th>
                     <th>날짜</th>
@@ -22,138 +23,181 @@
                     <th>가장 적합한 정치인</th>
                     <th>전체 성향</th>
                 </tr>
+                {% else %}
+                <tr><th>가장 최근에 진행한 리포트가 없습니다...</span></tr>
+                {% endif %}
             </thead>
             <tbody>
-                <tr class="button-row" onclick="location.href='/report/1/';" tabindex="0">
-                    <td>1</td>
-                    <td>25.05.20</td>
-                    <td>민주당</td>
-                    <td>이재명</td>
+                {% if reports.0.ratio %}
+                <tr class="button-row" onclick="location.href='/userreport/?date={{ reports.0.created_at }}';" tabindex="0">
+                    <td>{{ reports.0.rank }}</td>
+                    <td>{{ reports.0.created_at }}</td>
+                    <td>{{ reports.0.party }}</td>
+                    <td>{{ reports.0.politician }}</td>
                     <td>
                         <div class="result-bar-container">
-                            <span class="result-bar bar-red" style="width:44%;"></span>
-                            <span class="result-bar bar-green" style="width:56%;"></span>
-                            <span class="bar-text">44%</span>
+                            <span class="result-bar bar-red" style="width:{{ reports.0.ratio }}%;"></span>
+                            <span class="result-bar bar-green" style="width:{{ reports.0.ratio2 }}%;"></span>
+                            {% if reports.0.ratio %}
+                            <span class="bar-text">{{ reports.0.ratio }}%</span>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>
-                <tr class="button-row" onclick="location.href='/report/2/';" tabindex="0">
-                    <td>2</td>
-                    <td>25.05.19</td>
-                    <td>국민의힘</td>
-                    <td>홍길동</td>
+                {% endif %}
+                {% if reports.1.ratio %}
+                <tr class="button-row" onclick="location.href='/userreport/?date={{ reports.1.created_at }}';" tabindex="0">
+                    <td>{{ reports.1.rank }}</td>
+                    <td>{{ reports.1.created_at }}</td>
+                    <td>{{ reports.1.party }}</td>
+                    <td>{{ reports.1.politician }}</td>
                     <td>
                         <div class="result-bar-container">
-                            <span class="result-bar bar-blue" style="width:55%;"></span>
-                            <span class="result-bar bar-green" style="width:45%;"></span>
-                            <span class="bar-text">55%</span>
+                            <span class="result-bar bar-red" style="width:{{ reports.1.ratio }}%;"></span>
+                            <span class="result-bar bar-green" style="width:{{ reports.1.ratio2 }}%;"></span>
+                            {% if reports.1.ratio %}
+                            <span class="bar-text">{{ reports.1.ratio }}%</span>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>
-                <tr class="button-row" onclick="location.href='/report/3/';" tabindex="0">
-                    <td>3</td>
-                    <td>25.05.18</td>
-                    <td>조국혁신당</td>
-                    <td>김철수</td>
+                {% endif %}
+                {% if reports.2.ratio %}
+                <tr class="button-row" onclick="location.href='/userreport/?date={{ reports.2.created_at }}';" tabindex="0">
+                    <td>{{ reports.2.rank }}</td>
+                    <td>{{ reports.2.created_at }}</td>
+                    <td>{{ reports.2.party }}</td>
+                    <td>{{ reports.2.politician }}</td>
                     <td>
                         <div class="result-bar-container">
-                            <span class="result-bar bar-blue" style="width:55%;"></span>
-                            <span class="result-bar bar-green" style="width:45%;"></span>
-                            <span class="bar-text">55%</span>
+                            <span class="result-bar bar-red" style="width:{{ reports.2.ratio }}%;"></span>
+                            <span class="result-bar bar-green" style="width:{{ reports.2.ratio2 }}%;"></span>
+                            {% if reports.2.ratio %}
+                            <span class="bar-text">{{ reports.2.ratio }}%</span>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>
-                <tr class="button-row" onclick="location.href='/report/4/';" tabindex="0">
-                    <td>4</td>
-                    <td>25.05.17</td>
-                    <td>더불어민주당</td>
-                    <td>박영희</td>
+                {% endif %}
+                {% if reports.3.ratio %}
+                <tr class="button-row" onclick="location.href='/userreport/?date={{ reports.3.created_at }}';" tabindex="0">
+                    <td>{{ reports.3.rank }}</td>
+                    <td>{{ reports.3.created_at }}</td>
+                    <td>{{ reports.3.party }}</td>
+                    <td>{{ reports.3.politician }}</td>
                     <td>
                         <div class="result-bar-container">
-                            <span class="result-bar bar-red" style="width:41%;"></span>
-                            <span class="result-bar bar-green" style="width:59%;"></span>
-                            <span class="bar-text">41%</span>
+                            <span class="result-bar bar-red" style="width:{{ reports.3.ratio }}%;"></span>
+                            <span class="result-bar bar-green" style="width:{{ reports.3.ratio2 }}%;"></span>
+                            {% if reports.3.ratio %}
+                            <span class="bar-text">{{ reports.3.ratio }}%</span>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>
-                <tr class="button-row" onclick="location.href='/report/5/';" tabindex="0">
-                    <td>5</td>
-                    <td>25.05.16</td>
-                    <td>개혁신당</td>
-                    <td>이순신</td>
+                {% endif %}
+                {% if reports.4.ratio %}
+                <tr class="button-row" onclick="location.href='/userreport/?date={{ reports.4.created_at }}';" tabindex="0">
+                    <td>{{ reports.4.rank }}</td>
+                    <td>{{ reports.4.created_at }}</td>
+                    <td>{{ reports.4.party }}</td>
+                    <td>{{ reports.4.politician }}</td>
                     <td>
                         <div class="result-bar-container">
-                            <span class="result-bar bar-blue" style="width:57%;"></span>
-                            <span class="result-bar bar-green" style="width:43%;"></span>
-                            <span class="bar-text">57%</span>
+                            <span class="result-bar bar-red" style="width:{{ reports.4.ratio }}%;"></span>
+                            <span class="result-bar bar-green" style="width:{{ reports.4.ratio2 }}%;"></span>
+                            {% if reports.4.ratio %}
+                            <span class="bar-text">{{ reports.4.ratio }}%</span>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>
-                <tr class="button-row" onclick="location.href='/report/6/';" tabindex="0">
-                    <td>6</td>
-                    <td>25.05.15</td>
-                    <td>민주당</td>
-                    <td>이재명</td>
+                {% endif %}
+                {% if reports.5.ratio %}
+                <tr class="button-row" onclick="location.href='/userreport/?date={{ reports.5.created_at }}';" tabindex="0">
+                    <td>{{ reports.5.rank }}</td>
+                    <td>{{ reports.5.created_at }}</td>
+                    <td>{{ reports.5.party }}</td>
+                    <td>{{ reports.5.politician }}</td>
                     <td>
                         <div class="result-bar-container">
-                            <span class="result-bar bar-blue" style="width:62%;"></span>
-                            <span class="result-bar bar-green" style="width:38%;"></span>
-                            <span class="bar-text">62%</span>
+                            <span class="result-bar bar-red" style="width:{{ reports.5.ratio }}%;"></span>
+                            <span class="result-bar bar-green" style="width:{{ reports.5.ratio2 }}%;"></span>
+                            {% if reports.5.ratio %}
+                            <span class="bar-text">{{ reports.5.ratio }}%</span>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>
-                <tr class="button-row" onclick="location.href='/report/7/';" tabindex="0">
-                    <td>7</td>
-                    <td>25.05.14</td>
-                    <td>국민의힘</td>
-                    <td>홍길동</td>
+                {% endif %}
+                {% if reports.6.ratio %}
+                <tr class="button-row" onclick="location.href='/userreport/?date={{ reports.6.created_at }}';" tabindex="0">
+                    <td>{{ reports.6.rank }}</td>
+                    <td>{{ reports.6.created_at }}</td>
+                    <td>{{ reports.6.party }}</td>
+                    <td>{{ reports.6.politician }}</td>
                     <td>
                         <div class="result-bar-container">
-                            <span class="result-bar bar-blue" style="width:57%;"></span>
-                            <span class="result-bar bar-green" style="width:43%;"></span>
-                            <span class="bar-text">57%</span>
+                            <span class="result-bar bar-red" style="width:{{ reports.6.ratio }}%;"></span>
+                            <span class="result-bar bar-green" style="width:{{ reports.6.ratio2 }}%;"></span>
+                            {% if reports.6.ratio %}
+                            <span class="bar-text">{{ reports.6.ratio }}%</span>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>
-                <tr class="button-row" onclick="location.href='/report/8/';" tabindex="0">
-                    <td>8</td>
-                    <td>25.05.13</td>
-                    <td>조국혁신당</td>
-                    <td>김철수</td>
+                {% endif %}
+                {% if reports.7.ratio %}
+                <tr class="button-row" onclick="location.href='/userreport/?date={{ reports.7.created_at }}';" tabindex="0">
+                    <td>{{ reports.7.rank }}</td>
+                    <td>{{ reports.7.created_at }}</td>
+                    <td>{{ reports.7.party }}</td>
+                    <td>{{ reports.7.politician }}</td>
                     <td>
                         <div class="result-bar-container">
-                            <span class="result-bar bar-blue" style="width:51%;"></span>
-                            <span class="result-bar bar-green" style="width:49%;"></span>
-                            <span class="bar-text">51%</span>
+                            <span class="result-bar bar-red" style="width:{{ reports.7.ratio }}%;"></span>
+                            <span class="result-bar bar-green" style="width:{{ reports.7.ratio2 }}%;"></span>
+                            {% if reports.7.ratio %}
+                            <span class="bar-text">{{ reports.7.ratio }}%</span>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>
-                <tr class="button-row" onclick="location.href='/report/9/';" tabindex="0">
-                    <td>9</td>
-                    <td>25.05.12</td>
-                    <td>더불어민주당</td>
-                    <td>박영희</td>
+                {% endif %}
+                {% if reports.8.ratio %}
+                <tr class="button-row" onclick="location.href='/userreport/?date={{ reports.8.created_at }}';" tabindex="0">
+                    <td>{{ reports.8.rank }}</td>
+                    <td>{{ reports.8.created_at }}</td>
+                    <td>{{ reports.8.party }}</td>
+                    <td>{{ reports.8.politician }}</td>
                     <td>
                         <div class="result-bar-container">
-                            <span class="result-bar bar-red" style="width:49%;"></span>
-                            <span class="result-bar bar-green" style="width:51%;"></span>
-                            <span class="bar-text">49%</span>
+                            <span class="result-bar bar-red" style="width:{{ reports.8.ratio }}%;"></span>
+                            <span class="result-bar bar-green" style="width:{{ reports.8.ratio2 }}%;"></span>
+                            {% if reports.8.ratio %}
+                            <span class="bar-text">{{ reports.8.ratio }}%</span>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>
-                <tr class="button-row" onclick="location.href='/report/10/';" tabindex="0">
-                    <td>10</td>
-                    <td>25.05.11</td>
-                    <td>개혁신당</td>
-                    <td>이순신</td>
+                {% endif %}
+                {% if reports.9.ratio %}
+                <tr class="button-row" onclick="location.href='/userreport/?date={{ reports.9.created_at }}';" tabindex="0">
+                    <td>{{ reports.9.rank }}</td>
+                    <td>{{ reports.9.created_at }}</td>
+                    <td>{{ reports.9.party }}</td>
+                    <td>{{ reports.9.politician }}</td>
                     <td>
                         <div class="result-bar-container">
-                            <span class="result-bar bar-red" style="width:47%;"></span>
-                            <span class="result-bar bar-green" style="width:53%;"></span>
-                            <span class="bar-text">47%</span>
+                            <span class="result-bar bar-red" style="width:{{ reports.9.ratio }}%;"></span>
+                            <span class="result-bar bar-green" style="width:{{ reports.9.ratio2 }}%;"></span>
+                            {% if reports.9.ratio %}
+                            <span class="bar-text">{{ reports.9.ratio }}%</span>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>
+                {% endif %}
             </tbody>
         </table>
     </div>
