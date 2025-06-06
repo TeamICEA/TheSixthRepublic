@@ -1,80 +1,240 @@
-/* 4페이지 정치인 목록 - 피그마 디자인 정확 구현 */
-
-/* 전체 컨테이너 */
-.politician-list-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 40px 20px;
-    background-color: #f8f9fa;
-    min-height: 100vh;
+/* 전체 초기화 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-/* 페이지 헤더 */
+body {
+    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+    line-height: 1.6;
+}
+
+/* 상단 헤더 (베너) - 피그마 디자인 정확 구현 */
+.main-header {
+    background-color: #E6F9EC; /* 피그마 지정 색상 */
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.header-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    height: 70px; /* 피그마에 맞는 높이 */
+}
+
+/* 로고 섹션 */
+.logo-section {
+    flex-shrink: 0;
+}
+
+.logo-link {
+    display: inline-block;
+    text-decoration: none;
+}
+
+.logo-img {
+    height: 40px;
+    width: auto;
+    display: block;
+}
+
+/* 내비게이션 - 간격 조정 */
+.main-nav {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.nav-list {
+    list-style: none;
+    display: flex;
+    margin: 0;
+    padding: 0;
+    gap: 40px; /* 메뉴 간 간격 증가 */
+}
+
+.nav-item {
+    position: relative;
+}
+
+.nav-item a {
+    display: block;
+    padding: 20px 30px; /* 패딩 조정으로 클릭 영역 확보 */
+    color: #2E7D32; /* 진한 녹색 텍스트 */
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border-radius: 8px; /* 살짝 둥근 모서리 */
+    background-color: transparent;
+}
+
+.nav-item a:hover {
+    background-color: #C8E6C9; /* 연한 녹색 호버 */
+    color: #1B5E20; /* 더 진한 녹색 */
+}
+
+.nav-item.nav-active a {
+    background-color: #4CAF50; /* 활성 상태 녹색 */
+    color: white;
+    font-weight: 600;
+}
+
+/* 헤더 오른쪽 영역 */
+.header-right {
+    flex-shrink: 0;
+    width: 120px; /* 로고와 균형 맞추기 */
+}
+
+/* 메인 콘텐츠 */
+.main-content {
+    margin-top: 70px; /* 헤더 높이만큼 여백 */
+    min-height: calc(100vh - 70px);
+}
+
+/* 4페이지 정치인 목록 스타일 */
+.politician-list-container {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 30px;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
 .page-header {
-    text-align: center;
-    margin-bottom: 40px;
+    text-align: center; /* 피그마에 맞게 중앙 정렬 */
+    margin-bottom: 30px;
 }
 
 .page-title {
     font-size: 28px;
     font-weight: 700;
-    color: #2c3e50;
+    color: #2C3E50;
     margin: 0;
-    letter-spacing: -0.5px;
 }
 
-/* 필터 및 검색 섹션 */
+/* 필터 및 검색 섹션 - 피그마 디자인 */
 .filter-search-section {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     margin-bottom: 30px;
-    gap: 20px;
+    gap: 30px; /* 간격 증가 */
 }
 
-/* 필터 버튼 컨테이너 */
-.filter-buttons-container {
+/* 정당별 드롭다운 필터 - 위치 조정 */
+.filter-dropdown-container {
+    flex-shrink: 0;
+    margin-left: 50px; /* 오른쪽으로 이동 */
+}
+
+.dropdown {
+    position: relative;
+}
+
+.dropdown-toggle {
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    flex: 1;
-}
-
-.filter-button {
-    display: inline-block;
+    align-items: center;
+    justify-content: space-between;
     padding: 10px 20px;
-    background-color: #e9ecef;
-    color: #495057;
-    text-decoration: none;
-    border-radius: 25px;
+    background-color: #B2E5C6; /* 피그마 색상 */
+    color: #2E7D32; /* 진한 녹색 텍스트 */
+    border: 1px solid #A5D6A7;
+    border-radius: 8px;
     font-size: 14px;
     font-weight: 500;
+    cursor: pointer;
     transition: all 0.2s ease;
+    min-width: 120px;
+    text-align: left;
+    
+    /* 기본 드롭다운 화살표 제거 */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+.dropdown-toggle:hover {
+    background-color: #A5D6A7;
+    border-color: #81C784;
+}
+
+.dropdown-toggle i {
+    margin-left: 10px;
+    font-size: 12px;
+    transition: transform 0.2s ease;
+    /* 오른쪽 화살표만 유지 */
+}
+
+.dropdown-toggle[aria-expanded="true"] i {
+    transform: rotate(180deg);
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1000;
+    display: none;
+    min-width: 160px;
+    padding: 8px 0;
+    margin: 2px 0 0;
+    background-color: white;
     border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
-.filter-button:hover {
-    background-color: #d1ecf1;
-    color: #0c5460;
+.dropdown-menu.show {
+    display: block;
+}
+
+.dropdown-item {
+    display: block;
+    width: 100%;
+    padding: 8px 16px;
+    color: #495057;
     text-decoration: none;
-    transform: translateY(-1px);
+    background-color: transparent;
+    border: 0;
+    font-size: 14px;
+    transition: all 0.2s ease;
 }
 
-.filter-button.active {
-    background-color: #28a745;
-    color: white;
-    border-color: #28a745;
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+    color: #2E7D32;
 }
 
-/* 검색 컨테이너 */
+.dropdown-item.active {
+    background-color: #B2E5C6;
+    color: #2E7D32;
+    font-weight: 500;
+}
+
+/* 검색 컨테이너 - 피그마 색상 적용 + 크기/위치 조정 */
 .search-container {
-    flex-shrink: 0;
-    width: 300px;
+    flex: 1;
+    max-width: 500px; /* 길이 증가 */
+    margin-left: auto;
+    margin-right: 50px; /* 왼쪽으로 이동 */
 }
 
-.search-input-group {
+.search-input-wrapper {
     display: flex;
-    border: 1px solid #ced4da;
+    border: 2px solid #B2E5C6; /* 피그마 색상 */
     border-radius: 25px;
     overflow: hidden;
     background-color: white;
@@ -82,7 +242,7 @@
 
 .search-input {
     flex: 1;
-    padding: 10px 16px;
+    padding: 12px 16px;
     border: none;
     outline: none;
     font-size: 14px;
@@ -94,9 +254,9 @@
 }
 
 .search-button {
-    padding: 10px 20px;
-    background-color: #007bff;
-    color: white;
+    padding: 12px 20px;
+    background-color: #B2E5C6; /* 피그마 색상 */
+    color: #2E7D32; /* 진한 녹색 텍스트 */
     border: none;
     cursor: pointer;
     font-size: 14px;
@@ -105,7 +265,45 @@
 }
 
 .search-button:hover {
-    background-color: #0056b3;
+    background-color: #A5D6A7; /* 더 진한 녹색 */
+}
+
+/* 검색 상태 표시 */
+.search-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    background-color: #E3F2FD;
+    border: 1px solid #BBDEFB;
+    border-radius: 8px;
+}
+
+.search-info {
+    color: #1976D2;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.reset-search-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background-color: #FF9800;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+.reset-search-btn:hover {
+    background-color: #F57C00;
+    color: white;
+    text-decoration: none;
 }
 
 /* 테이블 섹션 */
@@ -145,22 +343,13 @@
     vertical-align: middle;
 }
 
-/* 컬럼 너비 */
-.col-photo { width: 80px; }
-.col-name { width: 100px; }
-.col-hanja { width: 120px; }
-.col-birth { width: 80px; }
-.col-party { width: 120px; }
-.col-region { width: 150px; }
-.col-action { width: 80px; }
-
-/* 테이블 행 */
-.politician-row {
+/* 테이블 행 호버 효과 */
+.politicians-table tbody tr {
     transition: background-color 0.2s ease;
     cursor: pointer;
 }
 
-.politician-row:hover {
+.politicians-table tbody tr:hover {
     background-color: #f8f9fa;
 }
 
@@ -183,65 +372,13 @@
     justify-content: center;
     color: #6c757d;
     border: 2px solid #e9ecef;
+    font-size: 12px;
 }
 
-/* 이름 컬럼 */
-.col-name {
-    font-weight: 600;
-    color: #2c3e50;
-}
-
-/* 한자 컬럼 */
-.col-hanja {
-    color: #6c757d;
-    font-style: italic;
-}
-
-/* 출생 컬럼 */
-.col-birth {
-    color: #495057;
-}
-
-/* 정당 컬럼 */
-.col-party {
-    font-weight: 500;
-    color: #495057;
-}
-
-/* 지역 컬럼 */
-.col-region {
-    color: #6c757d;
-}
-
-/* 찾기 버튼 */
-.detail-button {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    border: 1px solid #007bff;
-    background-color: white;
-    color: #007bff;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-}
-
-.detail-button:hover {
-    background-color: #007bff;
-    color: white;
-    transform: scale(1.05);
-}
-
-/* 빈 결과 */
-.empty-row {
+/* 빈 결과 메시지 */
+.empty-message {
     padding: 60px 20px;
     text-align: center;
-}
-
-.empty-message {
     color: #6c757d;
 }
 
@@ -267,53 +404,141 @@
     text-decoration: none;
 }
 
-/* 페이지네이션 */
+/* 페이지네이션 - 피그마 디자인 정확 구현 */
 .pagination-section {
     display: flex;
     justify-content: center;
     margin-top: 40px;
+    padding: 20px 0;
 }
 
-.pagination-container {
+.pagination-wrapper {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
+    background-color: #F8F9FA;
+    padding: 16px 24px;
+    border-radius: 12px;
+    border: 1px solid #E9ECEF;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    flex-wrap: wrap; /* 많은 페이지 번호 대응 */
+    justify-content: center;
 }
 
-.pagination-btn {
-    display: inline-block;
-    padding: 8px 12px;
-    color: #007bff;
+/* 이전/다음 버튼 */
+.pagination-nav-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 16px;
+    background-color: #B2E5C6; /* 피그마 색상 */
+    color: #2E7D32; /* 진한 녹색 텍스트 */
     text-decoration: none;
-    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    min-width: 60px;
+    justify-content: center;
+}
+
+.pagination-nav-btn:hover {
+    background-color: #A5D6A7;
+    color: #1B5E20;
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+.pagination-nav-btn.disabled {
+    background-color: #E0E0E0;
+    color: #9E9E9E;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.pagination-nav-btn.disabled:hover {
+    background-color: #E0E0E0;
+    color: #9E9E9E;
+    transform: none;
+}
+
+/* 페이지 번호 컨테이너 */
+.pagination-numbers {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0 8px;
+}
+
+/* 페이지 번호 */
+.page-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    color: #495057;
+    text-decoration: none;
     border-radius: 6px;
     font-size: 14px;
+    font-weight: 500;
     transition: all 0.2s ease;
     background-color: white;
+    border: 1px solid #DEE2E6;
 }
 
-.pagination-btn:hover {
-    background-color: #e9ecef;
-    color: #0056b3;
+.page-number:hover {
+    background-color: #E9ECEF;
+    color: #495057;
     text-decoration: none;
+    border-color: #ADB5BD;
 }
 
-.pagination-btn.active {
-    background-color: #007bff;
-    border-color: #007bff;
+.page-number.active {
+    background-color: #007BFF;
     color: white;
+    font-weight: 600;
+    border-color: #007BFF;
+}
+
+/* 페이지 정보 박스 */
+.page-info-box {
+    margin: 0 8px;
 }
 
 .page-info {
-    margin: 0 15px;
-    color: #6c757d;
-    font-size: 14px;
+    display: inline-block;
+    padding: 8px 12px;
+    background-color: #E9ECEF;
+    color: #6C757D;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 6px;
+    border: 1px solid #DEE2E6;
 }
 
 /* 반응형 디자인 */
 @media (max-width: 768px) {
+    .header-container {
+        padding: 0 15px;
+        height: 60px;
+    }
+    
+    .nav-list {
+        gap: 20px; /* 모바일에서 간격 줄임 */
+    }
+    
+    .nav-item a {
+        padding: 15px 20px;
+        font-size: 14px;
+    }
+    
+    .main-content {
+        margin-top: 60px;
+    }
+    
     .politician-list-container {
-        padding: 20px 10px;
+        margin: 15px;
+        padding: 20px;
     }
     
     .page-title {
@@ -323,19 +548,63 @@
     .filter-search-section {
         flex-direction: column;
         gap: 20px;
+        align-items: stretch;
+    }
+    
+    .filter-dropdown-container {
+        margin-left: 0;
     }
     
     .search-container {
-        width: 100%;
+        max-width: none;
+        margin-left: 0;
+        margin-right: 0;
     }
     
-    .filter-buttons-container {
+    .dropdown-toggle {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .search-status {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+    }
+    
+    .pagination-wrapper {
+        padding: 12px 16px;
+        gap: 8px;
+        flex-wrap: wrap;
         justify-content: center;
     }
     
-    .filter-button {
+    .pagination-nav-btn {
+        padding: 8px 12px;
         font-size: 13px;
-        padding: 8px 16px;
+        min-width: 50px;
+    }
+    
+    .page-number {
+        width: 32px;
+        height: 32px;
+        font-size: 13px;
+    }
+    
+    .page-info {
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+}
+
+@media (max-width: 576px) {
+    .nav-list {
+        gap: 10px;
+    }
+    
+    .nav-item a {
+        padding: 12px 15px;
+        font-size: 13px;
     }
     
     .politicians-table {
@@ -353,29 +622,34 @@
         height: 35px;
     }
     
-    .detail-button {
-        width: 30px;
-        height: 30px;
-        font-size: 12px;
-    }
-}
-
-@media (max-width: 576px) {
-    .col-hanja,
-    .col-birth {
-        display: none;
+    /* 모바일에서 일부 컬럼 숨기기 */
+    .politicians-table th:nth-child(3),
+    .politicians-table td:nth-child(3) {
+        display: none; /* 한자 컬럼 숨김 */
     }
     
-    .col-region {
-        display: none;
+    .politicians-table th:nth-child(4),
+    .politicians-table td:nth-child(4) {
+        display: none; /* 출생 컬럼 숨김 */
     }
     
-    .politicians-table th,
-    .politicians-table td {
-        padding: 10px 4px;
+    .pagination-numbers {
+        order: 2;
+        width: 100%;
+        justify-content: center;
+        margin: 8px 0;
+    }
+    
+    .page-info-box {
+        order: 3;
+        margin: 0;
+    }
+    
+    .prev-btn {
+        order: 1;
+    }
+    
+    .next-btn {
+        order: 4;
     }
 }
-
-
-
-

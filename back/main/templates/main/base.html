@@ -4,27 +4,52 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}정치 성향 분석{% endblock %}</title>
-    
-    <!-- Bootstrap CSS (선택적) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
     {% load static %}
     <link rel="stylesheet" href="{% static 'main/css/style.css' %}">
-    
     {% block extra_css %}{% endblock %}
 </head>
-<body style="margin: 0; padding: 0; background-color: #f8f9fa;">
+<body>
+    <!-- 상단 헤더 (베너) -->
+    <header class="main-header">
+        <div class="header-container">
+            <!-- 로고 영역 -->
+            <div class="logo-section">
+                <a href="{% url 'index' %}" class="logo-link">
+                    <img src="{% static 'main/images/logo.png' %}" alt="서비스 로고" class="logo-img">
+                </a>
+            </div>
+            
+            <!-- 내비게이션 영역 -->
+            <nav class="main-nav">
+                <ul class="nav-list">
+                    <li class="nav-item {% if 'questions' in request.path %}nav-active{% endif %}">
+                        <a href="{% url 'question_page' page_num=1 %}">성향 분석 리포트 보기</a>
+                    </li>
+                    <li class="nav-item {% if 'politicians' in request.path %}nav-active{% endif %}">
+                        <a href="{% url 'politician_list' %}">정치인 데이터</a>
+                    </li>
+                    <li class="nav-item {% if 'ranking' in request.path %}nav-active{% endif %}">
+                        <a href="{% url 'politician_ranking' %}">분야별 랭킹</a>
+                    </li>
+                </ul>
+            </nav>
+            
+            <!-- 오른쪽 영역 (필요시 추가) -->
+            <div class="header-right">
+                <!-- 추가 버튼이나 메뉴가 있다면 여기에 -->
+            </div>
+        </div>
+    </header>
+    
     <!-- 메인 콘텐츠 -->
-    <main>
+    <main class="main-content">
         {% block content %}
         {% endblock %}
     </main>
     
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    
     {% block scripts %}
     {% endblock %}
 </body>

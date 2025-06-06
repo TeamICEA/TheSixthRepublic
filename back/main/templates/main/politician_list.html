@@ -12,97 +12,126 @@
     
     <!-- 필터링 및 검색 영역 -->
     <div class="filter-search-section">
-        <!-- 정당별 필터 버튼 -->
-        <div class="filter-buttons-container">
-            <!-- 전체 버튼 -->
-            <a href="{% url 'politician_list' %}" 
-               class="filter-button {% if not party_query %}active{% endif %}">
-                전체
-            </a>
-            
-            <!-- 정당별 버튼 -->
-            {% for party in parties_for_buttons %}
-            <a href="?party={{ party.id }}{% if name_query %}&name={{ name_query }}{% endif %}" 
-               class="filter-button {% if party_query == party.id|stringformat:'s' %}active{% endif %}">
-                {{ party.name }}
-            </a>
-            {% endfor %}
+        <!-- 정당별 드롭다운 필터 -->
+        <div class="filter-dropdown-container">
+            <div class="dropdown">
+                <button class="dropdown-toggle" type="button" id="partyDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    {% if party_query %}
+                        {% for party in parties_for_buttons %}
+                            {% if party.id|stringformat:'s' == party_query %}
+                                {{ party.name }}
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        정당별
+                    {% endif %}
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="partyDropdown">
+                    <li>
+                        <a class="dropdown-item {% if not party_query %}active{% endif %}" 
+                           href="{% url 'politician_list' %}{% if name_query %}?name={{ name_query }}{% endif %}">
+                            전체
+                        </a>
+                    </li>
+                    {% for party in parties_for_buttons %}
+                    <li>
+                        <a class="dropdown-item {% if party_query == party.id|stringformat:'s' %}active{% endif %}" 
+                           href="?party={{ party.id }}{% if name_query %}&name={{ name_query }}{% endif %}">
+                            {{ party.name }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
         </div>
-        
+
         <!-- 이름 검색 -->
         <div class="search-container">
-            <form method="get" class="search-form">
-                {% if party_query %}
-                <input type="hidden" name="party" value="{{ party_query }}">
-                {% endif %}
-                
-                <div class="search-input-group">
+            <form method="get" action="{% url 'politician_list' %}" class="search-form">
+                <div class="search-input-wrapper">
                     <input type="text" 
                            name="name" 
-                           class="search-input" 
-                           placeholder="이름을 입력하세요"
-                           value="{{ name_query }}">
-                    <button type="submit" class="search-button">찾기</button>
+                           placeholder="이름 검색" 
+                           value="{{ name_query|default:'' }}" 
+                           class="search-input">
+                    {% if party_query %}
+                    <input type="hidden" name="party" value="{{ party_query }}">
+                    {% endif %}
+                    <button type="submit" class="search-button">
+                        찾기
+                    </button>
                 </div>
             </form>
         </div>
     </div>
     
+    <!-- 검색 상태 표시 및 초기화 버튼 -->
+    {% if name_query or party_query %}
+    <div class="search-status">
+        <div class="search-info">
+            {% if name_query and party_query %}
+                "{{ name_query }}" 이름으로 {{ first_party_name }} 정당에서 검색: {{ total_count }}명
+            {% elif name_query %}
+                "{{ name_query }}" 이름으로 검색: {{ total_count }}명
+            {% elif party_query %}
+                {{ first_party_name }} 정당 소속: {{ total_count }}명
+            {% endif %}
+        </div>
+        <a href="{% url 'politician_list' %}" class="reset-search-btn">
+            <i class="fas fa-times"></i> 전체 목록 보기
+        </a>
+    </div>
+    {% endif %}
+    
     <!-- 정치인 목록 테이블 -->
     <div class="table-section">
-        <table class="politicians-table">
+        <table class="table table-hover politicians-table">
             <thead>
                 <tr>
-                    <th class="col-photo">사진</th>
-                    <th class="col-name">이름</th>
-                    <th class="col-hanja">한자</th>
-                    <th class="col-birth">출생</th>
-                    <th class="col-party">정당</th>
-                    <th class="col-region">지역</th>
-                    <th class="col-action">찾기</th>
+                    <th>사진</th>
+                    <th>이름</th>
+                    <th>한자</th>
+                    <th>출생</th>
+                    <th>정당</th>
+                    <th>지역(선거구)</th>
                 </tr>
             </thead>
             <tbody>
                 {% for politician in page_obj %}
-                <tr class="politician-row" onclick="goToDetail('{{ politician.str_id }}')">
-                    <td class="col-photo">
+                <tr onclick="window.location='{% url 'politician_report' politician.str_id %}';" style="cursor: pointer;">
+                    <td>
                         {% if politician.pic_link %}
-                        <img src="{{ politician.pic_link }}" 
-                             alt="{{ politician.name }}" 
-                             class="politician-photo"
-                             onerror="this.src='{% static 'main/images/default-profile.png' %}'">
+                            <img src="{{ politician.pic_link }}" alt="{{ politician.name }} 사진" class="politician-photo">
                         {% else %}
-                        <div class="photo-placeholder">
-                            <i class="fas fa-user"></i>
-                        </div>
+                            <div class="photo-placeholder">
+                                <i class="fas fa-user"></i>
+                            </div>
                         {% endif %}
                     </td>
-                    <td class="col-name">{{ politician.name }}</td>
-                    <td class="col-hanja">{{ politician.hanja_name|default:"(한자)" }}</td>
-                    <td class="col-birth">
+                    <td>{{ politician.name }}</td>
+                    <td>{{ politician.hanja_name|default:"-" }}</td>
+                    <td>
                         {% if politician.birthdate %}
                             {{ politician.birthdate.year }}
                         {% else %}
                             1964
                         {% endif %}
                     </td>
-                    <td class="col-party">{{ politician.party.name }}</td>
-                    <td class="col-region">{{ politician.address|truncatechars:10|default:"인천" }}</td>
-                    <td class="col-action">
-                        <button class="detail-button" onclick="event.stopPropagation(); goToDetail('{{ politician.str_id }}')">
-                            <i class="fas fa-search"></i>
-                        </button>
+                    <td>{{ politician.party.name }}</td>
+                    <td>
+                        {% if politician.election_name %}
+                            {{ politician.election_name|truncatechars:15 }}
+                        {% else %}
+                            -
+                        {% endif %}
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="7" class="empty-row">
-                        <div class="empty-message">
-                            <p>검색 결과가 없습니다.</p>
-                            {% if name_query or party_query %}
-                            <a href="{% url 'politician_list' %}" class="reset-link">전체 목록 보기</a>
-                            {% endif %}
-                        </div>
+                    <td colspan="6" class="text-center empty-message">
+                        <p>해당 조건의 정치인이 없습니다.</p>
+                        <a href="{% url 'politician_list' %}" class="reset-link">전체 목록으로 돌아가기</a>
                     </td>
                 </tr>
                 {% endfor %}
@@ -110,33 +139,41 @@
         </table>
     </div>
     
-    <!-- 페이지네이션 -->
+    <!-- 페이지네이션 (피그마 디자인 적용) -->
     {% if page_obj.has_other_pages %}
     <div class="pagination-section">
-        <div class="pagination-container">
+        <div class="pagination-wrapper">
             <!-- 이전 버튼 -->
             {% if page_obj.has_previous %}
             <a href="?page={{ page_obj.previous_page_number }}{% if name_query %}&name={{ name_query }}{% endif %}{% if party_query %}&party={{ party_query }}{% endif %}" 
-               class="pagination-btn">이전</a>
+               class="pagination-nav-btn prev-btn">이전</a>
+            {% else %}
+            <span class="pagination-nav-btn prev-btn disabled">이전</span>
             {% endif %}
             
             <!-- 페이지 번호들 -->
-            {% for num in page_obj.paginator.page_range %}
-                {% if page_obj.number == num %}
-                <span class="pagination-btn active">{{ num }}</span>
-                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                <a href="?page={{ num }}{% if name_query %}&name={{ name_query }}{% endif %}{% if party_query %}&party={{ party_query }}{% endif %}" 
-                   class="pagination-btn">{{ num }}</a>
-                {% endif %}
-            {% endfor %}
+            <div class="pagination-numbers">
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <span class="page-number active">{{ num }}</span>
+                    {% else %}
+                    <a href="?page={{ num }}{% if name_query %}&name={{ name_query }}{% endif %}{% if party_query %}&party={{ party_query }}{% endif %}" 
+                       class="page-number">{{ num }}</a>
+                    {% endif %}
+                {% endfor %}
+            </div>
             
             <!-- 페이지 정보 -->
-            <span class="page-info">{{ page_obj.start_index }}-{{ page_obj.end_index }}</span>
+            <div class="page-info-box">
+                <span class="page-info">{{ page_obj.start_index }}-{{ page_obj.end_index }}</span>
+            </div>
             
             <!-- 다음 버튼 -->
             {% if page_obj.has_next %}
             <a href="?page={{ page_obj.next_page_number }}{% if name_query %}&name={{ name_query }}{% endif %}{% if party_query %}&party={{ party_query }}{% endif %}" 
-               class="pagination-btn">다음</a>
+               class="pagination-nav-btn next-btn">다음</a>
+            {% else %}
+            <span class="pagination-nav-btn next-btn disabled">다음</span>
             {% endif %}
         </div>
     </div>
@@ -146,18 +183,37 @@
 
 {% block scripts %}
 <script>
-function goToDetail(strId) {
-    window.location.href = `/${strId}/`;
-}
-
-// 검색 폼 검증
-document.querySelector('.search-form').addEventListener('submit', function(e) {
-    const nameInput = this.querySelector('input[name="name"]');
-    if (nameInput.value.trim() === '') {
+// 드롭다운 기능
+document.addEventListener('DOMContentLoaded', function() {
+    const dropdownToggle = document.getElementById('partyDropdown');
+    const dropdownMenu = dropdownToggle.nextElementSibling;
+    
+    dropdownToggle.addEventListener('click', function(e) {
         e.preventDefault();
-        nameInput.focus();
-        alert('검색할 이름을 입력해주세요.');
-    }
+        const isExpanded = this.getAttribute('aria-expanded') === 'true';
+        
+        if (isExpanded) {
+            this.setAttribute('aria-expanded', 'false');
+            dropdownMenu.classList.remove('show');
+        } else {
+            this.setAttribute('aria-expanded', 'true');
+            dropdownMenu.classList.add('show');
+        }
+    });
+    
+    // 외부 클릭 시 드롭다운 닫기
+    document.addEventListener('click', function(e) {
+        if (!dropdownToggle.contains(e.target) && !dropdownMenu.contains(e.target)) {
+            dropdownToggle.setAttribute('aria-expanded', 'false');
+            dropdownMenu.classList.remove('show');
+        }
+    });
+});
+
+// 검색 폼 개선 - 빈 값으로 검색하면 전체 목록 표시
+document.querySelector('.search-form').addEventListener('submit', function(e) {
+    // 빈 값으로 검색해도 허용 (전체 목록 표시)
+    // 기존의 alert 제거
 });
 </script>
 {% endblock %}
