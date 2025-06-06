@@ -116,7 +116,7 @@ def smart_survey_redirect(request):
             else:
                 # 모든 질문에 답했는데 완료 처리가 안 된 경우 → 결과 페이지
                 print(f"사용자 {user_uuid} → 결과 페이지로 이동")
-                return redirect('result_page')
+                return redirect('user_report')
         
         # 4. 아무것도 없으면 새로운 설문 시작
         print(f"사용자 {user_uuid} → 새 설문 시작")
@@ -280,7 +280,7 @@ def question_page(request, page_num):
         if page_num < 1:
             return redirect('question_page', page_num=1)
         elif page_num > total_pages:
-            return redirect('result_page')
+            return redirect('user_report')
         
         # 8. 현재 페이지의 질문들 가져오기
         try:
@@ -444,7 +444,7 @@ def question_page(request, page_num):
                 if 'current_survey_session_id' in request.session:
                     del request.session['current_survey_session_id']
                 
-                return redirect('result_page')
+                return redirect('user_report')
         
         # 16. GET 요청 처리 - 기존 응답 불러오기
         responses, responses_text = get_existing_responses(
@@ -485,24 +485,24 @@ def question_page(request, page_num):
 
 
 #region 3 리포트 페이지
-def result_page(request):
-    # 유저의 대답을 기반으로 UI에 표시 후 렌더링
-    responses = Response.objects.filter(user_id=get_user_id(request)).order_by('-survey_completed_at')
-    responses2: list[Response] = [] # 가장 최근 진행한 유저의 대답 리스트
-    created_at: DateTimeField = None
+# def result_page(request):
+#     # 유저의 대답을 기반으로 UI에 표시 후 렌더링
+#     responses = Response.objects.filter(user_id=get_user_id(request)).order_by('-survey_completed_at')
+#     responses2: list[Response] = [] # 가장 최근 진행한 유저의 대답 리스트
+#     created_at: DateTimeField = None
 
-    for response in responses:
-        if created_at is None:
-            created_at = response.survey_completed_at
-        if created_at == response.survey_completed_at:
-            responses2.append(response)
-        else:
-            break
+#     for response in responses:
+#         if created_at is None:
+#             created_at = response.survey_completed_at
+#         if created_at == response.survey_completed_at:
+#             responses2.append(response)
+#         else:
+#             break
 
-    # 구현 미완성
+#     # 구현 미완성
     
 
-    return render(request, 'main/result.html')
+#     return render(request, 'main/result.html')
 
 # def load_all_politicians() -> list[Politician]:
 #     # 국회의원 리스트를 DB에서 불러온 후 반환
