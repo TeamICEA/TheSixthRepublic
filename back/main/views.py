@@ -116,7 +116,7 @@ def smart_survey_redirect(request):
             else:
                 # 모든 질문에 답했는데 완료 처리가 안 된 경우 → 결과 페이지
                 print(f"사용자 {user_uuid} → 결과 페이지로 이동")
-                return redirect('result_page')
+                return redirect('user_report')
         
         # 4. 아무것도 없으면 새로운 설문 시작
         print(f"사용자 {user_uuid} → 새 설문 시작")
@@ -170,7 +170,7 @@ def add_news_articles(request):
         context[str(i)] = []
     
         for item in text_json["items"]:
-            title: str = re.sub(CLEANR, '', item["title"]).replace("&quot;", '"')
+            title: str = re.sub(CLEANR, '', item["title"]).replace("&quot;", '"').replace("&amp;", "&")
             link: str = item["link"]
             # description: str = re.sub(CLEANR, '', item["description"])
 
@@ -233,150 +233,73 @@ def question_page(request, page_num):
     """
     설문 질문 페이지 - 5개씩 질문을 보여주고 응답을 저장
     """
-    print("=" * 50)
-    print(f"🚀 question_page 시작: page_num={page_num}")
-    print(f"📊 요청 메서드: {request.method}")
-    print(f"🔗 요청 URL: {request.get_full_path()}")
-    print("=" * 50)
-    
     QUESTIONS_PER_PAGE = 5
     
     try:
-        # 1. 세션 상태 확인
-        print(f"🔑 세션 키: {request.session.session_key}")
-        print(f"📦 세션 데이터: {dict(request.session)}")
-        
-        # 2. 사용자 UUID 처리
-        print("👤 사용자 UUID 처리 시작...")
+        # 1. 사용자 UUID 처리
         user_uuid = get_user_id(request)
-        print(f"👤 기존 user_uuid: {user_uuid}")
         
         if not user_uuid:
-            try:
-                print("👤 새 사용자 생성 중...")
-                if not request.session.session_key:
-                    request.session.create()
-                    print("🔑 새 세션 생성됨")
-                
-                new_user = User.objects.create()
-                user_uuid = str(new_user.id)
-                request.session['user_uuid'] = user_uuid
-                print(f"✅ 새 사용자 생성 완료: {user_uuid}")
-            except Exception as e:
-                print(f"❌ 사용자 생성 오류: {e}")
-                import traceback
-                traceback.print_exc()
-                return render(request, 'main/error.html', {
-                    'error_message': f'사용자 세션 생성 오류: {e}'
-                })
+            # User 모델은 UUID만 가지는 단순한 모델
+            new_user = User.objects.create()
+            user_uuid = str(new_user.id)
+            request.session['user_uuid'] = user_uuid
         
-        # 3. User 객체 가져오기
-        print("👤 User 객체 조회 중...")
+        # 2. User 객체 가져오기 (예외 처리 추가)
         try:
             current_user = User.objects.get(id=user_uuid)
-            print(f"✅ 사용자 찾음: {current_user.id}")
         except User.DoesNotExist:
-            print(f"⚠️ 사용자 없음, 새로 생성: {user_uuid}")
-            try:
-                new_user = User.objects.create()
-                user_uuid = str(new_user.id)
-                request.session['user_uuid'] = user_uuid
-                current_user = new_user
-                print(f"✅ 사용자 재생성 완료: {user_uuid}")
-            except Exception as e:
-                print(f"❌ 사용자 재생성 오류: {e}")
-                import traceback
-                traceback.print_exc()
-                return render(request, 'main/error.html', {
-                    'error_message': f'사용자 생성 오류: {e}'
-                })
-        except Exception as e:
-            print(f"❌ 사용자 조회 오류: {e}")
-            import traceback
-            traceback.print_exc()
-            return render(request, 'main/error.html', {
-                'error_message': f'사용자 조회 오류: {e}'
-            })
+            # 세션에 있는 UUID가 유효하지 않은 경우 새로 생성
+            new_user = User.objects.create()
+            user_uuid = str(new_user.id)
+            request.session['user_uuid'] = user_uuid
+            current_user = new_user
         
-        # 4. 카테고리 확인
-        print("📂 카테고리 확인 중...")
+        # 3. 카테고리 확인
         categories = Category.objects.all()
-        print(f"📂 카테고리 수: {categories.count()}")
-        
-        if categories.exists():
-            category_names = list(categories.values_list('name', flat=True))
-            print(f"📂 카테고리 목록: {category_names}")
-        else:
-            print("❌ 카테고리가 없습니다!")
+        if not categories.exists():
             return render(request, 'main/error.html', {
                 'error_message': '설문 카테고리가 없습니다.'
             })
         
-        # 5. 질문 데이터 처리
-        print("❓ 질문 데이터 확인 중...")
+        # 4. 질문 데이터 처리
         all_questions = Question.objects.all().order_by('id')
-        print(f"❓ 전체 질문 수: {all_questions.count()}")
-        
-        if all_questions.exists():
-            question_ids = list(all_questions.values_list('id', flat=True)[:5])
-            print(f"❓ 첫 5개 질문 ID: {question_ids}")
-        else:
-            print("❌ 질문이 없습니다!")
+        if not all_questions.exists():
             return render(request, 'main/error.html', {
                 'error_message': '설문 질문이 없습니다.'
             })
         
-        # 6. Django Paginator로 페이지 나누기
-        print("📄 페이지네이션 처리 중...")
+        # 5. Django Paginator로 페이지 나누기
         paginator = Paginator(all_questions, QUESTIONS_PER_PAGE)
         total_pages = paginator.num_pages
-        print(f"📄 총 페이지 수: {total_pages}")
-        print(f"📄 요청된 페이지: {page_num}")
         
-        # 7. 진행률 계산
-        progress_percentage = round((page_num / total_pages) * 100, 1)
-        print(f"📊 진행률: {progress_percentage}%")
+        # 6. 진행률 계산
+        progress_percentage = (page_num / total_pages) * 100
         
-        # 8. 페이지 번호 유효성 검사
-        print("🔍 페이지 유효성 검사 중...")
+        # 7. 페이지 번호 유효성 검사
         if page_num < 1:
-            print(f"⚠️ 페이지 번호가 1보다 작음: {page_num} → 1페이지로 리다이렉트")
             return redirect('question_page', page_num=1)
         elif page_num > total_pages:
-            print(f"⚠️ 페이지 번호가 총 페이지보다 큼: {page_num} > {total_pages} → 결과 페이지로 리다이렉트")
-            return redirect('result_page')
+            return redirect('user_report')
         
-        # 9. 현재 페이지의 질문들 가져오기
-        print("❓ 현재 페이지 질문 가져오는 중...")
+        # 8. 현재 페이지의 질문들 가져오기
         try:
             page_obj = paginator.get_page(page_num)
             questions = page_obj.object_list
-            print(f"❓ 현재 페이지 질문 수: {len(questions)}")
-            
-            for i, q in enumerate(questions):
-                print(f"   {i+1}. ID:{q.id} - {q.question_text[:50]}...")
-                
-        except Exception as e:
-            print(f"❌ 페이지 객체 생성 오류: {e}")
-            import traceback
-            traceback.print_exc()
+        except:
             return redirect('question_page', page_num=1)
         
-        # 10. 진행 중인 설문의 survey_attempt_id 확인
+        # 9. 진행 중인 설문의 survey_attempt_id 확인
         current_survey_session = request.session.get('current_survey_session_id')
-        print(f"🔄 현재 설문 세션: {current_survey_session}")
         
-        # 11. 진행 중인 설문이 있고, GET 요청이면 적절한 페이지로 리다이렉트
+        # 10. 진행 중인 설문이 있고, GET 요청이면 적절한 페이지로 리다이렉트
         if current_survey_session and request.method == 'GET':
-            print("🔄 진행 중인 설문 확인 중...")
             # 답변하지 않은 첫 번째 질문 찾기
             answered_questions = Response.objects.filter(
                 survey_attempt_id=current_survey_session,
                 user=current_user,
                 survey_completed_at__isnull=True
             ).values_list('question_id', flat=True)
-            
-            print(f"🔄 답변한 질문 ID들: {list(answered_questions)}")
             
             if answered_questions:
                 # 모든 질문 ID 가져오기
@@ -390,42 +313,40 @@ def question_page(request, page_num):
                         break
                 
                 if next_unanswered_question:
-                    # 다음 답변할 질문이 속한 페이지 계산
                     next_page = ((next_unanswered_question - 1) // QUESTIONS_PER_PAGE) + 1
-                    print(f"🔄 다음 답변할 질문: ID {next_unanswered_question} (페이지 {next_page})")
-                    
                     if page_num != next_page:
-                        print(f"🔄 페이지 리다이렉트: {page_num} → {next_page}")
                         return redirect('question_page', page_num=next_page)
         
-        # 12. POST 요청 처리 (사용자가 답변을 제출했을 때)
+        # 11. POST 요청 처리 (사용자가 답변을 제출했을 때)
         if request.method == 'POST':
-            print("📝 POST 요청 처리 시작...")
-            
-            # 필수 답변 검사
+            # 12. 필수 답변 검사
             missing_answers = []
             for question in questions:
                 answer = request.POST.get(f'question_{question.id}')
-                print(f"📝 질문 {question.id} 답변: {answer}")
                 if not answer:  # 객관식 답변이 없으면
                     missing_answers.append(question.id)
             
-            print(f"📝 누락된 답변: {missing_answers}")
-            
             if missing_answers:
-                print("⚠️ 누락된 답변으로 인해 현재 페이지 재표시")
                 # 오류가 있으면 현재 페이지 다시 표시
                 responses, responses_text = get_existing_responses(
                     current_survey_session, current_user, questions
                 )
                 
+                # 미리 처리된 데이터 생성 (오류 상황)
+                questions_with_data = []
+                for q in questions:
+                    questions_with_data.append({
+                        'question': q,
+                        'current_answer': responses.get(q.id),
+                        'current_text': responses_text.get(q.id, ''),
+                        'has_error': q.id in missing_answers,
+                    })
+                
                 context = {
-                    'questions': questions,
+                    'questions_with_data': questions_with_data,
                     'page_num': page_num,
                     'total_pages': total_pages,
                     'progress_percentage': progress_percentage,
-                    'responses': responses,
-                    'responses_text': responses_text,
                     'is_first_page': page_num == 1,
                     'is_last_page': page_num == total_pages,
                     'prev_page': page_num - 1 if page_num > 1 else None,
@@ -434,29 +355,117 @@ def question_page(request, page_num):
                     'error_message': '모든 질문에 답변해주세요.',
                     'missing_questions': missing_answers,
                 }
-                print("📄 템플릿 렌더링: question_page.html (오류 포함)")
                 return render(request, 'main/question_page.html', context)
             
-            # POST 처리 계속...
-            print("📝 POST 처리 로직 실행 중...")
-            # 여기에 기존 POST 처리 로직 추가...
+            # 13. 진행 중인 설문 session_id가 없으면 새로 생성 또는 기존 것 찾기
+            if not current_survey_session:
+                # 기존 미완료 응답이 있는지 확인
+                existing_incomplete = Response.objects.filter(
+                    user=current_user,
+                    survey_completed_at__isnull=True
+                ).first()
+                
+                if existing_incomplete:
+                    # 기존 미완료 설문이 있으면 그 survey_attempt_id 사용
+                    current_survey_session = existing_incomplete.survey_attempt_id
+                    request.session['current_survey_session_id'] = str(current_survey_session)
+                else:
+                    # 완전히 새로운 설문 시작
+                    current_survey_session = uuid.uuid4()
+                    request.session['current_survey_session_id'] = str(current_survey_session)
+            
+            # 14. 각 질문의 답변 저장 (최적화된 방식)
+            with transaction.atomic():
+                responses_to_create = []
+                responses_to_update = []
+                
+                for question in questions:
+                    answer = request.POST.get(f'question_{question.id}')
+                    answer_text = request.POST.get(f'question_text_{question.id}')
+                    
+                    if answer:
+                        try:
+                            answer_int = int(answer)
+                            if 1 <= answer_int <= 5:
+                                # 기존 응답 확인
+                                existing_response = Response.objects.filter(
+                                    survey_attempt_id=current_survey_session,
+                                    user=current_user,
+                                    question=question
+                                ).first()
+                                
+                                if existing_response:
+                                    existing_response.answer = answer_int
+                                    if answer_text and answer_text.strip():
+                                        existing_response.answer_text = answer_text.strip()
+                                    responses_to_update.append(existing_response)
+                                else:
+                                    new_response = Response(
+                                        survey_attempt_id=current_survey_session,
+                                        user=current_user,
+                                        question=question,
+                                        answer=answer_int,
+                                        answer_text=answer_text.strip() if answer_text and answer_text.strip() else ''
+                                    )
+                                    responses_to_create.append(new_response)
+                        except ValueError:
+                            continue
+                
+                # 벌크 저장
+                if responses_to_create:
+                    Response.objects.bulk_create(responses_to_create)
+                if responses_to_update:
+                    Response.objects.bulk_update(responses_to_update, ['answer', 'answer_text'])
+            
+            # 15. 페이지 이동 처리
+            if page_num < total_pages:
+                return redirect('question_page', page_num=page_num + 1)
+            else:
+                # 설문 완료 처리
+                # 1. 모든 응답에 완료 시각 설정
+                Response.objects.filter(
+                    survey_attempt_id=current_survey_session,
+                    user=current_user
+                ).update(survey_completed_at=timezone.now())
+                
+                # 2. 4-3 함수 호출 - 사용자 벡터 계산 + 보고서 생성
+                result = process_survey_completion(
+                    current_survey_session, 
+                    current_user.id
+                )
+                
+                if result['success']:
+                    print(f"사용자 보고서 생성 완료: UserReport ID {result['user_report_id']}")
+                else:
+                    print(f"보고서 생성 실패: {result['error_message']}")
+                    # 실패해도 결과 페이지로 이동 (기본 결과라도 보여주기)
+                
+                # 3. 세션 정리
+                if 'current_survey_session_id' in request.session:
+                    del request.session['current_survey_session_id']
+                
+                return redirect('user_report')
         
-        # 13. GET 요청 처리 - 기존 응답 불러오기
-        print("📖 GET 요청 처리 - 기존 응답 불러오기...")
+        # 16. GET 요청 처리 - 기존 응답 불러오기
         responses, responses_text = get_existing_responses(
             current_survey_session, current_user, questions
         )
-        print(f"📖 기존 응답 수: {len(responses)}")
         
-        # 14. 템플릿에 전달할 데이터 준비
-        print("📦 컨텍스트 데이터 준비 중...")
+        # 17. 미리 처리된 데이터 생성 (정상 상황)
+        questions_with_data = []
+        for q in questions:
+            questions_with_data.append({
+                'question': q,
+                'current_answer': responses.get(q.id),
+                'current_text': responses_text.get(q.id, ''),
+                'has_error': False,
+            })
+        
         context = {
-            'questions': questions,
+            'questions_with_data': questions_with_data,
             'page_num': page_num,
             'total_pages': total_pages,
             'progress_percentage': progress_percentage,
-            'responses': responses,
-            'responses_text': responses_text,
             'is_first_page': page_num == 1,
             'is_last_page': page_num == total_pages,
             'prev_page': page_num - 1 if page_num > 1 else None,
@@ -464,48 +473,36 @@ def question_page(request, page_num):
             'answer_choices': Response.ANSWER_CHOICES,
         }
         
-        print("📦 컨텍스트 키들:", list(context.keys()))
-        print("📦 questions 타입:", type(context['questions']))
-        print("📦 answer_choices:", context['answer_choices'])
-        
-        print("✅ 모든 검증 통과 - question_page.html 템플릿 렌더링")
-        print("=" * 50)
         return render(request, 'main/question_page.html', context)
         
     except Exception as e:
-        print("=" * 50)
-        print(f"💥 question_page 전체 오류: {e}")
-        print(f"💥 오류 타입: {type(e).__name__}")
-        import traceback
-        print("💥 상세 스택 트레이스:")
-        traceback.print_exc()
-        print("=" * 50)
+        print(f"question_page 오류: {e}")
         return render(request, 'main/error.html', {
-            'error_message': f'시스템 오류가 발생했습니다: {e}'
+            'error_message': '시스템 오류가 발생했습니다.'
         })
 
 
 
 
 #region 3 리포트 페이지
-def result_page(request):
-    # 유저의 대답을 기반으로 UI에 표시 후 렌더링
-    responses = Response.objects.filter(user_id=get_user_id(request)).order_by('-survey_completed_at')
-    responses2: list[Response] = [] # 가장 최근 진행한 유저의 대답 리스트
-    created_at: DateTimeField = None
+# def result_page(request):
+#     # 유저의 대답을 기반으로 UI에 표시 후 렌더링
+#     responses = Response.objects.filter(user_id=get_user_id(request)).order_by('-survey_completed_at')
+#     responses2: list[Response] = [] # 가장 최근 진행한 유저의 대답 리스트
+#     created_at: DateTimeField = None
 
-    for response in responses:
-        if created_at is None:
-            created_at = response.survey_completed_at
-        if created_at == response.survey_completed_at:
-            responses2.append(response)
-        else:
-            break
+#     for response in responses:
+#         if created_at is None:
+#             created_at = response.survey_completed_at
+#         if created_at == response.survey_completed_at:
+#             responses2.append(response)
+#         else:
+#             break
 
-    # 구현 미완성
+#     # 구현 미완성
     
 
-    return render(request, 'main/result.html')
+#     return render(request, 'main/result.html')
 
 # def load_all_politicians() -> list[Politician]:
 #     # 국회의원 리스트를 DB에서 불러온 후 반환
@@ -662,7 +659,8 @@ def load_politician_report(id: str): #-> Report
     #없다면 None Report 출력
     if not politician_report.exists():
         raise Http404("None Report")
-    return politician_report.first().full_text
+    
+    return politician_report.first().full_text.replace("**", "").replace("\\n", "\n").replace("'", "")
 
 
 # item_type: 1 => 적합한 정치인 TOP, 2 => 적합한 정치인 WORST
@@ -678,8 +676,16 @@ def on_report_item_hover(item_type: int, id: str):
         .order_by('-created_at')
         .first()
     )
+    
     if not politician_rank:
         raise Http404("None rank")
+    
+    print(politician_rank.politicians_top)
+    
+    for i in range(0, 10):
+        politician_rank.politicians_top[i]['reason'] = politician_rank.politicians_top[i]['reason'].replace("**", "").replace("\\n", "\n").replace("'", "")
+        politician_rank.politicians_bottom[i]['reason'] = politician_rank.politicians_bottom[i]['reason'].replace("**", "").replace("\\n", "\n").replace("'", "")
+
     if item_type==1:
         return politician_rank.politicians_top
     else:
@@ -707,7 +713,7 @@ def IndividualPoliticians(request, str_id):
         'address':politician.address,
         'email':politician.email or '이메일 없음',
         'tel':politician.tel or '전화번호 없음',
-        'profile':politician.profile,
+        'profile':politician.profile.replace("\\n", "\n").replace("&middot;", "·"),
         'pic':politician.pic_link,
         'book':politician.books or '저서 없음',
         'curr_assets':politician.curr_assets,
@@ -735,8 +741,12 @@ def GoToChat(request,str_id:str):
 
     politicians = Politician.objects.filter(str_id=str_id)
     user_text = "" # 유저의 메시지는 어디서 가져올 것인가
-    text = "" # 답변변
-    
+    text = "" # 답변
+
+    if request.method == "POST":
+        message = request.POST.get('message')
+        user_text = message
+
     if politicians:
         politician = politicians.first()
 
@@ -767,19 +777,34 @@ def GoToChat(request,str_id:str):
             '득표격차':politician.election_gap,
             '본회의 출석률':politician.attendance_plenary
         }
+        context = {
+            "str_id": str_id,
+            "name": politician.name,
+            "pic_link": politician.pic_link,
+            "response": f"안녕하십니까, {politician.name}입니다."
+        }
+
+        if user_text == "": # 첫 페이지
+            if politician.name == "이재명":
+                context["response"] = "안녕하십니까, 이제부터 진짜 대한민국! 지금은 이재명입니다."
+            else:
+                context["response"] = ManageChat(request, "(인삿말)", politician, poly_infos)[0]
+            return render(request, "main/chat.html", context)
+
         response = ManageChat(request, user_text, politician, poly_infos)
         text = response[0]
 
         if text != "":
-            Chat.objects.create(user=get_user_id(request), text=user_text, role="user", token_count=response[1])
-            Chat.objects.create(user=get_user_id(request), text=response, role="model", token_count=response[1])
+            user = User.objects.filter(id=get_user_id(request)).first()
+            Chat.objects.create(user=user, text=user_text, role="user", token_count=response[1], politician_id=politician.str_id)
+            Chat.objects.create(user=user, text=text, role="model", token_count=response[1], politician_id=politician.str_id)
     else:
         text = "잘못된 접근입니다. 올바른 정치인을 선택 후 다시 시도해주세요."
 
     if text == "":
         text = "죄송합니다. 하루 토큰 사용량을 초과하였습니다. 내일 다시 시도해주세요."
 
-    context = { "response": text }
+    context["response"] = text
     return render(request, "main/chat.html", context)
 
 def ManageChat(request, user_text: str, politician: Politician, poly_infos: dict) -> tuple[str, int]:
@@ -789,7 +814,7 @@ def ManageChat(request, user_text: str, politician: Politician, poly_infos: dict
     prompt = []
     system = ""
     TONE_COUNT = 5
-    TOKEN_LIMIT = 15000
+    TOKEN_LIMIT = 50 * 10000 #AVAILABLE RESPONSE COUNT * TOKEN USED PER RESPONSE
 
     speeches = Tone.objects.all()
     indicies = list(range(0, len(speeches)))
@@ -805,13 +830,35 @@ def ManageChat(request, user_text: str, politician: Politician, poly_infos: dict
         speech: Tone = speeches[index]
         speeches2.append(speech.speech)
 
+    speeches3 = Tone.objects.filter(name=politician.name)
+
+    if speeches3:
+        speeches2.append(speeches3.first().speech)
+
+    user = User.objects.filter(id=get_user_id(request)).first()
     history = Chat.objects.filter(
-        user=get_user_id(request),
+        user=user,
         created_at__gte=timezone.now() - timedelta(hours=24)
     ).order_by('-created_at')[:30]
     total_tokens = 0
 
     for chat in history:
+        if chat.role == "user":
+            continue
+        total_tokens += chat.token_count
+        
+    if total_tokens >= TOKEN_LIMIT:
+        return ("", 0)
+    
+    history2 = Chat.objects.filter(
+        user=user,
+        politician_id=politician.str_id,
+        created_at__gte=timezone.now() - timedelta(hours=24)
+    ).order_by('-created_at')[:30]
+    
+    for i in reversed(range(0, len(history2))):
+        chat = history2[i]
+
         prompt.append({
             "role": chat.role,
             "parts": [
@@ -820,10 +867,6 @@ def ManageChat(request, user_text: str, politician: Politician, poly_infos: dict
                 }
             ]
         })
-        total_tokens += chat.token_count
-
-    if total_tokens >= TOKEN_LIMIT:
-        return ("", 0)
 
     prompt.append({
             "role": "user",
@@ -848,6 +891,9 @@ def ManageChat(request, user_text: str, politician: Politician, poly_infos: dict
     --------------------
     
     넌 앞으로 성격, 말투, 외모, 지능 모두 {politician.name}인 척 말하고, 길게 말하지 마. 그리고 한국어로 말해."""
+    
+    if politician.name == "이재명":
+        system += "\n참고로, 이재명은 제 21대 대선에 1위되어서 2025년 6월 3일부터 대한민국 대통령이 되었어. 그 점 참고하고 이야기해줘. 또한, 그 나머지 후보인 김문수, 이준석, 권영국 후보는 당선되지 못했어."
 
     ai_text = CreateResponse(prompt, system) # 로직 구현 필요
     # 문제점: 텍스트만 생성해야 하고, 딴 질문에는 답변하지 않아야 함. 그런 제한할 수 있는 기능이 있나?
@@ -867,7 +913,7 @@ def CreateResponse(prompt: str | list, system = "")-> tuple[str, int]: # (text, 
         config=config
     )
     
-    return (response.text, response.usage_metadata.total_token_count)
+    return (response.text.replace("**", "").replace("\\n", "\n").replace("'", ""), response.usage_metadata.total_token_count)
 #endreigon
 
 

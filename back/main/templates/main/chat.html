@@ -1,7 +1,7 @@
 {% extends 'main/base.html' %}
 {% load static %}
 
-{% block title %}정치 성향 분석 서비스{% endblock %}
+{% block title %}{{ name }} 봇과 대화하기{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'main/css/chat.css' %}">
@@ -10,14 +10,14 @@
 {% block content %}
 <div class="chat-container">
 <div class="chat-row">
-    <img class="profile-img" src="{{ profile_url }}" alt="프로필사진">
+    <img class="profile-img" src="{{ pic_link }}" alt="프로필사진">
     <div class="chat-bubble">
-    안녕하십니까, 이제부터 진짜 대한민국! 지금은 이재명입니다.
+    {{ response|linebreaksbr }}
     </div>
 </div>
 </div>
 
-<form class="chat-input-wrap" method="post" action="{% url 'chat_send' %}">
+<form class="chat-input-wrap" method="post" action="{% url 'chat' str_id=str_id %}">
 {% csrf_token %}
 <div class="input-box-container">
     <input class="chat-input-box" autocomplete="off" name="message" type="text" placeholder="무엇이든 물어보세요">

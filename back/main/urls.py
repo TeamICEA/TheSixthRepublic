@@ -9,7 +9,7 @@ urlpatterns = [
 
     # 2 질문지 페이지
     path('questions/<int:page_num>/', views.question_page, name='question_page'),
-    path('result/', views.result_page, name='result_page'),
+    # path('result/', views.result_page, name='result_page'),
 
     # 3 리포트 페이지(석환)
     path('userreport',views.ShowUserReport,name='user_report'),
@@ -35,6 +35,6 @@ urlpatterns = [
     path('<str:str_id>/',views.IndividualPoliticians,name='politician_report'),
 
 
-    # 몇 페이지인지 주석 써주세요.
+    # 1 페이지
     path('', views.index, name='index'),
 ]
