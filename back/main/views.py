@@ -233,150 +233,73 @@ def question_page(request, page_num):
     """
     설문 질문 페이지 - 5개씩 질문을 보여주고 응답을 저장
     """
-    print("=" * 50)
-    print(f"🚀 question_page 시작: page_num={page_num}")
-    print(f"📊 요청 메서드: {request.method}")
-    print(f"🔗 요청 URL: {request.get_full_path()}")
-    print("=" * 50)
-    
     QUESTIONS_PER_PAGE = 5
     
     try:
-        # 1. 세션 상태 확인
-        print(f"🔑 세션 키: {request.session.session_key}")
-        print(f"📦 세션 데이터: {dict(request.session)}")
-        
-        # 2. 사용자 UUID 처리
-        print("👤 사용자 UUID 처리 시작...")
+        # 1. 사용자 UUID 처리
         user_uuid = get_user_id(request)
-        print(f"👤 기존 user_uuid: {user_uuid}")
         
         if not user_uuid:
-            try:
-                print("👤 새 사용자 생성 중...")
-                if not request.session.session_key:
-                    request.session.create()
-                    print("🔑 새 세션 생성됨")
-                
-                new_user = User.objects.create()
-                user_uuid = str(new_user.id)
-                request.session['user_uuid'] = user_uuid
-                print(f"✅ 새 사용자 생성 완료: {user_uuid}")
-            except Exception as e:
-                print(f"❌ 사용자 생성 오류: {e}")
-                import traceback
-                traceback.print_exc()
-                return render(request, 'main/error.html', {
-                    'error_message': f'사용자 세션 생성 오류: {e}'
-                })
+            # User 모델은 UUID만 가지는 단순한 모델
+            new_user = User.objects.create()
+            user_uuid = str(new_user.id)
+            request.session['user_uuid'] = user_uuid
         
-        # 3. User 객체 가져오기
-        print("👤 User 객체 조회 중...")
+        # 2. User 객체 가져오기 (예외 처리 추가)
         try:
             current_user = User.objects.get(id=user_uuid)
-            print(f"✅ 사용자 찾음: {current_user.id}")
         except User.DoesNotExist:
-            print(f"⚠️ 사용자 없음, 새로 생성: {user_uuid}")
-            try:
-                new_user = User.objects.create()
-                user_uuid = str(new_user.id)
-                request.session['user_uuid'] = user_uuid
-                current_user = new_user
-                print(f"✅ 사용자 재생성 완료: {user_uuid}")
-            except Exception as e:
-                print(f"❌ 사용자 재생성 오류: {e}")
-                import traceback
-                traceback.print_exc()
-                return render(request, 'main/error.html', {
-                    'error_message': f'사용자 생성 오류: {e}'
-                })
-        except Exception as e:
-            print(f"❌ 사용자 조회 오류: {e}")
-            import traceback
-            traceback.print_exc()
-            return render(request, 'main/error.html', {
-                'error_message': f'사용자 조회 오류: {e}'
-            })
+            # 세션에 있는 UUID가 유효하지 않은 경우 새로 생성
+            new_user = User.objects.create()
+            user_uuid = str(new_user.id)
+            request.session['user_uuid'] = user_uuid
+            current_user = new_user
         
-        # 4. 카테고리 확인
-        print("📂 카테고리 확인 중...")
+        # 3. 카테고리 확인
         categories = Category.objects.all()
-        print(f"📂 카테고리 수: {categories.count()}")
-        
-        if categories.exists():
-            category_names = list(categories.values_list('name', flat=True))
-            print(f"📂 카테고리 목록: {category_names}")
-        else:
-            print("❌ 카테고리가 없습니다!")
+        if not categories.exists():
             return render(request, 'main/error.html', {
                 'error_message': '설문 카테고리가 없습니다.'
             })
         
-        # 5. 질문 데이터 처리
-        print("❓ 질문 데이터 확인 중...")
+        # 4. 질문 데이터 처리
         all_questions = Question.objects.all().order_by('id')
-        print(f"❓ 전체 질문 수: {all_questions.count()}")
-        
-        if all_questions.exists():
-            question_ids = list(all_questions.values_list('id', flat=True)[:5])
-            print(f"❓ 첫 5개 질문 ID: {question_ids}")
-        else:
-            print("❌ 질문이 없습니다!")
+        if not all_questions.exists():
             return render(request, 'main/error.html', {
                 'error_message': '설문 질문이 없습니다.'
             })
         
-        # 6. Django Paginator로 페이지 나누기
-        print("📄 페이지네이션 처리 중...")
+        # 5. Django Paginator로 페이지 나누기
         paginator = Paginator(all_questions, QUESTIONS_PER_PAGE)
         total_pages = paginator.num_pages
-        print(f"📄 총 페이지 수: {total_pages}")
-        print(f"📄 요청된 페이지: {page_num}")
         
-        # 7. 진행률 계산
-        progress_percentage = round((page_num / total_pages) * 100, 1)
-        print(f"📊 진행률: {progress_percentage}%")
+        # 6. 진행률 계산
+        progress_percentage = (page_num / total_pages) * 100
         
-        # 8. 페이지 번호 유효성 검사
-        print("🔍 페이지 유효성 검사 중...")
+        # 7. 페이지 번호 유효성 검사
         if page_num < 1:
-            print(f"⚠️ 페이지 번호가 1보다 작음: {page_num} → 1페이지로 리다이렉트")
             return redirect('question_page', page_num=1)
         elif page_num > total_pages:
-            print(f"⚠️ 페이지 번호가 총 페이지보다 큼: {page_num} > {total_pages} → 결과 페이지로 리다이렉트")
             return redirect('result_page')
         
-        # 9. 현재 페이지의 질문들 가져오기
-        print("❓ 현재 페이지 질문 가져오는 중...")
+        # 8. 현재 페이지의 질문들 가져오기
         try:
             page_obj = paginator.get_page(page_num)
             questions = page_obj.object_list
-            print(f"❓ 현재 페이지 질문 수: {len(questions)}")
-            
-            for i, q in enumerate(questions):
-                print(f"   {i+1}. ID:{q.id} - {q.question_text[:50]}...")
-                
-        except Exception as e:
-            print(f"❌ 페이지 객체 생성 오류: {e}")
-            import traceback
-            traceback.print_exc()
+        except:
             return redirect('question_page', page_num=1)
         
-        # 10. 진행 중인 설문의 survey_attempt_id 확인
+        # 9. 진행 중인 설문의 survey_attempt_id 확인
         current_survey_session = request.session.get('current_survey_session_id')
-        print(f"🔄 현재 설문 세션: {current_survey_session}")
         
-        # 11. 진행 중인 설문이 있고, GET 요청이면 적절한 페이지로 리다이렉트
+        # 10. 진행 중인 설문이 있고, GET 요청이면 적절한 페이지로 리다이렉트
         if current_survey_session and request.method == 'GET':
-            print("🔄 진행 중인 설문 확인 중...")
             # 답변하지 않은 첫 번째 질문 찾기
             answered_questions = Response.objects.filter(
                 survey_attempt_id=current_survey_session,
                 user=current_user,
                 survey_completed_at__isnull=True
             ).values_list('question_id', flat=True)
-            
-            print(f"🔄 답변한 질문 ID들: {list(answered_questions)}")
             
             if answered_questions:
                 # 모든 질문 ID 가져오기
@@ -390,42 +313,40 @@ def question_page(request, page_num):
                         break
                 
                 if next_unanswered_question:
-                    # 다음 답변할 질문이 속한 페이지 계산
                     next_page = ((next_unanswered_question - 1) // QUESTIONS_PER_PAGE) + 1
-                    print(f"🔄 다음 답변할 질문: ID {next_unanswered_question} (페이지 {next_page})")
-                    
                     if page_num != next_page:
-                        print(f"🔄 페이지 리다이렉트: {page_num} → {next_page}")
                         return redirect('question_page', page_num=next_page)
         
-        # 12. POST 요청 처리 (사용자가 답변을 제출했을 때)
+        # 11. POST 요청 처리 (사용자가 답변을 제출했을 때)
         if request.method == 'POST':
-            print("📝 POST 요청 처리 시작...")
-            
-            # 필수 답변 검사
+            # 12. 필수 답변 검사
             missing_answers = []
             for question in questions:
                 answer = request.POST.get(f'question_{question.id}')
-                print(f"📝 질문 {question.id} 답변: {answer}")
                 if not answer:  # 객관식 답변이 없으면
                     missing_answers.append(question.id)
             
-            print(f"📝 누락된 답변: {missing_answers}")
-            
             if missing_answers:
-                print("⚠️ 누락된 답변으로 인해 현재 페이지 재표시")
                 # 오류가 있으면 현재 페이지 다시 표시
                 responses, responses_text = get_existing_responses(
                     current_survey_session, current_user, questions
                 )
                 
+                # 미리 처리된 데이터 생성 (오류 상황)
+                questions_with_data = []
+                for q in questions:
+                    questions_with_data.append({
+                        'question': q,
+                        'current_answer': responses.get(q.id),
+                        'current_text': responses_text.get(q.id, ''),
+                        'has_error': q.id in missing_answers,
+                    })
+                
                 context = {
-                    'questions': questions,
+                    'questions_with_data': questions_with_data,
                     'page_num': page_num,
                     'total_pages': total_pages,
                     'progress_percentage': progress_percentage,
-                    'responses': responses,
-                    'responses_text': responses_text,
                     'is_first_page': page_num == 1,
                     'is_last_page': page_num == total_pages,
                     'prev_page': page_num - 1 if page_num > 1 else None,
@@ -434,29 +355,117 @@ def question_page(request, page_num):
                     'error_message': '모든 질문에 답변해주세요.',
                     'missing_questions': missing_answers,
                 }
-                print("📄 템플릿 렌더링: question_page.html (오류 포함)")
                 return render(request, 'main/question_page.html', context)
             
-            # POST 처리 계속...
-            print("📝 POST 처리 로직 실행 중...")
-            # 여기에 기존 POST 처리 로직 추가...
+            # 13. 진행 중인 설문 session_id가 없으면 새로 생성 또는 기존 것 찾기
+            if not current_survey_session:
+                # 기존 미완료 응답이 있는지 확인
+                existing_incomplete = Response.objects.filter(
+                    user=current_user,
+                    survey_completed_at__isnull=True
+                ).first()
+                
+                if existing_incomplete:
+                    # 기존 미완료 설문이 있으면 그 survey_attempt_id 사용
+                    current_survey_session = existing_incomplete.survey_attempt_id
+                    request.session['current_survey_session_id'] = str(current_survey_session)
+                else:
+                    # 완전히 새로운 설문 시작
+                    current_survey_session = uuid.uuid4()
+                    request.session['current_survey_session_id'] = str(current_survey_session)
+            
+            # 14. 각 질문의 답변 저장 (최적화된 방식)
+            with transaction.atomic():
+                responses_to_create = []
+                responses_to_update = []
+                
+                for question in questions:
+                    answer = request.POST.get(f'question_{question.id}')
+                    answer_text = request.POST.get(f'question_text_{question.id}')
+                    
+                    if answer:
+                        try:
+                            answer_int = int(answer)
+                            if 1 <= answer_int <= 5:
+                                # 기존 응답 확인
+                                existing_response = Response.objects.filter(
+                                    survey_attempt_id=current_survey_session,
+                                    user=current_user,
+                                    question=question
+                                ).first()
+                                
+                                if existing_response:
+                                    existing_response.answer = answer_int
+                                    if answer_text and answer_text.strip():
+                                        existing_response.answer_text = answer_text.strip()
+                                    responses_to_update.append(existing_response)
+                                else:
+                                    new_response = Response(
+                                        survey_attempt_id=current_survey_session,
+                                        user=current_user,
+                                        question=question,
+                                        answer=answer_int,
+                                        answer_text=answer_text.strip() if answer_text and answer_text.strip() else ''
+                                    )
+                                    responses_to_create.append(new_response)
+                        except ValueError:
+                            continue
+                
+                # 벌크 저장
+                if responses_to_create:
+                    Response.objects.bulk_create(responses_to_create)
+                if responses_to_update:
+                    Response.objects.bulk_update(responses_to_update, ['answer', 'answer_text'])
+            
+            # 15. 페이지 이동 처리
+            if page_num < total_pages:
+                return redirect('question_page', page_num=page_num + 1)
+            else:
+                # 설문 완료 처리
+                # 1. 모든 응답에 완료 시각 설정
+                Response.objects.filter(
+                    survey_attempt_id=current_survey_session,
+                    user=current_user
+                ).update(survey_completed_at=timezone.now())
+                
+                # 2. 4-3 함수 호출 - 사용자 벡터 계산 + 보고서 생성
+                result = process_survey_completion(
+                    current_survey_session, 
+                    current_user.id
+                )
+                
+                if result['success']:
+                    print(f"사용자 보고서 생성 완료: UserReport ID {result['user_report_id']}")
+                else:
+                    print(f"보고서 생성 실패: {result['error_message']}")
+                    # 실패해도 결과 페이지로 이동 (기본 결과라도 보여주기)
+                
+                # 3. 세션 정리
+                if 'current_survey_session_id' in request.session:
+                    del request.session['current_survey_session_id']
+                
+                return redirect('result_page')
         
-        # 13. GET 요청 처리 - 기존 응답 불러오기
-        print("📖 GET 요청 처리 - 기존 응답 불러오기...")
+        # 16. GET 요청 처리 - 기존 응답 불러오기
         responses, responses_text = get_existing_responses(
             current_survey_session, current_user, questions
         )
-        print(f"📖 기존 응답 수: {len(responses)}")
         
-        # 14. 템플릿에 전달할 데이터 준비
-        print("📦 컨텍스트 데이터 준비 중...")
+        # 17. 미리 처리된 데이터 생성 (정상 상황)
+        questions_with_data = []
+        for q in questions:
+            questions_with_data.append({
+                'question': q,
+                'current_answer': responses.get(q.id),
+                'current_text': responses_text.get(q.id, ''),
+                'has_error': False,
+            })
+        
         context = {
-            'questions': questions,
+            'questions_with_data': questions_with_data,
             'page_num': page_num,
             'total_pages': total_pages,
             'progress_percentage': progress_percentage,
-            'responses': responses,
-            'responses_text': responses_text,
             'is_first_page': page_num == 1,
             'is_last_page': page_num == total_pages,
             'prev_page': page_num - 1 if page_num > 1 else None,
@@ -464,24 +473,12 @@ def question_page(request, page_num):
             'answer_choices': Response.ANSWER_CHOICES,
         }
         
-        print("📦 컨텍스트 키들:", list(context.keys()))
-        print("📦 questions 타입:", type(context['questions']))
-        print("📦 answer_choices:", context['answer_choices'])
-        
-        print("✅ 모든 검증 통과 - question_page.html 템플릿 렌더링")
-        print("=" * 50)
         return render(request, 'main/question_page.html', context)
         
     except Exception as e:
-        print("=" * 50)
-        print(f"💥 question_page 전체 오류: {e}")
-        print(f"💥 오류 타입: {type(e).__name__}")
-        import traceback
-        print("💥 상세 스택 트레이스:")
-        traceback.print_exc()
-        print("=" * 50)
+        print(f"question_page 오류: {e}")
         return render(request, 'main/error.html', {
-            'error_message': f'시스템 오류가 발생했습니다: {e}'
+            'error_message': '시스템 오류가 발생했습니다.'
         })
 
 

@@ -39,13 +39,13 @@
         
         <!-- 질문 목록 -->
         <div class="questions-section">
-            {% for question in questions %}
-            <div class="question-card {% if question.id in missing_questions %}error{% endif %}">
-                <!-- 질문 번호 및 카테고리 -->
+            {% for item in questions_with_data %}
+            <div class="question-card {% if item.has_error %}error{% endif %}">
+                <!-- 질문 헤더 -->
                 <div class="question-header">
-                    <span class="question-number">{{ question.id }}.</span>
-                    <span class="question-category">{{ question.category.name }}</span>
-                    {% if question.question_type == 'urgent' %}
+                    <span class="question-number">{{ item.question.id }}.</span>
+                    <span class="question-category">{{ item.question.category.name }}</span>
+                    {% if item.question.question_type == 'urgent' %}
                     <span class="question-type urgent">중요 현안</span>
                     {% else %}
                     <span class="question-type political">정치 성향</span>
@@ -54,17 +54,17 @@
 
                 <!-- 질문 내용 -->
                 <div class="question-content">
-                    <h3 class="question-text">{{ question.question_text }}</h3>
+                    <h3 class="question-text">{{ item.question.question_text }}</h3>
                 </div>
 
                 <!-- 답변 선택지 -->
                 <div class="answer-options">
                     {% for value, label in answer_choices %}
-                    <label class="answer-option">
+                    <label class="answer-option {% if item.current_answer == value %}selected{% endif %}">
                         <input type="radio" 
-                               name="question_{{ question.id }}" 
+                               name="question_{{ item.question.id }}" 
                                value="{{ value }}"
-                               {% if responses|get_item:question.id == value %}checked{% endif %}
+                               {% if item.current_answer == value %}checked{% endif %}
                                required>
                         <span class="answer-text">{{ label }}</span>
                         <span class="answer-circle"></span>
@@ -74,15 +74,15 @@
 
                 <!-- 서술형 답변 (선택사항) -->
                 <div class="text-answer-section">
-                    <label for="question_text_{{ question.id }}" class="text-label">
+                    <label for="question_text_{{ item.question.id }}" class="text-label">
                         <i class="fas fa-edit"></i>
                         추가 의견이나 가중치 (1-10)를 입력해주세요 (선택사항)
                     </label>
-                    <textarea name="question_text_{{ question.id }}" 
-                              id="question_text_{{ question.id }}"
+                    <textarea name="question_text_{{ item.question.id }}" 
+                              id="question_text_{{ item.question.id }}"
                               class="text-answer"
                               placeholder="여기에 의견을 자유롭게 작성하거나, 이 주제의 중요도를 1-10 숫자로 입력해주세요..."
-                              rows="3">{{ responses_text|get_item:question.id|default:'' }}</textarea>
+                              rows="3">{{ item.current_text }}</textarea>
                 </div>
             </div>
             {% endfor %}
@@ -174,13 +174,6 @@ document.querySelectorAll('input[type="radio"]').forEach(radio => {
         
         // 에러 상태 제거
         this.closest('.question-card').classList.remove('error');
-    });
-});
-
-// 페이지 로드 시 이미 선택된 옵션들에 selected 클래스 추가
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
-        radio.closest('.answer-option').classList.add('selected');
     });
 });
 
