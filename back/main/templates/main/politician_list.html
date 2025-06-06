@@ -25,7 +25,7 @@
                     {% else %}
                         정당별
                     {% endif %}
-                    <i class="fas fa-chevron-down"></i>
+                    <!-- Font Awesome 화살표 제거 -->
                 </button>
                 <ul class="dropdown-menu" aria-labelledby="partyDropdown">
                     <li>
@@ -71,11 +71,11 @@
     <div class="search-status">
         <div class="search-info">
             {% if name_query and party_query %}
-                "{{ name_query }}" 이름으로 {{ first_party_name }} 정당에서 검색: {{ total_count }}명
+                "{{ name_query }}" 이름으로 {{ selected_party_name }} 정당에서 검색: {{ total_count }}명
             {% elif name_query %}
                 "{{ name_query }}" 이름으로 검색: {{ total_count }}명
             {% elif party_query %}
-                {{ first_party_name }} 정당 소속: {{ total_count }}명
+                {{ selected_party_name }} 정당 소속: {{ total_count }}명
             {% endif %}
         </div>
         <a href="{% url 'politician_list' %}" class="reset-search-btn">
@@ -183,7 +183,7 @@
 
 {% block scripts %}
 <script>
-// 드롭다운 기능
+// 드롭다운 기능 (Font Awesome 화살표 제거로 애니메이션 코드도 단순화)
 document.addEventListener('DOMContentLoaded', function() {
     const dropdownToggle = document.getElementById('partyDropdown');
     const dropdownMenu = dropdownToggle.nextElementSibling;
@@ -208,12 +208,6 @@ document.addEventListener('DOMContentLoaded', function() {
             dropdownMenu.classList.remove('show');
         }
     });
-});
-
-// 검색 폼 개선 - 빈 값으로 검색하면 전체 목록 표시
-document.querySelector('.search-form').addEventListener('submit', function(e) {
-    // 빈 값으로 검색해도 허용 (전체 목록 표시)
-    // 기존의 alert 제거
 });
 </script>
 {% endblock %}

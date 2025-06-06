@@ -485,17 +485,22 @@ def politician_list(request):
     parties_for_buttons = Party.objects.filter(
         id__in=[0, 1, 2, 3, 4, 5, 6, 7] # 무소속 포함 8개 정당
     ).order_by('id')
-    # 템플릿에서 전체 버튼 추가로 총 9개
     
-     # 첫 번째 정당 이름 미리 계산
-    first_party_name = parties_for_buttons.first().name if parties_for_buttons.exists() else "정당"
+    # 선택된 정당 이름 계산
+    selected_party_name = "정당"
+    if party_query:
+        try:
+            selected_party = Party.objects.get(id=int(party_query))
+            selected_party_name = selected_party.name
+        except (Party.DoesNotExist, ValueError):
+            selected_party_name = "정당"
 
     context = {
         'page_obj': page_obj,
         'name_query': name_query,
         'party_query': party_query,
         'parties_for_buttons': parties_for_buttons,  # 9개 버튼용
-        'first_party_name': first_party_name, 
+        'selected_party_name': selected_party_name, 
         'total_count': politicians.count(),
     }
     return render(request, 'main/politician_list.html', context)
