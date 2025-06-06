@@ -679,9 +679,7 @@ def on_report_item_hover(item_type: int, id: str):
     
     if not politician_rank:
         raise Http404("None rank")
-    
-    print(politician_rank.politicians_top)
-    
+
     for i in range(0, 10):
         politician_rank.politicians_top[i]['reason'] = politician_rank.politicians_top[i]['reason'].replace("**", "").replace("\\n", "\n").replace("'", "")
         politician_rank.politicians_bottom[i]['reason'] = politician_rank.politicians_bottom[i]['reason'].replace("**", "").replace("\\n", "\n").replace("'", "")
