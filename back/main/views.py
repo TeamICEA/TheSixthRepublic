@@ -735,8 +735,12 @@ def GoToChat(request,str_id:str):
 
     politicians = Politician.objects.filter(str_id=str_id)
     user_text = "" # 유저의 메시지는 어디서 가져올 것인가
-    text = "" # 답변변
-    
+    text = "" # 답변
+
+    if request.method == "POST":
+        message = request.POST.get('message')
+        user_text = message
+
     if politicians:
         politician = politicians.first()
 
@@ -767,19 +771,34 @@ def GoToChat(request,str_id:str):
             '득표격차':politician.election_gap,
             '본회의 출석률':politician.attendance_plenary
         }
+        context = {
+            "str_id": str_id,
+            "name": politician.name,
+            "pic_link": politician.pic_link,
+            "response": f"안녕하십니까, {politician.name}입니다."
+        }
+
+        if user_text == "": # 첫 페이지
+            if politician.name == "이재명":
+                context["response"] = "안녕하십니까, 이제부터 진짜 대한민국! 지금은 이재명입니다."
+            else:
+                context["response"] = ManageChat(request, "(인삿말)", politician, poly_infos)[0]
+            return render(request, "main/chat.html", context)
+
         response = ManageChat(request, user_text, politician, poly_infos)
         text = response[0]
 
         if text != "":
-            Chat.objects.create(user=get_user_id(request), text=user_text, role="user", token_count=response[1])
-            Chat.objects.create(user=get_user_id(request), text=response, role="model", token_count=response[1])
+            user = User.objects.filter(id=get_user_id(request)).first()
+            Chat.objects.create(user=user, text=user_text, role="user", token_count=response[1], politician_id=politician.str_id)
+            Chat.objects.create(user=user, text=text, role="model", token_count=response[1], politician_id=politician.str_id)
     else:
         text = "잘못된 접근입니다. 올바른 정치인을 선택 후 다시 시도해주세요."
 
     if text == "":
         text = "죄송합니다. 하루 토큰 사용량을 초과하였습니다. 내일 다시 시도해주세요."
 
-    context = { "response": text }
+    context["response"] = text
     return render(request, "main/chat.html", context)
 
 def ManageChat(request, user_text: str, politician: Politician, poly_infos: dict) -> tuple[str, int]:
@@ -789,7 +808,7 @@ def ManageChat(request, user_text: str, politician: Politician, poly_infos: dict
     prompt = []
     system = ""
     TONE_COUNT = 5
-    TOKEN_LIMIT = 15000
+    TOKEN_LIMIT = 30 * 10000 #AVAILABLE RESPONSE COUNT * TOKEN USED PER RESPONSE
 
     speeches = Tone.objects.all()
     indicies = list(range(0, len(speeches)))
@@ -805,13 +824,35 @@ def ManageChat(request, user_text: str, politician: Politician, poly_infos: dict
         speech: Tone = speeches[index]
         speeches2.append(speech.speech)
 
+    speeches3 = Tone.objects.filter(name=politician.name)
+
+    if speeches3:
+        speeches2.append(speeches3.first().speech)
+
+    user = User.objects.filter(id=get_user_id(request)).first()
     history = Chat.objects.filter(
-        user=get_user_id(request),
+        user=user,
         created_at__gte=timezone.now() - timedelta(hours=24)
     ).order_by('-created_at')[:30]
     total_tokens = 0
 
     for chat in history:
+        if chat.role == "user":
+            continue
+        total_tokens += chat.token_count
+        
+    if total_tokens >= TOKEN_LIMIT:
+        return ("", 0)
+    
+    history2 = Chat.objects.filter(
+        user=user,
+        politician_id=politician.str_id,
+        created_at__gte=timezone.now() - timedelta(hours=24)
+    ).order_by('-created_at')[:30]
+    
+    for i in reversed(range(0, len(history2))):
+        chat = history2[i]
+
         prompt.append({
             "role": chat.role,
             "parts": [
@@ -820,10 +861,6 @@ def ManageChat(request, user_text: str, politician: Politician, poly_infos: dict
                 }
             ]
         })
-        total_tokens += chat.token_count
-
-    if total_tokens >= TOKEN_LIMIT:
-        return ("", 0)
 
     prompt.append({
             "role": "user",
@@ -848,6 +885,9 @@ def ManageChat(request, user_text: str, politician: Politician, poly_infos: dict
     --------------------
     
     넌 앞으로 성격, 말투, 외모, 지능 모두 {politician.name}인 척 말하고, 길게 말하지 마. 그리고 한국어로 말해."""
+    
+    if politician.name == "이재명":
+        system += "\n참고로, 이재명은 제 21대 대선에 1위되어서 2025년 6월 3일부터 대한민국 대통령이 되었어. 그 점 참고하고 이야기해줘. 또한, 그 나머지 후보인 김문수, 이준석, 권영국 후보는 당선되지 못했어."
 
     ai_text = CreateResponse(prompt, system) # 로직 구현 필요
     # 문제점: 텍스트만 생성해야 하고, 딴 질문에는 답변하지 않아야 함. 그런 제한할 수 있는 기능이 있나?
@@ -867,7 +907,7 @@ def CreateResponse(prompt: str | list, system = "")-> tuple[str, int]: # (text, 
         config=config
     )
     
-    return (response.text, response.usage_metadata.total_token_count)
+    return (response.text.replace("**", "").replace("\\n", "\n").replace("'", ""), response.usage_metadata.total_token_count)
 #endreigon
 
 

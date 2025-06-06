@@ -913,7 +913,7 @@ class Tone(models.Model):
         verbose_name_plural = "정치인 말투들"
 #endregion
 
-#region 12 챗봇 이전 대화 기록
+#region 12 챗봇 이전 대화 기록 CHAT
 class Chat(models.Model):
     # id는 Django에서 자동으로 생성되므로 별도로 정의할 필요 없음
     user = models.ForeignKey(
@@ -935,6 +935,13 @@ class Chat(models.Model):
     # 대화 내용
     text = models.TextField(
         verbose_name="대화 내용"
+    )
+
+    politician_id = models.CharField(
+        max_length=30,
+        null=True,
+        blank=True,
+        verbose_name="대화하고 있는 정치인 id"
     )
 
     role = models.CharField(
