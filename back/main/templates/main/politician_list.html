@@ -15,7 +15,12 @@
         <!-- 정당별 드롭다운 필터 -->
         <div class="filter-dropdown-container">
             <div class="dropdown">
-                <button class="dropdown-toggle" type="button" id="partyDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <!-- Bootstrap 자동 기능만 사용 -->
+                <button class="dropdown-toggle" 
+                        type="button" 
+                        id="partyDropdown" 
+                        data-bs-toggle="dropdown" 
+                        aria-expanded="false">
                     {% if party_query %}
                         {% for party in parties_for_buttons %}
                             {% if party.id|stringformat:'s' == party_query %}
@@ -138,7 +143,7 @@
         </table>
     </div>
     
-    <!-- 페이지네이션 (초록계열 색상 적용) -->
+    <!-- 페이지네이션 -->
     {% if page_obj.has_other_pages %}
     <div class="pagination-section">
         <div class="pagination-wrapper">
@@ -181,32 +186,18 @@
 {% endblock %}
 
 {% block scripts %}
+<!-- JavaScript 완전 제거 또는 단순화 -->
 <script>
-// 드롭다운 기능
+// Bootstrap이 자동으로 처리하므로 추가 JavaScript 불필요
+// 필요시 드롭다운 이벤트 리스너만 추가
 document.addEventListener('DOMContentLoaded', function() {
-    const dropdownToggle = document.getElementById('partyDropdown');
-    const dropdownMenu = dropdownToggle.nextElementSibling;
-    
-    dropdownToggle.addEventListener('click', function(e) {
-        e.preventDefault();
-        const isExpanded = this.getAttribute('aria-expanded') === 'true';
-        
-        if (isExpanded) {
-            this.setAttribute('aria-expanded', 'false');
-            dropdownMenu.classList.remove('show');
-        } else {
-            this.setAttribute('aria-expanded', 'true');
-            dropdownMenu.classList.add('show');
-        }
-    });
-    
-    // 외부 클릭 시 드롭다운 닫기
-    document.addEventListener('click', function(e) {
-        if (!dropdownToggle.contains(e.target) && !dropdownMenu.contains(e.target)) {
-            dropdownToggle.setAttribute('aria-expanded', 'false');
-            dropdownMenu.classList.remove('show');
-        }
-    });
+    // 드롭다운이 열릴 때 로그 (선택사항)
+    var dropdownElement = document.getElementById('partyDropdown');
+    if (dropdownElement) {
+        dropdownElement.addEventListener('shown.bs.dropdown', function () {
+            console.log('드롭다운이 열렸습니다');
+        });
+    }
 });
 </script>
 {% endblock %}
