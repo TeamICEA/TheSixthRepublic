@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'main',
     'pgvector',
+    'django.contrib.humanize',
 ]
 
 MIDDLEWARE = [

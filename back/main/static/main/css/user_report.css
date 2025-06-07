@@ -1,0 +1,125 @@
+기존 css
+/*석환
+/* 기본 구조 */
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background-color: #f9f9f9;
+  margin: 0;
+  padding: 40px 20px;
+}
+
+.politician_report {
+  max-width: 800px;
+  margin: auto;
+}
+
+/* 페이지 헤더 */
+.page-header h1 {
+    font-size: 40px;
+  font-weight: bold;
+  margin-bottom: 30px;
+  text-align: left;
+
+}
+
+
+/* 리포트 박스 */
+.outer-box {
+  background-color: #daffe6;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.report-title,
+.ranking-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+/* 리포트 내부 박스 */
+.inner-box {
+  background-color: #f2f2f2;
+  border: 2px solid #a3d3ff;
+  border-radius: 8px;
+  padding: 20px;
+  min-height: 160px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* 랭킹 테이블 + 이유 박스 묶는 row */
+.ranking-row {
+  display: flex;
+  gap: 20px;
+  align-items: stretch;  /* 핵심! 높이 맞춤 */
+}
+
+/* 기존 left-box */
+.left-box {
+  flex: 2;
+}
+
+/* 기존 right-box */
+.right-box {
+  flex: 1;
+  background-color: #f2f2f2;
+  border-radius: 8px;
+  padding: 10px;
+  overflow-y: auto;
+  box-sizing: border-box;
+  max-height:620px;
+  overflow-y:auto;
+}
+
+.reason-title {
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.reason {
+  font-size: 14px;
+  color: #333;
+  line-height: 1.5;
+}
+
+/* 테이블 스타일 */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+th, td {
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid #ccc;
+}
+
+th {
+  background-color: #c5f5c5;
+  font-weight: bold;
+}
+
+table img {
+  width: 30px;
+  height: auto;
+  border-radius: 4px;
+}
+
+/* clearfix */
+.outer-box::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+
+
+
+.clickable-row {
+  cursor: pointer;
+}
+
+/*랭킹 페이지

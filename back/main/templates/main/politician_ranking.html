@@ -1,6 +1,6 @@
 {% extends 'main/base.html' %}
 {% load static %}
-
+{% load humanize %}
 {% block title %}개별 정치인 집중 분석{% endblock %}
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'main/css/politician_ranking.css' %}">
@@ -49,7 +49,7 @@
                 <th>출생</th>
                 <th>정당</th>
                 <th>{% if sort_by == 'reelected' %}당선 수
-                    {% elif sort_by == 'curr_assets' %}재산 총액
+                    {% elif sort_by == 'curr_assets' %}재산 총액(천 원)
                     {% elif sort_by == 'birthdate' %}나이
                     {% elif sort_by == 'attendance' %}출석률
                     {% else %}투표 격차
@@ -74,11 +74,11 @@
             <td>{{ politician.name }}</td>
             <td>{{ politician.birthdate|date:"Y" }}</td>
             <td>{{ politician.party }}</td>
-            <td>{% if sort_by == 'reelected' %} {{ politician.reelected_count }}
-                    {% elif sort_by == 'curr_assets' %} {{ politician.curr_assets}}
-                    {% elif sort_by == 'birthdate' %} {{ politician.age }}
-                    {% elif sort_by == 'attendance' %} {{ politician.attendance_plenary }}
-                    {% else %} {{ politician.election_gap }}
+            <td>{% if sort_by == 'reelected' %} {{ politician.reelected_count }}번
+                    {% elif sort_by == 'curr_assets' %} {{ politician.curr_assets|intcomma}}
+                    {% elif sort_by == 'birthdate' %} {{ politician.age }}세
+                    {% elif sort_by == 'attendance' %} {{ politician.attendance_plenary }}%
+                    {% else %} {{ politician.election_gap }}%
                     {% endif %}</td>
             </tr>
             {% endfor %}

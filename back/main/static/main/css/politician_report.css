@@ -1,3 +1,4 @@
+기존 css
 /*석환
 /* 기본 구조 */
 body {
@@ -21,21 +22,27 @@ body {
 
 }
 
-/* 프로필 박스 전체 */
+/* 컨테이너: 세로 정렬 구조 */
 .profile-container {
   display: flex;
-  align-items:stretch;
+  flex-direction: column;
   background-color: #daffe6;
   border-radius: 10px;
   padding: 20px;
   margin-bottom: 24px;
-  flex-wrap: wrap;
   gap: 20px;
 }
 
-/* 왼쪽 텍스트 */
+/* 상단 텍스트 + 이미지 나란히 */
+.profile-top {
+  display: flex;
+  gap: 20px;
+  align-items: stretch;
+}
+
+/* 텍스트 영역 */
 .profile-info {
-  flex: 1 1 300px;
+  flex: 2;
   display: flex;
   flex-direction: column;
 }
@@ -46,10 +53,6 @@ body {
   margin: 0;
 }
 
-.profile-info h3{
-font-weight:bold;
-margin-bottom: 20px;
-}
 .profile-info dt {
   width: 100px;
   font-weight: bold;
@@ -61,36 +64,55 @@ margin-bottom: 20px;
   width: calc(100% - 100px);
 }
 
-/* 오른쪽 사진 */
+/* 이미지 영역 */
 .profile-img-box {
- flex: 1 1 80px; /* info와 같은 flex 값 */
+  flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;   /* img를 세로 가운데 정렬 */
+  align-items: center;
+  justify-content: center;
+  min-width: 180px;
+  max-width: 240px;
+
 }
 
 .profile-img-box img {
-  max-height: 100%;
-  max-width: 100%;
-  object-fit: cover; /* 비율 유지하면서 꽉 채우기 */
+  width: 100%;
+  height: auto;
+  object-fit: cover;
   border-radius: 10px;
-  border: 12px solid #9af5b8;}
+  border: 12px solid #9af5b8;
+}
 
-/* 채팅 버튼 */
 .chat-button {
   display: inline-block;
   margin-top: 12px;
-  padding: 15px 25px;
+  padding: 20px 25px;
   background-color: #b2e5c6;
   border-radius: 6px;
   font-weight: bold;
   text-decoration: none;
   color: #000;
-  box-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-  transition: 0.2s;
-  width:100%;
-  text-align:center;
-  font-size: 20px;
+  text-align: center;
+  font-size: 18px;
+  width: 100%;
+  max-width: 240px;
+}
+
+/* 학력/경력 박스: 아래쪽, 전체 너비 */
+.history-box {
+  background-color: #9af5b8;
+  border-radius: 10px;
+  padding: 15px;
+  width: 100%;
+}
+
+.history-innerbox {
+  background: #f2f2f2;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 1.5;
 }
 .chat-button:hover {
   background-color: #cdeccc;

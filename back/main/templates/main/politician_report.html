@@ -12,8 +12,10 @@
         <h1>{{name}} 집중 분석</h1>
     </div>
 
-    <div class="profile-container">
-    <!-- 텍스트 정보 영역 -->
+<div class="profile-container">
+
+  <!-- 상단: 텍스트 + 이미지 (좌우 배치) -->
+  <div class="profile-top">
     <div class="profile-info">
       <dl>
         <dt><h3>{{name}}</h3></dt><dd></dd>
@@ -30,29 +32,27 @@
       </dl>
     </div>
 
-    <!-- 사진 영역 -->
     <div class="profile-img-box">
-        {% if pic %}
-      <img src="{{pic}}" alt="{{name}} 사진">
-                            {% else %}
-                            <div class="photo-placeholder1">
-                                <i class="fas fa-user" style="font-size: 200px"></i>
-                            </div>
-                        {% endif %}
-  
-    <a href="{% url 'chat' str_id %}" class="chat-button">{{name}} 봇과 대화하기 →</a>
-    </div>
-
-      <!-- 학력 및 경력사항 -->
-
-    <div class="history-box">
-    <h3>학력 및 경력사항</h3>
-        <div class="history-innerbox">
-            {{profile|linebreaksbr}}
+      {% if pic %}
+        <img src="{{pic}}" alt="{{name}} 사진">
+      {% else %}
+        <div class="photo-placeholder1">
+          <i class="fas fa-user" style="font-size: 200px;"></i>
         </div>
+      {% endif %}
+      <a href="{% url 'chat' str_id %}" class="chat-button">{{name}} 봇과 대화하기 →</a>
     </div>
-    
   </div>
+
+  <!-- 하단: 전체 너비 학력/경력 박스 -->
+  <div class="history-box">
+    <h3>학력 및 경력사항</h3>
+    <div class="history-innerbox">
+      {{profile|linebreaksbr}}
+    </div>
+  </div>
+
+</div>
 
 
     <!--정치 성향 분석 리포트 박스-->
@@ -88,8 +88,8 @@
                     <!--여기부터 본셀-->
                     <tbody>
                         {% for politician in best_rank|slice:":10" %}
-                        <div class="clickable-row"></div>
-                    <tr onclick="showReason(this,'reason-display-top')" data-reason="{{ politician.reason|linebreaksbr }}">
+                    
+                    <tr class="clickable-row" onclick="showReason(this,'reason-display-top')" data-reason="{{ politician.reason|linebreaksbr }}">
                 
                         <td>{{ politician.rank }}</td>
                         <td>
@@ -146,7 +146,7 @@
                     <!--여기부터 본셀-->
                     <tbody>
                         {% for politician in worst_rank|slice:":10" %}
-                    <tr onclick="showReason(this,'reason-display-bottom')" data-reason="{{ politician.reason|linebreaksbr }}">
+                    <tr class="clickable-row" onclick="showReason(this,'reason-display-bottom')" data-reason="{{ politician.reason|linebreaksbr }}">
                         <td>
                             {{ politician.rank }}</td>
                         <td>
