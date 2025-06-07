@@ -1176,23 +1176,34 @@ def ReportHistory(request):
         if not user_reports.exists():
             return redirect('question_page', page_num=1)
         
-        # 날짜를 문자열로 변환하여 딕셔너리 키로 사용
-        reports_with_formatted_date = []
-        for report in user_reports[:10]:  # 최신 10개만
-            reports_with_formatted_date.append({
-                'id': report.id,
-                'created_at': report.created_at,
-                'formatted_date': report.created_at.strftime('%Y년 %m월 %d일 %H:%M'),
-                'date_key': report.created_at.strftime('%Y-%m-%d-%H-%M-%S'),
-                'tendency_label': report.get_tendency_label(),
-                'overall_tendency': report.user_overall_tendency,
-                'parties_count': len(report.parties_rank) if report.parties_rank else 0,
-                'politicians_count': len(report.politicians_top) if report.politicians_top else 0,
+        # history.html 템플릿에 맞는 데이터 구조로 변환
+        reports = []
+        for i, report in enumerate(user_reports[:10]):  # 최신 10개만
+            # 정당 랭킹에서 1위 정당 가져오기
+            top_party = "정당 없음"
+            if report.parties_rank and len(report.parties_rank) > 0:
+                top_party = report.parties_rank[0].get('name', '정당 없음')
+            
+            # 정치인 TOP에서 1위 정치인 가져오기
+            top_politician = "정치인 없음"
+            if report.politicians_top and len(report.politicians_top) > 0:
+                top_politician = report.politicians_top[0].get('name', '정치인 없음')
+            
+            # 성향 비율 계산 (0~1을 0~100으로 변환)
+            ratio = int(round(report.user_overall_tendency * 100, 0))
+            ratio2 = 100 - ratio
+            
+            reports.append({
+                "rank": i + 1,
+                "created_at": report.created_at,
+                "party": top_party,
+                "politician": top_politician,
+                "ratio": ratio,
+                "ratio2": ratio2
             })
         
         context = {
-            'user_reports': reports_with_formatted_date,
-            'total_reports': user_reports.count(),
+            "reports": reports  # 템플릿에서 기대하는 'reports' 키로 전달
         }
         
         return render(request, 'main/history.html', context)

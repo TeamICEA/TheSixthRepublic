@@ -24,180 +24,29 @@
                     <th>전체 성향</th>
                 </tr>
                 {% else %}
-                <tr><th>가장 최근에 진행한 리포트가 없습니다...</span></tr>
+                <tr><th>가장 최근에 진행한 리포트가 없습니다...</th></tr>
                 {% endif %}
             </thead>
             <tbody>
-                {% if reports.0.ratio %}
-                <tr class="button-row" onclick="location.href='/userreport/?date={{ reports.0.created_at }}';" tabindex="0">
-                    <td>{{ reports.0.rank }}</td>
-                    <td>{{ reports.0.created_at }}</td>
-                    <td>{{ reports.0.party }}</td>
-                    <td>{{ reports.0.politician }}</td>
-                    <td>
-                        <div class="result-bar-container">
-                            <span class="result-bar bar-red" style="width:{{ reports.0.ratio }}%;"></span>
-                            <span class="result-bar bar-green" style="width:{{ reports.0.ratio2 }}%;"></span>
-                            {% if reports.0.ratio %}
-                            <span class="bar-text">{{ reports.0.ratio }}%</span>
-                            {% endif %}
-                        </div>
-                    </td>
-                </tr>
-                {% endif %}
-                {% if reports.1.ratio %}
-                <tr class="button-row" onclick="location.href='/userreport/?date={{ reports.1.created_at }}';" tabindex="0">
-                    <td>{{ reports.1.rank }}</td>
-                    <td>{{ reports.1.created_at }}</td>
-                    <td>{{ reports.1.party }}</td>
-                    <td>{{ reports.1.politician }}</td>
-                    <td>
-                        <div class="result-bar-container">
-                            <span class="result-bar bar-red" style="width:{{ reports.1.ratio }}%;"></span>
-                            <span class="result-bar bar-green" style="width:{{ reports.1.ratio2 }}%;"></span>
-                            {% if reports.1.ratio %}
-                            <span class="bar-text">{{ reports.1.ratio }}%</span>
-                            {% endif %}
-                        </div>
-                    </td>
-                </tr>
-                {% endif %}
-                {% if reports.2.ratio %}
-                <tr class="button-row" onclick="location.href='/userreport/?date={{ reports.2.created_at }}';" tabindex="0">
-                    <td>{{ reports.2.rank }}</td>
-                    <td>{{ reports.2.created_at }}</td>
-                    <td>{{ reports.2.party }}</td>
-                    <td>{{ reports.2.politician }}</td>
-                    <td>
-                        <div class="result-bar-container">
-                            <span class="result-bar bar-red" style="width:{{ reports.2.ratio }}%;"></span>
-                            <span class="result-bar bar-green" style="width:{{ reports.2.ratio2 }}%;"></span>
-                            {% if reports.2.ratio %}
-                            <span class="bar-text">{{ reports.2.ratio }}%</span>
-                            {% endif %}
-                        </div>
-                    </td>
-                </tr>
-                {% endif %}
-                {% if reports.3.ratio %}
-                <tr class="button-row" onclick="location.href='/userreport/?date={{ reports.3.created_at }}';" tabindex="0">
-                    <td>{{ reports.3.rank }}</td>
-                    <td>{{ reports.3.created_at }}</td>
-                    <td>{{ reports.3.party }}</td>
-                    <td>{{ reports.3.politician }}</td>
-                    <td>
-                        <div class="result-bar-container">
-                            <span class="result-bar bar-red" style="width:{{ reports.3.ratio }}%;"></span>
-                            <span class="result-bar bar-green" style="width:{{ reports.3.ratio2 }}%;"></span>
-                            {% if reports.3.ratio %}
-                            <span class="bar-text">{{ reports.3.ratio }}%</span>
-                            {% endif %}
-                        </div>
-                    </td>
-                </tr>
-                {% endif %}
-                {% if reports.4.ratio %}
-                <tr class="button-row" onclick="location.href='/userreport/?date={{ reports.4.created_at }}';" tabindex="0">
-                    <td>{{ reports.4.rank }}</td>
-                    <td>{{ reports.4.created_at }}</td>
-                    <td>{{ reports.4.party }}</td>
-                    <td>{{ reports.4.politician }}</td>
-                    <td>
-                        <div class="result-bar-container">
-                            <span class="result-bar bar-red" style="width:{{ reports.4.ratio }}%;"></span>
-                            <span class="result-bar bar-green" style="width:{{ reports.4.ratio2 }}%;"></span>
-                            {% if reports.4.ratio %}
-                            <span class="bar-text">{{ reports.4.ratio }}%</span>
-                            {% endif %}
-                        </div>
-                    </td>
-                </tr>
-                {% endif %}
-                {% if reports.5.ratio %}
-                <tr class="button-row" onclick="location.href='/userreport/?date={{ reports.5.created_at }}';" tabindex="0">
-                    <td>{{ reports.5.rank }}</td>
-                    <td>{{ reports.5.created_at }}</td>
-                    <td>{{ reports.5.party }}</td>
-                    <td>{{ reports.5.politician }}</td>
-                    <td>
-                        <div class="result-bar-container">
-                            <span class="result-bar bar-red" style="width:{{ reports.5.ratio }}%;"></span>
-                            <span class="result-bar bar-green" style="width:{{ reports.5.ratio2 }}%;"></span>
-                            {% if reports.5.ratio %}
-                            <span class="bar-text">{{ reports.5.ratio }}%</span>
-                            {% endif %}
-                        </div>
-                    </td>
-                </tr>
-                {% endif %}
-                {% if reports.6.ratio %}
-                <tr class="button-row" onclick="location.href='/userreport/?date={{ reports.6.created_at }}';" tabindex="0">
-                    <td>{{ reports.6.rank }}</td>
-                    <td>{{ reports.6.created_at }}</td>
-                    <td>{{ reports.6.party }}</td>
-                    <td>{{ reports.6.politician }}</td>
-                    <td>
-                        <div class="result-bar-container">
-                            <span class="result-bar bar-red" style="width:{{ reports.6.ratio }}%;"></span>
-                            <span class="result-bar bar-green" style="width:{{ reports.6.ratio2 }}%;"></span>
-                            {% if reports.6.ratio %}
-                            <span class="bar-text">{{ reports.6.ratio }}%</span>
-                            {% endif %}
-                        </div>
-                    </td>
-                </tr>
-                {% endif %}
-                {% if reports.7.ratio %}
-                <tr class="button-row" onclick="location.href='/userreport/?date={{ reports.7.created_at }}';" tabindex="0">
-                    <td>{{ reports.7.rank }}</td>
-                    <td>{{ reports.7.created_at }}</td>
-                    <td>{{ reports.7.party }}</td>
-                    <td>{{ reports.7.politician }}</td>
-                    <td>
-                        <div class="result-bar-container">
-                            <span class="result-bar bar-red" style="width:{{ reports.7.ratio }}%;"></span>
-                            <span class="result-bar bar-green" style="width:{{ reports.7.ratio2 }}%;"></span>
-                            {% if reports.7.ratio %}
-                            <span class="bar-text">{{ reports.7.ratio }}%</span>
-                            {% endif %}
-                        </div>
-                    </td>
-                </tr>
-                {% endif %}
-                {% if reports.8.ratio %}
-                <tr class="button-row" onclick="location.href='/userreport/?date={{ reports.8.created_at }}';" tabindex="0">
-                    <td>{{ reports.8.rank }}</td>
-                    <td>{{ reports.8.created_at }}</td>
-                    <td>{{ reports.8.party }}</td>
-                    <td>{{ reports.8.politician }}</td>
-                    <td>
-                        <div class="result-bar-container">
-                            <span class="result-bar bar-red" style="width:{{ reports.8.ratio }}%;"></span>
-                            <span class="result-bar bar-green" style="width:{{ reports.8.ratio2 }}%;"></span>
-                            {% if reports.8.ratio %}
-                            <span class="bar-text">{{ reports.8.ratio }}%</span>
-                            {% endif %}
-                        </div>
-                    </td>
-                </tr>
-                {% endif %}
-                {% if reports.9.ratio %}
-                <tr class="button-row" onclick="location.href='/userreport/?date={{ reports.9.created_at }}';" tabindex="0">
-                    <td>{{ reports.9.rank }}</td>
-                    <td>{{ reports.9.created_at }}</td>
-                    <td>{{ reports.9.party }}</td>
-                    <td>{{ reports.9.politician }}</td>
-                    <td>
-                        <div class="result-bar-container">
-                            <span class="result-bar bar-red" style="width:{{ reports.9.ratio }}%;"></span>
-                            <span class="result-bar bar-green" style="width:{{ reports.9.ratio2 }}%;"></span>
-                            {% if reports.9.ratio %}
-                            <span class="bar-text">{{ reports.9.ratio }}%</span>
-                            {% endif %}
-                        </div>
-                    </td>
-                </tr>
-                {% endif %}
+                {% for report in reports %}
+                    {% if report.ratio %}
+                    <tr class="button-row" onclick="location.href='/userreport?date={{ report.created_at }}';" tabindex="0">
+                        <td>{{ report.rank }}</td>
+                        <td>{{ report.created_at }}</td>
+                        <td>{{ report.party }}</td>
+                        <td>{{ report.politician }}</td>
+                        <td>
+                            <div class="result-bar-container">
+                                <span class="result-bar bar-red" style="width:{{ report.ratio }}%;"></span>
+                                <span class="result-bar bar-green" style="width:{{ report.ratio2 }}%;"></span>
+                                {% if report.ratio %}
+                                <span class="bar-text">{{ report.ratio }}%</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endif %}
+                {% endfor %}
             </tbody>
         </table>
     </div>
