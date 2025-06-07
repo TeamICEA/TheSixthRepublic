@@ -3,13 +3,17 @@ from . import views
 
 urlpatterns = [
     #path('', views.index, name='index'),
+    
+    path('history_or_survey/', views.history_or_survey, name='history_or_survey'),
 
     # 스마트 설문 리다이렉트 (베너용)
     path('survey/', views.smart_survey_redirect, name='smart_survey_redirect'),
 
+    # 1 페이지
+    path('', views.index, name='index'),
+
     # 2 질문지 페이지
     path('questions/<int:page_num>/', views.question_page, name='question_page'),
-    # path('result/', views.result_page, name='result_page'),
 
     # 3 리포트 페이지(석환)
     path('userreport',views.ShowUserReport,name='user_report'),
@@ -34,7 +38,4 @@ urlpatterns = [
     # 5 개별 정치인 분석 페이지
     path('<str:str_id>/',views.IndividualPoliticians,name='politician_report'),
 
-
-    # 1 페이지
-    path('', views.index, name='index'),
 ]
