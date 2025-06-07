@@ -40,6 +40,17 @@ logger = logging.getLogger(__name__)
 # 사용자 설문 완료 시 자동 실행:
 # 3. process_survey_completion() - 사용자 벡터 + 보고서 생성
 
+def is_valid_vector(vector_field):
+    """
+    벡터 필드가 유효한지 안전하게 확인
+    """
+    if vector_field is None:
+        return False
+    if hasattr(vector_field, '__len__'):
+        return len(vector_field) > 0
+    if hasattr(vector_field, 'size'):
+        return vector_field.size > 0
+    return bool(vector_field)
 
 # 1단계: 정당 로직
 #region 1-1. 정당 최종 계산 함수
@@ -60,7 +71,7 @@ def calculate_party_final_from_existing_vectors():
         
         for party in parties:
             # 성향벡터와 가중치벡터가 모두 존재하는지 확인
-            if party.tendency_vector.all() and party.weight_vector.all():
+            if is_valid_vector(party.tendency_vector) and is_valid_vector(party.weight_vector):
                 # numpy 배열로 변환
                 tendency = np.array(party.tendency_vector)
                 weight = np.array(party.weight_vector)
@@ -211,7 +222,7 @@ def set_politician_weight_from_party():
                     # 소속 정당의 가중치벡터 가져오기
                     party = politician.party
                     
-                    if party.weight_vector.any():
+                    if is_valid_vector(party.weight_vector):
                         # 정당의 가중치벡터를 정치인에게 할당
                         politician.weight_vector = party.weight_vector
                         politician.save(update_fields=['weight_vector'])
@@ -242,6 +253,7 @@ def set_politician_weight_from_party():
         return 0
 #endregion
 
+
 #region 2-3. 정치인 최종 계산
 def calculate_politician_final_vectors():
     """
@@ -259,7 +271,7 @@ def calculate_politician_final_vectors():
         
         for politician in politicians:
             # 성향벡터와 가중치벡터가 모두 존재하는지 확인
-            if politician.tendency_vector.all() and politician.weight_vector.all():
+            if is_valid_vector(politician.tendency_vector) and is_valid_vector(politician.weight_vector):
                 # numpy 배열로 변환
                 tendency = np.array(politician.tendency_vector)
                 weight = np.array(politician.weight_vector)
@@ -370,7 +382,7 @@ def calculate_politician_similarities(politician_id):
         target_politician = Politician.objects.get(id=politician_id)
         
         # 대상 정치인의 최종벡터 존재 여부 확인
-        if not target_politician.final_vector.any():
+        if not is_valid_vector(target_politician.final_vector):
             print(f"정치인 {politician_id}({target_politician.name})의 최종벡터가 없습니다")
             return []
         
@@ -379,11 +391,13 @@ def calculate_politician_similarities(politician_id):
         results = []
         
         # 자신을 제외한 모든 정치인과 비교 (최종벡터가 있는 정치인만)
-        other_politicians = Politician.objects.exclude(id=politician_id).filter(
-            final_vector__isnull=False
-        ).select_related('party')
+        other_politicians = Politician.objects.exclude(id=politician_id).select_related('party')
         
         for politician in other_politicians:
+            # 비교 대상 정치인의 최종벡터 존재 확인
+            if not is_valid_vector(politician.final_vector):
+                continue
+                
             # 비교 대상 정치인의 최종벡터를 numpy 배열로 변환
             politician_vector = np.array(politician.final_vector)
             
@@ -695,11 +709,12 @@ def generate_politician_report_content(politician_id):
         # 1. 대상 정치인 데이터 조회
         target_politician = Politician.objects.get(id=politician_id)
         
-        # 필수 데이터 검증
-        if not target_politician.final_vector.any() or target_politician.overall_tendency is None:
+        # 필수 데이터 검증 - 수정된 부분
+        if not is_valid_vector(target_politician.final_vector) or target_politician.overall_tendency is None:
             print(f"정치인 {politician_id}({target_politician.name})의 벡터 데이터가 없습니다")
             return None
         
+        # 나머지 코드는 동일...
         # 2. 다른 정치인들과의 유사도 계산
         similarity_results = calculate_politician_similarities(politician_id)
         if not similarity_results:
@@ -811,8 +826,8 @@ def save_politician_report(politician_id):
         # 1. 대상 정치인 데이터 조회
         target_politician = Politician.objects.get(id=politician_id)
         
-        # 필수 데이터 검증
-        if not target_politician.final_vector.any() or target_politician.overall_tendency is None:
+        # 필수 데이터 검증 - 수정된 부분
+        if not is_valid_vector(target_politician.final_vector) or target_politician.overall_tendency is None:
             print(f"정치인 {politician_id}({target_politician.name})의 벡터 데이터가 없습니다")
             return None
         
@@ -870,7 +885,6 @@ def save_politician_report(politician_id):
         print(f"정치인 {politician_id} 보고서 저장 중 오류 발생: {e}")
         return None
 #endregion
-
 
 # 3단계: 사용자 설문조사 로직
 #region 서술형 답변 성향 분석 함수
@@ -1120,7 +1134,7 @@ def calculate_user_final_vectors(survey_attempt_id, user_id):
         action = "생성됨" if created else "업데이트됨"
         print(f"사용자 {user_id} 설문 {survey_attempt_id} 최종 계산 완료 ({action})")
         print(f"- 전체성향: {overall_tendency:.3f}")
-        print(f"- 편향성: {bias:.3f if bias else 'None'}")
+        print(f"- 편향성: {bias:.3f}" if bias else "- 편향성: None")
         
         return user_report
         
@@ -1153,7 +1167,7 @@ def calculate_user_party_similarities(survey_attempt_id, user_id):
         )
         
         # 사용자의 최종벡터 존재 여부 확인
-        if not user_report.user_final_vector:
+        if not is_valid_vector(user_report.user_final_vector):
             print(f"사용자 {user_id} 설문 {survey_attempt_id}의 최종벡터가 없습니다")
             return []
         
@@ -1162,11 +1176,13 @@ def calculate_user_party_similarities(survey_attempt_id, user_id):
         results = []
         
         # 2. 무소속을 제외한 모든 정당과 비교 (최종벡터가 있는 정당만)
-        parties = Party.objects.exclude(id=0).filter(
-            final_vector__isnull=False
-        )
+        parties = Party.objects.exclude(id=0)
         
         for party in parties:
+            # 정당의 최종벡터 존재 확인
+            if not is_valid_vector(party.final_vector):
+                continue
+                
             # 정당의 최종벡터를 numpy 배열로 변환
             party_vector = np.array(party.final_vector)
             
@@ -1226,7 +1242,7 @@ def calculate_user_politician_similarities(survey_attempt_id, user_id):
         )
         
         # 사용자의 최종벡터 존재 여부 확인
-        if not user_report.user_final_vector:
+        if not is_valid_vector(user_report.user_final_vector):
             print(f"사용자 {user_id} 설문 {survey_attempt_id}의 최종벡터가 없습니다")
             return []
         
@@ -1235,11 +1251,13 @@ def calculate_user_politician_similarities(survey_attempt_id, user_id):
         results = []
         
         # 2. 모든 정치인과 비교 (무소속 포함, 최종벡터가 있는 정치인만)
-        politicians = Politician.objects.filter(
-            final_vector__isnull=False
-        ).select_related('party')
+        politicians = Politician.objects.select_related('party')
         
         for politician in politicians:
+            # 정치인의 최종벡터 존재 확인
+            if not is_valid_vector(politician.final_vector):
+                continue
+                
             # 정치인의 최종벡터를 numpy 배열로 변환
             politician_vector = np.array(politician.final_vector)
             
@@ -1307,8 +1325,8 @@ def generate_user_rankings_with_reasons(survey_attempt_id, user_id):
             survey_attempt_id=survey_attempt_id
         )
         
-        # 사용자의 최종벡터 존재 여부 확인
-        if not user_report.user_final_vector:
+        # 사용자의 최종벡터 존재 여부 확인 - 수정된 부분
+        if not is_valid_vector(user_report.user_final_vector):
             print(f"사용자 {user_id} 설문 {survey_attempt_id}의 최종벡터가 없습니다")
             return None
         
@@ -1525,8 +1543,8 @@ def generate_user_report_content(survey_attempt_id, user_id):
             survey_attempt_id=survey_attempt_id
         )
         
-        # 필수 데이터 검증
-        if not user_report.user_final_vector or user_report.user_overall_tendency is None:
+        # 필수 데이터 검증 - 수정된 부분
+        if not is_valid_vector(user_report.user_final_vector) or user_report.user_overall_tendency is None:
             print(f"사용자 {user_id} 설문 {survey_attempt_id}의 벡터 데이터가 없습니다")
             return None
         
@@ -1664,8 +1682,8 @@ def save_user_report(survey_attempt_id, user_id):
             survey_attempt_id=survey_attempt_id
         )
         
-        # 필수 데이터 검증
-        if not user_report.user_final_vector or user_report.user_overall_tendency is None:
+        # 필수 데이터 검증 - 수정된 부분
+        if not is_valid_vector(user_report.user_final_vector) or user_report.user_overall_tendency is None:
             print(f"사용자 {user_id} 설문 {survey_attempt_id}의 벡터 데이터가 없습니다")
             return None
         
@@ -1699,9 +1717,23 @@ def save_user_report(survey_attempt_id, user_id):
         print(f"사용자 {user_id} 설문 {survey_attempt_id} 보고서 저장 완료")
         print(f"저장된 데이터:")
         print(f"- 보고서 길이: {len(report_content)}자")
-        print(f"- 정당 랭킹: {len(rankings['parties_rank'])}개")
-        print(f"- 유사한 정치인 TOP: {len(rankings['politicians_top'])}명")
-        print(f"- 차이나는 정치인 BOTTOM: {len(rankings['politicians_bottom'])}명")
+        
+        # 안전한 배열 길이 확인
+        if rankings['parties_rank']:
+            print(f"- 정당 랭킹: {len(rankings['parties_rank'])}개")
+        else:
+            print(f"- 정당 랭킹: 0개")
+            
+        if rankings['politicians_top']:
+            print(f"- 유사한 정치인 TOP: {len(rankings['politicians_top'])}명")
+        else:
+            print(f"- 유사한 정치인 TOP: 0명")
+            
+        if rankings['politicians_bottom']:
+            print(f"- 차이나는 정치인 BOTTOM: {len(rankings['politicians_bottom'])}명")
+        else:
+            print(f"- 차이나는 정치인 BOTTOM: 0명")
+            
         print(f"- 생성 시각: {user_report.created_at}")
         
         return user_report
@@ -2039,7 +2071,7 @@ def process_survey_completion(survey_attempt_id, user_id):
         print(f"\n=== 사용자 설문 완료 처리 성공 ===")
         print(f"- UserReport ID: {final_report.id}")
         print(f"- 전체성향: {user_report.user_overall_tendency:.3f}")
-        print(f"- 편향성: {user_report.user_bias:.3f if user_report.user_bias else 'None'}")
+        print(f"- 편향성: {user_report.user_bias:.3f}" if user_report.user_bias else "- 편향성: None")
         print(f"- 생성 시각: {final_report.created_at}")
         
         return result

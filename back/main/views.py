@@ -547,29 +547,146 @@ def question_page(request, page_num):
 
 
 #region 3 리포트 페이지 (석환)
-def ShowUserReport(request):
-    date = request.GET.get('date')
-    user_id = get_user_id(request)
+# def ShowUserReport(request):
+#     date = request.GET.get('date')
+#     user_id = get_user_id(request)
 
-    if date is not None:
-        report = UserReport.objects.filter(user=user_id, created_at__gte=date).order_by("created_at").first()
-        return ShowUserReportBy(request, report)
+#     if date is not None:
+#         report = UserReport.objects.filter(user=user_id, created_at__gte=date).order_by("created_at").first()
+#         return ShowUserReportBy(request, report)
 
-    latest_report=UserReport.objects.filter(user=user_id).order_by("-created_at").first()
-    return ShowUserReportBy(request, latest_report)
+#     latest_report=UserReport.objects.filter(user=user_id).order_by("-created_at").first()
+#     return ShowUserReportBy(request, latest_report)
     
+# def ShowUserReportBy(request, latest_report: UserReport):
+#     if latest_report is None:
+#         raise Http404("None report")
+
+#     context={
+#         'report':latest_report.full_text,
+#         'parties_rank':latest_report.parties_rank,
+#         'politicians_top':latest_report.politicians_top,
+#         'politicians_bottom':latest_report.politicians_bottom,
+#     }
+#     return render(request,'main/user_report.html',context)
+
+def ShowUserReport(request):
+    """사용자 보고서 표시 - 디버깅 코드 포함"""
+    print("🔍 ShowUserReport 함수 시작")
+    
+    date = request.GET.get('date')
+    user_uuid = get_user_id(request)
+    print(f"🔍 user_uuid: {user_uuid}")
+    print(f"🔍 date 파라미터: {date}")
+    
+    if not user_uuid:
+        print("❌ user_uuid가 없음 - 설문 페이지로 리다이렉트")
+        return redirect('question_page', page_num=1)
+    
+    try:
+        current_user = User.objects.get(id=user_uuid)
+        print(f"✅ User 객체 찾음: {current_user} (ID: {current_user.id})")
+    except User.DoesNotExist:
+        print(f"❌ User 객체를 찾을 수 없음 - UUID: {user_uuid}")
+        return redirect('question_page', page_num=1)
+    except Exception as e:
+        print(f"❌ User 조회 중 오류: {e}")
+        return redirect('question_page', page_num=1)
+
+    # 날짜 기반 조회
+    if date is not None:
+        print(f"📅 날짜 기반 조회: {date}")
+        try:
+            report = UserReport.objects.filter(
+                user=current_user, 
+                created_at__gte=date
+            ).order_by("created_at").first()
+            print(f"📊 날짜 기반 리포트 결과: {report}")
+            return ShowUserReportBy(request, report)
+        except Exception as e:
+            print(f"❌ 날짜 기반 조회 오류: {e}")
+
+    # 최신 리포트 조회
+    print("📊 최신 리포트 조회 시작")
+    try:
+        latest_report = UserReport.objects.filter(
+            user=current_user
+        ).order_by("-created_at").first()
+        print(f"📊 최신 리포트 결과: {latest_report}")
+        
+        if latest_report:
+            print(f"✅ 리포트 발견:")
+            print(f"  - ID: {latest_report.id}")
+            print(f"  - 생성일: {latest_report.created_at}")
+            print(f"  - 사용자: {latest_report.user}")
+            print(f"  - full_text 길이: {len(latest_report.full_text) if latest_report.full_text else 0}")
+            print(f"  - parties_rank 개수: {len(latest_report.parties_rank) if latest_report.parties_rank else 0}")
+            print(f"  - politicians_top 개수: {len(latest_report.politicians_top) if latest_report.politicians_top else 0}")
+        else:
+            print("❌ 리포트가 없음 - 설문 페이지로 리다이렉트")
+            return redirect('question_page', page_num=1)
+            
+    except Exception as e:
+        print(f"❌ 최신 리포트 조회 오류: {e}")
+        import traceback
+        traceback.print_exc()
+        return redirect('question_page', page_num=1)
+        
+    return ShowUserReportBy(request, latest_report)
+
 def ShowUserReportBy(request, latest_report: UserReport):
+    """특정 UserReport 객체로 보고서 표시 - 디버깅 코드 포함"""
+    print("🔍 ShowUserReportBy 함수 시작")
+    print(f"📊 전달받은 리포트: {latest_report}")
+    
     if latest_report is None:
-        raise Http404("None report")
-
-    context={
-        'report':latest_report.full_text,
-        'parties_rank':latest_report.parties_rank,
-        'politicians_top':latest_report.politicians_top,
-        'politicians_bottom':latest_report.politicians_bottom,
-    }
-    return render(request,'main/user_report.html',context)
-
+        print("❌ latest_report가 None - 404 처리")
+        raise Http404("리포트를 찾을 수 없습니다")
+    
+    try:
+        # 리포트 데이터 상세 검증
+        print("🔍 리포트 데이터 검증 시작:")
+        
+        full_text = latest_report.full_text
+        print(f"  - full_text: {type(full_text)}, 길이: {len(full_text) if full_text else 0}")
+        
+        parties_rank = latest_report.parties_rank
+        print(f"  - parties_rank: {type(parties_rank)}, 개수: {len(parties_rank) if parties_rank else 0}")
+        
+        politicians_top = latest_report.politicians_top
+        print(f"  - politicians_top: {type(politicians_top)}, 개수: {len(politicians_top) if politicians_top else 0}")
+        
+        politicians_bottom = latest_report.politicians_bottom
+        print(f"  - politicians_bottom: {type(politicians_bottom)}, 개수: {len(politicians_bottom) if politicians_bottom else 0}")
+        
+        # 각 데이터의 샘플 출력
+        if full_text:
+            print(f"  - full_text 샘플: {full_text[:100]}...")
+        
+        if parties_rank and len(parties_rank) > 0:
+            print(f"  - parties_rank 첫 번째 항목: {parties_rank[0]}")
+        
+        if politicians_top and len(politicians_top) > 0:
+            print(f"  - politicians_top 첫 번째 항목: {politicians_top[0]}")
+        
+        # 컨텍스트 구성
+        context = {
+            'report': full_text,
+            'parties_rank': parties_rank,
+            'politicians_top': politicians_top,
+            'politicians_bottom': politicians_bottom,
+        }
+        
+        print("✅ 컨텍스트 구성 완료")
+        print(f"🎯 템플릿 렌더링: main/user_report.html")
+        
+        return render(request, 'main/user_report.html', context)
+        
+    except Exception as e:
+        print(f"❌ ShowUserReportBy 오류: {e}")
+        import traceback
+        traceback.print_exc()
+        raise Http404("리포트 처리 중 오류가 발생했습니다")
 #endregion
 
 
@@ -1078,7 +1195,7 @@ def ReportHistory(request):
             'total_reports': user_reports.count(),
         }
         
-        return render(request, 'main/report_history.html', context)
+        return render(request, 'main/history.html', context)
         
     except Exception as e:
         print(f"ReportHistory 오류: {e}")

@@ -12,194 +12,188 @@
         <h1>성향 분석 결과</h1>
     </div>
 
-
     <!--정치 성향 분석 리포트 박스-->
     <div class="outer-box">
         <h3 class="report-title">나의 정치 성향 분석 리포트</h3>
         <!--내부 박스-->
         <div class="inner-box">
-            {% if reports %}
+            {% if report %}
             <!--DB에서 데이터 갖고 와서 채워주기(리포트)-->
-            {{report|linebreaksbr}}
+            {{ report|linebreaksbr }}
             {% else %}
             <p style="color: red;">리포트가 아직 생성되지 않았어요.</p>
             {% endif %}
         </div>
+    </div>  <!--정치 성향 분석 리포트 박스 섹션 끝끝-->
 
-        </div>  <!--정치 성향 분석 리포트 박스 섹션 끝끝-->
-
-        <!--정당 랭킹/이유박스-->
-        <div class="outer-box">
-            <h3 class="ranking-title">나와 적합한 정당 랭킹</h3>
-            
-            <div class="ranking-row"><!--좌측 랭킹 박스-->
-            <div class="left-box">
-                <table>
-                    <!--구분을 위한 행 정보-->
-                    <thead>
-                    <tr>
-                        <th>순위</th>
-                        <th>로고</th>
-                        <th>이름</th>  
-                        <th>적합도</th> 
-                    </tr>
-                    </thead>
-                    <!--여기부터 본셀-->
-                    <tbody>
+    <!--정당 랭킹/이유박스-->
+    <div class="outer-box">
+        <h3 class="ranking-title">나와 적합한 정당 랭킹</h3>
+        
+        <div class="ranking-row"><!--좌측 랭킹 박스-->
+        <div class="left-box">
+            <table>
+                <!--구분을 위한 행 정보-->
+                <thead>
+                <tr>
+                    <th>순위</th>
+                    <th>로고</th>
+                    <th>이름</th>  
+                    <th>적합도</th> 
+                </tr>
+                </thead>
+                <!--여기부터 본셀-->
+                <tbody>
+                    {% if parties_rank %}
                         {% for party in parties_rank %}
-                    
-                    <tr class="clickable-row" onclick="showReason(this,'reason-display-top-party')" data-reason="{{ party.reason|linebreaksbr }}">
-                
-                        <td>{{ party.rank }}</td>
-                        <td>
-                            
-                            {% if party.logo %}
-                            <img src="{{party.logo}}" alt="{{ party.name }} 사진"/>
-                            {% else %}
-                            <div class="photo-placeholder">
-                                <i class="fas fa-user"></i>
-                            </div>
-                        {% endif %}
-
-
-                        </td> 
-                        <td>{{party.name}}</td>
-                        <td>{{party.percentage}}</td>
-                    </tr>
-                    </div>
-                    {% endfor %}
-                    </tbody>
-                </table>
-
-            </div>
-            <!--설명 박스-->
-            <div class="right-box">
-                <h3 class="reason-title">주요 이유</h3>
-                <div class="reason" id="reason-display-top-party">
-                    클릭한 정당의 이유가 여기에 나타납니다.
+                        <tr class="clickable-row" onclick="showReason(this,'reason-display-top-party')" data-reason="{{ party.reason|linebreaksbr }}">
+                            <td>{{ party.rank }}</td>
+                            <td>
+                                {% if party.logo %}
+                                <img src="{{ party.logo }}" alt="{{ party.name }} 로고"/>
+                                {% else %}
+                                <div class="photo-placeholder">
+                                    <i class="fas fa-building"></i>
+                                </div>
+                                {% endif %}
+                            </td> 
+                            <td>{{ party.name }}</td>
+                            <td>{{ party.percentage }}%</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: red;">정당 랭킹 데이터가 없습니다.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
         </div>
-            </div>  <!--rightbox-->
+        <!--설명 박스-->
+        <div class="right-box">
+            <h3 class="reason-title">주요 이유</h3>
+            <div class="reason" id="reason-display-top-party">
+                클릭한 정당의 이유가 여기에 나타납니다.
             </div>
-</div>
+        </div>  <!--rightbox-->
+        </div>
+    </div>
 
-        <!--랭킹/이유박스-->
-        <div class="outer-box">
-            <h3 class="ranking-title">나와 적합한 정치인 랭킹 Top 10</h3>
-            
-            <div class="ranking-row"><!--좌측 랭킹 박스-->
-            <div class="left-box">
-                <table>
-                    <!--구분을 위한 행 정보-->
-                    <thead>
-                    <tr>
-                        <th>순위</th>
-                        <th>사진</th>
-                        <th>이름</th>  
-                        <th>출생</th>
-                        <th>정당</th>   
-                        <th>적합도</th> 
-                    </tr>
-                    </thead>
-                    <!--여기부터 본셀-->
-                    <tbody>
+    <!--랭킹/이유박스-->
+    <div class="outer-box">
+        <h3 class="ranking-title">나와 적합한 정치인 랭킹 Top 10</h3>
+        
+        <div class="ranking-row"><!--좌측 랭킹 박스-->
+        <div class="left-box">
+            <table>
+                <!--구분을 위한 행 정보-->
+                <thead>
+                <tr>
+                    <th>순위</th>
+                    <th>사진</th>
+                    <th>이름</th>  
+                    <th>출생</th>
+                    <th>정당</th>   
+                    <th>적합도</th> 
+                </tr>
+                </thead>
+                <!--여기부터 본셀-->
+                <tbody>
+                    {% if politicians_top %}
                         {% for politician in politicians_top|slice:":10" %}
-                    
-                    <tr class="clickable-row" onclick="showReason(this,'reason-display-top')" data-reason="{{ politician.reason|linebreaksbr }}">
-                
-                        <td>{{ politician.rank }}</td>
-                        <td>
-                            
-                            {% if politician.picture %}
-                            <img src="{{politician.picture}}" alt="{{ politician.name }} 사진"/>
-                            {% else %}
-                            <div class="photo-placeholder">
-                                <i class="fas fa-user"></i>
-                            </div>
-                        {% endif %}
-
-
-                        </td> 
-                        <td>{{politician.name}}</td>
-                        <td>{{politician.birth}}</td>
-                        <td>{{politician.party}}</td>
-                        <td>{{politician.percentage}}</td>
-                    </tr>
-                    </div>
-                    {% endfor %}
-                    </tbody>
-                </table>
-
-            </div>
-            <!--설명 박스-->
-            <div class="right-box">
-                <h3 class="reason-title">주요 이유</h3>
-                <div class="reason" id="reason-display-top">
-                    클릭한 정치인의 이유가 여기에 나타납니다.
+                        <tr class="clickable-row" onclick="showReason(this,'reason-display-top')" data-reason="{{ politician.reason|linebreaksbr }}">
+                            <td>{{ politician.rank }}</td>
+                            <td>
+                                {% if politician.picture %}
+                                <img src="{{ politician.picture }}" alt="{{ politician.name }} 사진"/>
+                                {% else %}
+                                <div class="photo-placeholder">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                {% endif %}
+                            </td> 
+                            <td>{{ politician.name }}</td>
+                            <td>{{ politician.birth }}</td>
+                            <td>{{ politician.party }}</td>
+                            <td>{{ politician.percentage }}%</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: red;">정치인 TOP 랭킹 데이터가 없습니다.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
         </div>
-            </div>  <!--rightbox-->
+        <!--설명 박스-->
+        <div class="right-box">
+            <h3 class="reason-title">주요 이유</h3>
+            <div class="reason" id="reason-display-top">
+                클릭한 정치인의 이유가 여기에 나타납니다.
             </div>
+        </div>  <!--rightbox-->
         </div>
-        <!--랭킹/이유박스-->
-        <div class="outer-box">
-            <h3 class="ranking-title">나와 적합한 정치인 랭킹 Bottom 10</h3>
-            <div class="ranking-row">
-            <!--좌측 랭킹 박스-->
-            <div class="left-box">
-                <table>
-                    <!--구분을 위한 행 정보-->
-                    <thead>
-                    <tr>
-                        <th>순위</th>
-                        <th>사진</th>
-                        <th>이름</th>  
-                        <th>출생</th>
-                        <th>정당</th>   
-                        <th>적합도</th> 
-                    </tr>
-                    </thead>
-                    <!--여기부터 본셀-->
-                    <tbody>
+    </div>
+
+    <!--랭킹/이유박스-->
+    <div class="outer-box">
+        <h3 class="ranking-title">나와 적합한 정치인 랭킹 Bottom 10</h3>
+        <div class="ranking-row">
+        <!--좌측 랭킹 박스-->
+        <div class="left-box">
+            <table>
+                <!--구분을 위한 행 정보-->
+                <thead>
+                <tr>
+                    <th>순위</th>
+                    <th>사진</th>
+                    <th>이름</th>  
+                    <th>출생</th>
+                    <th>정당</th>   
+                    <th>적합도</th> 
+                </tr>
+                </thead>
+                <!--여기부터 본셀-->
+                <tbody>
+                    {% if politicians_bottom %}
                         {% for politician in politicians_bottom|slice:":10" %}
-                    <tr class="clickable-row" onclick="showReason(this,'reason-display-bottom')" data-reason="{{ politician.reason|linebreaksbr }}">
-                        <td>
-                            {{ politician.rank }}</td>
-                        <td>
-                            
-                            
-                            
-                            {% if politician.picture %}
-                            <img src="{{politician.picture}}" alt="{{ politician.name }} 사진"/></td> 
-                                                    {% else %}
-                            <div class="photo-placeholder">
-                                <i class="fas fa-user"></i>
-                            </div>
-                        {% endif %}
-
-                        
-                        
-                        
-                            <td>{{politician.name}}</td>
-                        <td>{{politician.birth}}</td>
-                        <td>{{politician.party}}</td>
-                        <td>{{politician.percentage}}</td>
-                    </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-
-            </div>
-            <!--설명 박스-->
-            <div class="right-box">
-                <h3 class="reason-title">주요 이유</h3>
-                <div class="reason" id="reason-display-bottom">
-                    클릭한 정치인의 이유가 여기에 나타납니다.
+                        <tr class="clickable-row" onclick="showReason(this,'reason-display-bottom')" data-reason="{{ politician.reason|linebreaksbr }}">
+                            <td>{{ politician.rank }}</td>
+                            <td>
+                                {% if politician.picture %}
+                                <img src="{{ politician.picture }}" alt="{{ politician.name }} 사진"/>
+                                {% else %}
+                                <div class="photo-placeholder">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                {% endif %}
+                            </td>
+                            <td>{{ politician.name }}</td>
+                            <td>{{ politician.birth }}</td>
+                            <td>{{ politician.party }}</td>
+                            <td>{{ politician.percentage }}%</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: red;">정치인 BOTTOM 랭킹 데이터가 없습니다.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
         </div>
-            </div>
+        <!--설명 박스-->
+        <div class="right-box">
+            <h3 class="reason-title">주요 이유</h3>
+            <div class="reason" id="reason-display-bottom">
+                클릭한 정치인의 이유가 여기에 나타납니다.
             </div>
         </div>
+        </div>
+    </div>
 
-    </div>  <!--latest report-->
-
+</div>  <!--latest report-->
 
 <script>
 function showReason(row, targetId) {
@@ -210,8 +204,5 @@ function showReason(row, targetId) {
     }
 }
 </script>
-
-
-
 
 {% endblock %}
