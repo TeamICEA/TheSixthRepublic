@@ -1,125 +1,250 @@
-기존 css
-/*석환
-/* 기본 구조 */
-body {
-  font-family: 'Noto Sans KR', sans-serif;
-  background-color: #f9f9f9;
-  margin: 0;
-  padding: 40px 20px;
+/* 나무위키 다크 모드 색상 체계 */
+:root {
+    --primary: #4A9EFF;
+    --primary-light: #6BB6FF;
+    --primary-dark: #2563EB;
+    --background: #1B1D1F;
+    --surface: #2E3033;
+    --surface-light: #3E4042;
+    --surface-darker: #252729;
+    --text-primary: #FFFFFF;
+    --text-secondary: #E0E0E0;
+    --text-muted: #8A8D93;
+    --border-light: #3E4042;
+    --border-medium: #4A4D50;
+    --success: #00C851;
+    --warning: #FFB347;
+    --error: #FF4444;
+    --hover: #383A3D;
 }
 
-.politician_report {
-  max-width: 800px;
-  margin: auto;
+/* 기본 구조 - 다크 모드 적용 및 너비 조정 */
+body {
+    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--background);
+    color: var(--text-primary);
+    margin: 0;
+    padding: 40px 20px;  /* politician_report.css와 동일 */
+    line-height: 1.6;
+}
+
+/* 올바른 클래스명으로 수정 */
+.user_report {
+    max-width: 1000px;   /* politician_report.css와 동일 */
+    margin: auto;        /* politician_report.css와 동일 */
 }
 
 /* 페이지 헤더 */
 .page-header h1 {
-    font-size: 40px;
-  font-weight: bold;
-  margin-bottom: 30px;
-  text-align: left;
-
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 30px;
+    text-align: left;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 12px;
 }
 
-
-/* 리포트 박스 */
+/* 리포트 박스 - 다크 모드 */
 .outer-box {
-  background-color: #daffe6;
-  border-radius: 10px;
-  padding: 20px;
-  margin-bottom: 24px;
+    background-color: var(--surface);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    border: 1px solid var(--border-light);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .report-title,
 .ranking-title {
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 12px;
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 8px;
 }
 
-/* 리포트 내부 박스 */
+/* 리포트 내부 박스 - 다크 모드 */
 .inner-box {
-  background-color: #f2f2f2;
-  border: 2px solid #a3d3ff;
-  border-radius: 8px;
-  padding: 20px;
-  min-height: 160px;
-  font-size: 14px;
-  line-height: 1.6;
+    background-color: var(--surface-darker);
+    border: 1px solid var(--border-medium);
+    border-radius: 8px;
+    padding: 20px;
+    min-height: 160px;
+    font-size: 15px; /* 14*/
+    line-height: 1.8; /* 1.6*/
+    color: var(--text-secondary);
 }
 
 /* 랭킹 테이블 + 이유 박스 묶는 row */
 .ranking-row {
-  display: flex;
-  gap: 20px;
-  align-items: stretch;  /* 핵심! 높이 맞춤 */
+    display: flex;
+    gap: 20px;
+    align-items: stretch;
 }
 
 /* 기존 left-box */
 .left-box {
-  flex: 2;
+    flex: 2;
+    min-width: 0;
 }
 
-/* 기존 right-box */
+/* 기존 right-box - 다크 모드 */
 .right-box {
-  flex: 1;
-  background-color: #f2f2f2;
-  border-radius: 8px;
-  padding: 10px;
-  overflow-y: auto;
-  box-sizing: border-box;
-  max-height:620px;
-  overflow-y:auto;
+    flex: 1;
+    background-color: var(--surface-darker);
+    border-radius: 8px;
+    padding: 16px;
+    overflow-y: auto;
+    box-sizing: border-box;
+    max-height: 620px;
+    border: 1px solid var(--border-medium);
+    min-width: 0;
 }
 
 .reason-title {
-  font-weight: bold;
-  margin-bottom: 15px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: var(--text-primary);
+    font-size: 16px;
 }
 
 .reason {
-  font-size: 14px;
-  color: #333;
-  line-height: 1.5;
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
 }
 
-/* 테이블 스타일 */
+/* 테이블 스타일 - 다크 모드 */
 table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    background-color: var(--surface-darker);
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border-medium);
 }
 
 th, td {
-  padding: 8px;
-  text-align: left;
-  border-bottom: 1px solid #ccc;
+    padding: 12px 8px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-light);
+    color: var(--text-primary);
 }
 
 th {
-  background-color: #c5f5c5;
-  font-weight: bold;
+    background-color: var(--surface-light);
+    font-weight: 600;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-medium);
+}
+
+tr:hover {
+    background-color: var(--hover);
 }
 
 table img {
-  width: 30px;
-  height: auto;
-  border-radius: 4px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border-light);
 }
-
-/* clearfix */
-.outer-box::after {
-  content: "";
-  display: table;
-  clear: both;
-}
-
-
-
 
 .clickable-row {
-  cursor: pointer;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
 }
 
-/*랭킹 페이지
+.clickable-row:hover {
+    background-color: var(--hover);
+}
+
+/* 1, 2, 3위 순위 숫자 - 모두 동일한 금색 */
+.rank-top {
+    color: #ECA019 !important; /* 금색 */
+    font-weight: 700 !important;
+    font-size: 16px !important;
+}
+
+/* 순위 셀 기본 스타일 */
+td:first-child {
+    text-align: center;
+    font-weight: 600;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    body {
+        padding: 20px 16px;
+    }
+    
+    .user_report {
+        max-width: calc(100% - 32px);
+        margin: 0 16px;
+    }
+    
+    .page-header h1 {
+        font-size: 24px;
+    }
+    
+    .ranking-row {
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .right-box {
+        max-height: 300px;
+    }
+    
+    .outer-box {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 576px) {
+    .user_report {
+        max-width: calc(100% - 24px);
+        margin: 0 12px;
+    }
+    
+    body {
+        padding: 12px;
+    }
+    
+    th, td {
+        padding: 8px 6px;
+        font-size: 13px;
+    }
+    
+    table img {
+        width: 28px;
+        height: 28px;
+    }
+}
+
+/* 접근성 개선 */
+.clickable-row:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* 스크롤바 스타일 */
+.right-box::-webkit-scrollbar {
+    width: 6px;
+}
+
+.right-box::-webkit-scrollbar-track {
+    background: var(--surface);
+}
+
+.right-box::-webkit-scrollbar-thumb {
+    background: var(--border-medium);
+    border-radius: 3px;
+}
+
+.right-box::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}

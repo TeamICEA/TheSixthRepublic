@@ -203,6 +203,27 @@ function showReason(row, targetId) {
         target.innerHTML = reason;
     }
 }
-</script>
 
+// 순위별 색상 적용 함수 (1, 2, 3위 모두 동일한 금색)
+function applyRankColors() {
+    const rankCells = document.querySelectorAll('table tbody tr td:first-child');
+    
+    rankCells.forEach(cell => {
+        const rankText = cell.textContent.trim();
+        
+        // 기존 클래스 제거
+        cell.classList.remove('rank-top');
+        
+        // 1, 2, 3위 모두 동일한 클래스 추가
+        if (rankText === '1' || rankText === '2' || rankText === '3') {
+            cell.classList.add('rank-top');
+        }
+    });
+}
+
+// 페이지 로드 시 실행
+document.addEventListener('DOMContentLoaded', function() {
+    applyRankColors();
+});
+</script>
 {% endblock %}

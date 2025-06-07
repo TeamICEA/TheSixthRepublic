@@ -60,9 +60,12 @@
 
         <tbody>
             {% for politician in politicians %}
-            <tr onclick="window.location.href='{% url 'politician_report' politician.str_id %}'" class="clickable-row">
-            <td>{{ forloop.counter|add:politicians.start_index|add:"-1" }}</td>
-            <td>
+            {% with actual_rank=forloop.counter|add:politicians.start_index|add:"-1" %}
+            <tr onclick="window.location.href='{% url 'politician_report' politician.str_id %}'" 
+                class="clickable-row party-{{ politician.party|slugify }}"
+                data-rank="{{ actual_rank }}">
+            <td>{{ actual_rank }}</td>
+            <td class="party-{{ politician.party|slugify }}">
             {% if politician.pic_link %}
               <img src="{{ politician.pic_link }}" alt="{{ politician.name }}">
              {% else %}
@@ -73,7 +76,9 @@
             </td>
             <td>{{ politician.name }}</td>
             <td>{{ politician.birthdate|date:"Y" }}</td>
-            <td>{{ politician.party }}</td>
+            <td class="party-{{ politician.party|slugify }}">
+                <span class="party-name">{{ politician.party }}</span>
+            </td>
             <td>{% if sort_by == 'reelected' %} {{ politician.reelected_count }}번
                     {% elif sort_by == 'curr_assets' %} {{ politician.curr_assets|intcomma}}
                     {% elif sort_by == 'birthdate' %} {{ politician.age }}세
@@ -81,6 +86,7 @@
                     {% else %} {{ politician.election_gap }}%
                     {% endif %}</td>
             </tr>
+            {% endwith %}
             {% endfor %}
         </tbody>
         </table>
@@ -101,7 +107,7 @@
       {% endfor %}
 
       {% if politicians.has_next %}
-        <a href="?sort={{ sort_by }}&order={{ order }}&page={{ page_obj.next_page_number }}">다음</a>
+        <a href="?sort={{ sort_by }}&order={{ order }}&page={{ politicians.next_page_number }}">다음</a>
         {% else %}
         <span class="disabled">다음</span>
       {% endif %}

@@ -5,55 +5,75 @@
     box-sizing: border-box;
 }
 
-body {
-    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background-color: #f8f9fa;
-    color: #333;
-    line-height: 1.6;
+/* 나무위키 다크 모드 색상 체계 */
+:root {
+    --primary: #4A9EFF;
+    --primary-light: #6BB6FF;
+    --primary-dark: #2E7FE8;
+    --background: #1B1D1F;
+    --surface: #2E3033;
+    --surface-light: #3E4042;
+    --text-primary: #FFFFFF;
+    --text-secondary: #B0B3B8;
+    --text-muted: #8A8D93;
+    --border-light: #3E4042;
+    --border-medium: #4A4D50;
+    --success: #00C851;
+    --warning: #FFB347;
+    --error: #FF4444;
+    --hover: #383A3D;
 }
 
-/* 상단 헤더 (베너) - 피그마 디자인 정확 구현 */
+body {
+    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--background);
+    color: var(--text-primary);
+    line-height: 1.6;
+    font-size: 14px;
+}
+
+/* 상단 헤더 - 정렬 개선 */
 .main-header {
-    background-color: #E6F9EC; /* 피그마 지정 색상 */
+    background-color: var(--surface);
+    border-bottom: 1px solid var(--border-light);
     width: 100%;
     position: fixed;
     top: 0;
     left: 0;
     z-index: 1000;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .header-container {
-    max-width: 1200px;
+    max-width: 1000px; /* 랭킹 페이지와 동일한 max-width */
     margin: 0 auto;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 20px;
-    height: 70px;
+    padding: 0 24px; /* 랭킹 페이지와 동일한 패딩 */
+    height: 64px;
 }
 
-/* 로고 섹션 */
 .logo-section {
     flex-shrink: 0;
 }
 
-.logo-link {
-    display: inline-block;
+.logo-section .logo-text {
+    color: var(--text-primary);
+    font-size: 20px;
+    font-weight: 500;
     text-decoration: none;
 }
 
-.logo-img {
-    height: 40px;
-    width: auto;
-    display: block;
+.logo-section .logo-link {
+    text-decoration: none;
 }
 
-/* 내비게이션 - 간격 조정 */
+/* 네비게이션 - 오른쪽 정렬 */
 .main-nav {
     flex: 1;
     display: flex;
-    justify-content: center;
+    justify-content: flex-end; /* 오른쪽 정렬로 변경 */
 }
 
 .nav-list {
@@ -61,7 +81,7 @@ body {
     display: flex;
     margin: 0;
     padding: 0;
-    gap: 40px;
+    gap: 8px;
 }
 
 .nav-item {
@@ -70,74 +90,280 @@ body {
 
 .nav-item a {
     display: block;
-    padding: 20px 30px;
-    color: #2E7D32;
+    padding: 8px 16px;
+    color: var(--text-secondary);
     text-decoration: none;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 500;
     transition: all 0.2s ease;
-    border-radius: 8px;
+    border-radius: 4px;
     background-color: transparent;
+    white-space: nowrap; /* 텍스트 줄바꿈 방지 */
 }
 
 .nav-item a:hover {
-    background-color: #C8E6C9;
-    color: #1B5E20;
+    color: var(--text-primary);
+    background-color: var(--hover);
 }
 
 .nav-item.nav-active a {
-    background-color: #4CAF50;
+    background-color: var(--primary);
     color: white;
-    font-weight: 600;
+    font-weight: 500;
 }
 
-/* 헤더 오른쪽 영역 */
 .header-right {
     flex-shrink: 0;
-    width: 120px;
+    width: 0; /* 빈 공간 제거 */
 }
 
 /* 메인 콘텐츠 */
 .main-content {
-    margin-top: 70px;
-    min-height: calc(100vh - 70px);
+    margin-top: 64px;
+    min-height: calc(100vh - 64px);
+    background-color: var(--background);
 }
 
-/* 4페이지 정치인 목록 스타일 */
+/* 2페이지 - 설문 컨테이너 */
+.survey-container {
+    max-width: 800px;
+    margin: 24px auto;
+    padding: 0 24px;
+}
+
+/* 진행률 표시 */
+.progress-section {
+    margin-bottom: 24px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 4px;
+    background-color: var(--surface-light);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.progress-fill {
+    height: 100%;
+    background-color: var(--primary);
+    transition: width 0.3s ease;
+    border-radius: 2px;
+}
+
+.progress-text {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 400;
+}
+
+/* 질문 카드 */
+.question-card {
+    background-color: var(--surface);
+    padding: 24px;
+    border-radius: 8px;
+    border: 1px solid var(--border-light);
+    margin-bottom: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.question-title {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+    line-height: 1.4;
+}
+
+.question-description {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+/* 답변 옵션 */
+.answer-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.answer-option {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    background-color: var(--surface-light);
+    border: 1px solid var(--border-medium);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    color: var(--text-secondary);
+}
+
+.answer-option:hover {
+    background-color: var(--hover);
+    border-color: var(--primary);
+    text-decoration: none;
+    color: var(--text-primary);
+}
+
+.answer-option.selected {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+
+.answer-option input[type="radio"] {
+    margin-right: 12px;
+    accent-color: var(--primary);
+}
+
+.answer-text {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+/* 네비게이션 버튼 */
+.nav-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 24px;
+    gap: 12px;
+}
+
+.nav-btn {
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: 1px solid var(--border-medium);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+}
+
+.nav-btn-secondary {
+    background-color: var(--surface-light);
+    color: var(--text-secondary);
+    border-color: var(--border-medium);
+}
+
+.nav-btn-secondary:hover {
+    background-color: var(--hover);
+    color: var(--text-primary);
+    text-decoration: none;
+}
+
+.nav-btn-primary {
+    background-color: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.nav-btn-primary:hover {
+    background-color: var(--primary-light);
+    border-color: var(--primary-light);
+    color: white;
+    text-decoration: none;
+}
+
+.nav-btn:disabled {
+    background-color: var(--surface-light);
+    color: var(--text-muted);
+    border-color: var(--border-light);
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* 결과 페이지 */
+.result-container {
+    max-width: 900px;
+    margin: 24px auto;
+    padding: 0 24px;
+}
+
+.result-card {
+    background-color: var(--surface);
+    padding: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--border-light);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+.result-title {
+    font-size: 24px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+}
+
+.result-subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+}
+
+.result-score {
+    font-size: 36px;
+    font-weight: 500;
+    color: var(--primary);
+    margin-bottom: 16px;
+}
+
+.result-description {
+    font-size: 14px;
+    color: var(--text-primary);
+    line-height: 1.6;
+    margin-bottom: 24px;
+}
+
+/* 정치인 목록 페이지 - 랭킹 페이지와 동일한 너비와 여백 */
 .politician-list-container {
-    max-width: 1200px;
-    margin: 30px auto;
-    padding: 30px;
-    background-color: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    max-width: 1000px; /* 랭킹 페이지와 동일 */
+    margin: 0 auto;
+    padding: 24px; /* 랭킹 페이지와 동일 */
 }
 
 .page-header {
-    text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 24px; /* 랭킹 페이지와 동일 */
+    padding-bottom: 0; /* 랭킹 페이지와 동일 */
+    border-bottom: none; /* 랭킹 페이지와 동일 */
 }
 
 .page-title {
-    font-size: 28px;
-    font-weight: 700;
-    color: #2C3E50;
+    font-size: 24px;
+    font-weight: 500;
+    color: var(--text-primary);
     margin: 0;
+    text-align: left;
 }
 
-/* 필터 및 검색 섹션 - 피그마 디자인 */
+/* 필터 및 검색 섹션 */
 .filter-search-section {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
-    gap: 30px;
+    margin-bottom: 16px;
+    gap: 16px;
+    background: var(--surface);
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border-light);
 }
 
-/* 정당별 드롭다운 필터 - 브라우저 기본 화살표만 사용 */
 .filter-dropdown-container {
     flex-shrink: 0;
-    margin-left: 50px;
 }
 
 .dropdown {
@@ -148,22 +374,24 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 20px;
-    background-color: #B2E5C6;
-    color: #2E7D32;
-    border: 1px solid #A5D6A7;
-    border-radius: 8px;
+    padding: 6px 12px;
+    background-color: var(--surface-light);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-medium);
+    border-radius: 4px;
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 400;
     cursor: pointer;
     transition: all 0.2s ease;
     min-width: 120px;
     text-align: left;
+    min-height: 32px;
 }
 
 .dropdown-toggle:hover {
-    background-color: #A5D6A7;
-    border-color: #81C784;
+    background-color: var(--hover);
+    border-color: var(--primary);
+    color: var(--text-primary);
 }
 
 .dropdown-menu {
@@ -173,12 +401,12 @@ body {
     z-index: 1000;
     display: none;
     min-width: 160px;
-    padding: 8px 0;
+    padding: 4px;
     margin: 2px 0 0;
-    background-color: white;
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    background-color: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .dropdown-menu.show {
@@ -188,68 +416,76 @@ body {
 .dropdown-item {
     display: block;
     width: 100%;
-    padding: 8px 16px;
-    color: #495057;
+    padding: 6px 12px;
+    color: var(--text-secondary);
     text-decoration: none;
     background-color: transparent;
     border: 0;
     font-size: 14px;
+    border-radius: 4px;
     transition: all 0.2s ease;
+    margin: 1px 0;
 }
 
 .dropdown-item:hover {
-    background-color: #f8f9fa;
-    color: #2E7D32;
+    background-color: var(--primary);
+    color: white;
 }
 
 .dropdown-item.active {
-    background-color: #B2E5C6;
-    color: #2E7D32;
+    background-color: var(--primary);
+    color: white;
     font-weight: 500;
 }
 
-/* 검색 컨테이너 - 피그마 색상 적용 + 크기/위치 조정 */
+/* 검색 컨테이너 */
 .search-container {
     flex: 1;
-    max-width: 500px;
-    margin-left: auto;
-    margin-right: 50px;
+    max-width: 400px;
 }
 
 .search-input-wrapper {
     display: flex;
-    border: 2px solid #B2E5C6;
-    border-radius: 25px;
+    border: 1px solid var(--border-medium);
+    border-radius: 4px;
     overflow: hidden;
-    background-color: white;
+    background-color: var(--surface-light);
+    transition: all 0.2s ease;
+}
+
+.search-input-wrapper:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(74, 158, 255, 0.2);
 }
 
 .search-input {
     flex: 1;
-    padding: 12px 16px;
+    padding: 6px 12px;
     border: none;
     outline: none;
     font-size: 14px;
     background: transparent;
+    color: var(--text-primary);
+    min-height: 32px;
 }
 
 .search-input::placeholder {
-    color: #6c757d;
+    color: var(--text-muted);
 }
 
 .search-button {
-    padding: 12px 20px;
-    background-color: #B2E5C6;
-    color: #2E7D32;
+    padding: 6px 12px;
+    background-color: var(--primary);
+    color: white;
     border: none;
     cursor: pointer;
     font-size: 14px;
     font-weight: 500;
-    transition: background-color 0.2s ease;
+    transition: all 0.2s ease;
 }
 
 .search-button:hover {
-    background-color: #A5D6A7;
+    background-color: var(--primary-light);
 }
 
 /* 검색 상태 표시 */
@@ -257,15 +493,15 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-    padding: 12px 16px;
-    background-color: #E3F2FD;
-    border: 1px solid #BBDEFB;
-    border-radius: 8px;
+    margin-bottom: 12px;
+    padding: 8px 12px;
+    background-color: rgba(74, 158, 255, 0.1);
+    border: 1px solid rgba(74, 158, 255, 0.2);
+    border-radius: 4px;
 }
 
 .search-info {
-    color: #1976D2;
+    color: var(--primary);
     font-size: 14px;
     font-weight: 500;
 }
@@ -273,33 +509,32 @@ body {
 .reset-search-btn {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    background-color: #FF9800;
+    gap: 4px;
+    padding: 4px 8px;
+    background-color: var(--error);
     color: white;
     text-decoration: none;
-    border-radius: 6px;
-    font-size: 13px;
+    border-radius: 4px;
+    font-size: 12px;
     font-weight: 500;
-    transition: background-color 0.2s ease;
+    transition: all 0.2s ease;
 }
 
 .reset-search-btn:hover {
-    background-color: #F57C00;
+    background-color: #B52D20;
     color: white;
     text-decoration: none;
 }
 
 /* 테이블 섹션 */
 .table-section {
-    background-color: white;
-    border-radius: 12px;
+    background-color: var(--surface);
+    border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    margin-bottom: 30px;
+    border: 1px solid var(--border-light);
+    margin-bottom: 24px;
 }
 
-/* 정치인 테이블 */
 .politicians-table {
     width: 100%;
     border-collapse: collapse;
@@ -307,348 +542,288 @@ body {
 }
 
 .politicians-table thead {
-    background-color: #f1f3f4;
+    background-color: var(--surface-light);
 }
 
 .politicians-table th {
-    padding: 16px 12px;
-    text-align: center;
-    font-weight: 600;
-    color: #495057;
-    font-size: 14px;
-    border-bottom: 2px solid #e9ecef;
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 500;
+    color: var(--text-secondary);
+    font-size: 13px;
+    border-bottom: 1px solid var(--border-light);
 }
 
 .politicians-table td {
-    padding: 14px 12px;
-    text-align: center;
-    border-bottom: 1px solid #f8f9fa;
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-light);
     font-size: 14px;
     vertical-align: middle;
+    color: var(--text-primary);
 }
 
-/* 테이블 행 호버 효과 */
 .politicians-table tbody tr {
     transition: background-color 0.2s ease;
     cursor: pointer;
 }
 
 .politicians-table tbody tr:hover {
-    background-color: #f8f9fa;
+    background-color: var(--hover);
 }
 
-/* 정치인 사진 */
 .politician-photo {
-    width: 45px;
-    height: 45px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid #e9ecef;
+    border: 1px solid var(--border-light);
 }
 
 .photo-placeholder {
-    width: 45px;
-    height: 45px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
-    background-color: #e9ecef;
+    background-color: var(--surface-light);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: #6c757d;
-    border: 2px solid #e9ecef;
-    font-size: 12px;
+    color: var(--text-muted);
+    font-size: 14px;
+    border: 1px solid var(--border-light);
 }
 
 /* 빈 결과 메시지 */
 .empty-message {
-    padding: 60px 20px;
+    padding: 32px 20px;
     text-align: center;
-    color: #6c757d;
+    color: var(--text-secondary);
 }
 
 .empty-message p {
-    margin: 0 0 15px 0;
-    font-size: 16px;
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    font-weight: 400;
 }
 
 .reset-link {
     display: inline-block;
-    padding: 8px 16px;
-    background-color: #6c757d;
+    padding: 6px 12px;
+    background-color: var(--primary);
     color: white;
     text-decoration: none;
-    border-radius: 20px;
+    border-radius: 4px;
     font-size: 14px;
-    transition: background-color 0.2s ease;
+    font-weight: 500;
+    transition: all 0.2s ease;
 }
 
 .reset-link:hover {
-    background-color: #5a6268;
+    background-color: var(--primary-light);
     color: white;
     text-decoration: none;
 }
 
-/* 페이지네이션 - 초록계열 색상으로 변경 */
+/* 페이지네이션 */
 .pagination-section {
     display: flex;
     justify-content: center;
-    margin-top: 40px;
-    padding: 20px 0;
+    margin-top: 24px;
+    padding: 16px 0;
 }
 
 .pagination-wrapper {
     display: flex;
     align-items: center;
-    gap: 12px;
-    background-color: #F8F9FA;
-    padding: 16px 24px;
-    border-radius: 12px;
-    border: 1px solid #E9ECEF;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    flex-wrap: wrap;
-    justify-content: center;
+    gap: 4px;
+    background: var(--surface);
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid var(--border-light);
 }
 
-/* 이전/다음 버튼 - 초록계열 */
 .pagination-nav-btn {
     display: inline-flex;
     align-items: center;
-    padding: 10px 16px;
-    background-color: #B2E5C6;
-    color: #2E7D32;
+    padding: 6px 12px;
+    background-color: var(--primary);
+    color: white;
     text-decoration: none;
-    border-radius: 8px;
+    border-radius: 4px;
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 500;
     transition: all 0.2s ease;
     min-width: 60px;
     justify-content: center;
+    min-height: 32px;
 }
 
 .pagination-nav-btn:hover {
-    background-color: #A5D6A7;
-    color: #1B5E20;
+    background-color: var(--primary-light);
     text-decoration: none;
-    transform: translateY(-1px);
+    color: white;
 }
 
 .pagination-nav-btn.disabled {
-    background-color: #E0E0E0;
-    color: #9E9E9E;
+    background-color: var(--surface-light);
+    color: var(--text-muted);
     cursor: not-allowed;
-    transform: none;
 }
 
 .pagination-nav-btn.disabled:hover {
-    background-color: #E0E0E0;
-    color: #9E9E9E;
-    transform: none;
+    background-color: var(--surface-light);
+    color: var(--text-muted);
 }
 
-/* 페이지 번호 컨테이너 */
 .pagination-numbers {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 2px;
     margin: 0 8px;
 }
 
-/* 페이지 번호 - 초록계열로 변경 */
 .page-number {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
-    color: #495057;
+    width: 32px;
+    height: 32px;
+    color: var(--text-secondary);
     text-decoration: none;
-    border-radius: 6px;
+    border-radius: 4px;
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 400;
     transition: all 0.2s ease;
-    background-color: white;
-    border: 1px solid #DEE2E6;
+    background-color: transparent;
 }
 
 .page-number:hover {
-    background-color: #E8F5E9;
-    color: #2E7D32;
+    background-color: var(--hover);
+    color: var(--text-primary);
     text-decoration: none;
-    border-color: #A5D6A7;
 }
 
-/* 현재 페이지 번호 - 초록색으로 변경 */
 .page-number.active {
-    background-color: #4CAF50 !important; /* 초록색 배경 */
-    color: white !important; /* 흰색 텍스트 */
-    font-weight: 600;
-    border-color: #4CAF50 !important; /* 초록색 테두리 */
+    background-color: var(--primary);
+    color: white;
+    font-weight: 500;
 }
 
-/* Bootstrap 기본 pagination 스타일 오버라이드 */
-.page-item.active .page-link {
-    z-index: 3;
-    color: #fff !important;
-    background-color: #4CAF50 !important; /* 초록색 배경 */
-    border-color: #4CAF50 !important; /* 초록색 테두리 */
-}
-
-.page-item .page-link:hover {
-    color: #2E7D32 !important;
-    background-color: #E8F5E9 !important;
-    border-color: #A5D6A7 !important;
-}
-
-/* 페이지 정보 박스 */
 .page-info-box {
     margin: 0 8px;
 }
 
 .page-info {
     display: inline-block;
-    padding: 8px 12px;
-    background-color: #E9ECEF;
-    color: #6C757D;
-    font-size: 13px;
-    font-weight: 500;
-    border-radius: 6px;
-    border: 1px solid #DEE2E6;
+    padding: 4px 8px;
+    background-color: var(--surface-light);
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 400;
+    border-radius: 4px;
+    border: 1px solid var(--border-light);
 }
 
 /* 반응형 디자인 */
 @media (max-width: 768px) {
     .header-container {
-        padding: 0 15px;
-        height: 60px;
+        padding: 0 16px;
+        height: 56px;
     }
     
     .nav-list {
-        gap: 20px;
+        gap: 4px;
     }
     
     .nav-item a {
-        padding: 15px 20px;
-        font-size: 14px;
+        padding: 6px 12px;
+        font-size: 13px;
     }
     
     .main-content {
-        margin-top: 60px;
+        margin-top: 56px;
     }
     
-    .politician-list-container {
-        margin: 15px;
+    .survey-container,
+    .politician-list-container,
+    .result-container {
+        margin: 16px;
+        padding: 16px;
+    }
+    
+    .question-card {
         padding: 20px;
     }
     
-    .page-title {
-        font-size: 22px;
+    .question-title {
+        font-size: 16px;
     }
     
     .filter-search-section {
         flex-direction: column;
-        gap: 20px;
-        align-items: stretch;
-    }
-    
-    .filter-dropdown-container {
-        margin-left: 0;
+        gap: 12px;
+        padding: 12px;
     }
     
     .search-container {
         max-width: none;
-        margin-left: 0;
-        margin-right: 0;
     }
     
-    .dropdown-toggle {
-        width: 100%;
-        justify-content: space-between;
+    .politicians-table th,
+    .politicians-table td {
+        padding: 8px 12px;
+        font-size: 13px;
     }
     
-    .search-status {
-        flex-direction: column;
-        gap: 12px;
-        text-align: center;
+    .politician-photo,
+    .photo-placeholder {
+        width: 28px;
+        height: 28px;
     }
     
     .pagination-wrapper {
-        padding: 12px 16px;
-        gap: 8px;
+        padding: 6px 8px;
+        gap: 2px;
         flex-wrap: wrap;
         justify-content: center;
-    }
-    
-    .pagination-nav-btn {
-        padding: 8px 12px;
-        font-size: 13px;
-        min-width: 50px;
-    }
-    
-    .page-number {
-        width: 32px;
-        height: 32px;
-        font-size: 13px;
-    }
-    
-    .page-info {
-        font-size: 12px;
-        padding: 6px 10px;
     }
 }
 
 @media (max-width: 576px) {
     .nav-list {
-        gap: 10px;
+        gap: 2px;
     }
     
     .nav-item a {
-        padding: 12px 15px;
-        font-size: 13px;
-    }
-    
-    .politicians-table {
+        padding: 4px 8px;
         font-size: 12px;
     }
     
-    .politicians-table th,
-    .politicians-table td {
-        padding: 8px 6px;
+    .answer-options {
+        gap: 6px;
     }
     
-    .politician-photo,
-    .photo-placeholder {
-        width: 35px;
-        height: 35px;
+    .answer-option {
+        padding: 10px 12px;
     }
     
-    /* 모바일에서 일부 컬럼 숨기기 */
+    .nav-buttons {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .nav-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
     .politicians-table th:nth-child(3),
     .politicians-table td:nth-child(3) {
-        display: none; /* 한자 컬럼 숨김 */
+        display: none;
     }
     
     .politicians-table th:nth-child(4),
     .politicians-table td:nth-child(4) {
-        display: none; /* 출생 컬럼 숨김 */
-    }
-    
-    .pagination-numbers {
-        order: 2;
-        width: 100%;
-        justify-content: center;
-        margin: 8px 0;
-    }
-    
-    .page-info-box {
-        order: 3;
-        margin: 0;
-    }
-    
-    .prev-btn {
-        order: 1;
-    }
-    
-    .next-btn {
-        order: 4;
+        display: none;
     }
 }

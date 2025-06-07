@@ -11,86 +11,92 @@
 <div class="main-section">
     <div class="main-banner">
         <div class="main-banner-content">
-        <h1>
-            당신의 정치 성향을 분석하고<br>
-            리포트를 받아보세요.
-        </h1>
-        <button class="main-banner-btn" onclick="location.href='/questions/1';">
-            바로 검사하러 가기 →
-        </button>
+            <h1>
+                당신의 정치 성향을 분석하고<br>
+                맞춤형 리포트를 받아보세요
+            </h1>
+            <a href="{% url 'smart_survey_redirect' %}" class="main-banner-btn">
+                성향 분석 시작하기 →
+            </a>
         </div>
     </div>
+    
     <div class="section-title">주요 뉴스</div>
+    
     <div class="news-section">
         <!-- 정치 -->
         <div class="news-column">
-        <h2>정치</h2>
-        <div class="news-list">
-            <div class="news-item">
-            <div class="news-img"></div>
-            <a class="news-text" href="{{ 0.0.link }}">{{ 0.0.title }}</a>
-            </div>
-            <div class="news-item">
-            <div class="news-img"></div>
-            <a class="news-text" href="{{ 0.1.link }}">{{ 0.1.title }}</a>
-            </div>
-            <div class="news-item">
-            <div class="news-img"></div>
-            <a class="news-text" href="{{ 0.2.link }}">{{ 0.2.title }}</a>
+            <h2>정치</h2>
+            <div class="news-list">
+                <div class="news-item">
+                    <div class="news-img"></div>
+                    <a class="news-text" href="{{ 0.0.link|default:'#' }}" target="_blank">{{ 0.0.title|default:'뉴스를 불러오는 중...' }}</a>
+                </div>
+                <div class="news-item">
+                    <div class="news-img"></div>
+                    <a class="news-text" href="{{ 0.1.link|default:'#' }}" target="_blank">{{ 0.1.title|default:'뉴스를 불러오는 중...' }}</a>
+                </div>
+                <div class="news-item">
+                    <div class="news-img"></div>
+                    <a class="news-text" href="{{ 0.2.link|default:'#' }}" target="_blank">{{ 0.2.title|default:'뉴스를 불러오는 중...' }}</a>
+                </div>
             </div>
         </div>
-        </div>
+        
         <!-- 경제 -->
         <div class="news-column">
-        <h2>경제</h2>
-        <div class="news-list">
-            <div class="news-item">
-            <div class="news-img"></div>
-            <a class="news-text" href="{{ 1.0.link }}">{{ 1.0.title }}</a>
-            </div>
-            <div class="news-item">
-            <div class="news-img"></div>
-            <a class="news-text" href="{{ 1.1.link }}">{{ 1.1.title }}</a>
-            </div>
-            <div class="news-item">
-            <div class="news-img"></div>
-            <a class="news-text" href="{{ 1.2.link }}">{{ 1.2.title }}</a>
+            <h2>경제</h2>
+            <div class="news-list">
+                <div class="news-item">
+                    <div class="news-img"></div>
+                    <a class="news-text" href="{{ 1.0.link|default:'#' }}" target="_blank">{{ 1.0.title|default:'뉴스를 불러오는 중...' }}</a>
+                </div>
+                <div class="news-item">
+                    <div class="news-img"></div>
+                    <a class="news-text" href="{{ 1.1.link|default:'#' }}" target="_blank">{{ 1.1.title|default:'뉴스를 불러오는 중...' }}</a>
+                </div>
+                <div class="news-item">
+                    <div class="news-img"></div>
+                    <a class="news-text" href="{{ 1.2.link|default:'#' }}" target="_blank">{{ 1.2.title|default:'뉴스를 불러오는 중...' }}</a>
+                </div>
             </div>
         </div>
-        </div>
+        
         <!-- 글로벌 -->
         <div class="news-column">
-        <h2>글로벌</h2>
-        <div class="news-list">
-            <div class="news-item">
-            <div class="news-img"></div>
-            <a class="news-text" href="{{ 2.0.link }}">{{ 2.0.title }}</a>
-            </div>
-            <div class="news-item">
-            <div class="news-img"></div>
-            <a class="news-text" href="{{ 2.1.link }}">{{ 2.1.title }}</a>
-            </div>
-            <div class="news-item">
-            <div class="news-img"></div>
-            <a class="news-text" href="{{ 2.2.link }}">{{ 2.2.title }}</a>
+            <h2>글로벌</h2>
+            <div class="news-list">
+                <div class="news-item">
+                    <div class="news-img"></div>
+                    <a class="news-text" href="{{ 2.0.link|default:'#' }}" target="_blank">{{ 2.0.title|default:'뉴스를 불러오는 중...' }}</a>
+                </div>
+                <div class="news-item">
+                    <div class="news-img"></div>
+                    <a class="news-text" href="{{ 2.1.link|default:'#' }}" target="_blank">{{ 2.1.title|default:'뉴스를 불러오는 중...' }}</a>
+                </div>
+                <div class="news-item">
+                    <div class="news-img"></div>
+                    <a class="news-text" href="{{ 2.2.link|default:'#' }}" target="_blank">{{ 2.2.title|default:'뉴스를 불러오는 중...' }}</a>
+                </div>
             </div>
         </div>
-        </div>
+        
         <!-- 사회 -->
         <div class="news-column">
-        <h2>사회</h2>
-        <div class="news-list">
-            <div class="news-item">
-            <div class="news-img"></div>
-            <a class="news-text" href="{{ 3.0.link }}">{{ 3.0.title }}</a>
-            </div>
-            <div class="news-item">
-            <div class="news-img"></div>
-            <a class="news-text" href="{{ 3.1.link }}">{{ 3.1.title }}</a>
-            </div>
-            <div class="news-item">
-            <div class="news-img"></div>
-            <a class="news-text" href="{{ 3.2.link }}">{{ 3.2.title }}</a>
+            <h2>사회</h2>
+            <div class="news-list">
+                <div class="news-item">
+                    <div class="news-img"></div>
+                    <a class="news-text" href="{{ 3.0.link|default:'#' }}" target="_blank">{{ 3.0.title|default:'뉴스를 불러오는 중...' }}</a>
+                </div>
+                <div class="news-item">
+                    <div class="news-img"></div>
+                    <a class="news-text" href="{{ 3.1.link|default:'#' }}" target="_blank">{{ 3.1.title|default:'뉴스를 불러오는 중...' }}</a>
+                </div>
+                <div class="news-item">
+                    <div class="news-img"></div>
+                    <a class="news-text" href="{{ 3.2.link|default:'#' }}" target="_blank">{{ 3.2.title|default:'뉴스를 불러오는 중...' }}</a>
+                </div>
             </div>
         </div>
     </div>

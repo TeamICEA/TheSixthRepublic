@@ -51,4 +51,87 @@
         </table>
     </div>
 </div>
+
+<script>
+// 페이지 로드 시 진행률 바 동적 색상 설정
+document.addEventListener('DOMContentLoaded', function() {
+    const progressBars = document.querySelectorAll('.result-bar-container');
+    
+    progressBars.forEach(container => {
+        const textElement = container.querySelector('.bar-text');
+        const barElement = container.querySelector('.result-bar');
+        const barRedElement = container.querySelector('.bar-red');
+        
+        if (textElement && barElement && barRedElement) {
+            const percentage = parseInt(textElement.textContent);
+            
+            // 퍼센트에 따른 단일 색상 결정
+            let backgroundColor;
+            if (percentage <= 10) {
+                backgroundColor = '#8B0000'; // 극보수 - 진한 빨간색
+            } else if (percentage <= 25) {
+                backgroundColor = '#DC143C'; // 보수 - 빨간색
+            } else if (percentage <= 40) {
+                backgroundColor = '#FF6347'; // 중도우파 - 토마토색
+            } else if (percentage <= 60) {
+                backgroundColor = '#9370DB'; // 중도 - 보라색
+            } else if (percentage <= 75) {
+                backgroundColor = '#4169E1'; // 중도좌파 - 로열블루
+            } else if (percentage <= 90) {
+                backgroundColor = '#1E90FF'; // 진보 - 파란색
+            } else {
+                backgroundColor = '#000080'; // 극진보 - 진한 파란색
+            }
+            
+            // 단일 색상으로 설정
+            barRedElement.style.backgroundColor = backgroundColor;
+            
+            // CSS 변수로 목표 너비 설정
+            barElement.style.setProperty('--target-width', percentage + '%');
+            
+            // 그림자 효과도 동일한 색상으로
+            barRedElement.style.boxShadow = `0 2px 8px ${backgroundColor}40`;
+            
+            // 정치 성향 분류
+            let politicalType;
+            if (percentage <= 30) {
+                politicalType = 'conservative';
+            } else if (percentage <= 70) {
+                politicalType = 'moderate';
+            } else {
+                politicalType = 'progressive';
+            }
+            
+            container.setAttribute('data-political', politicalType);
+        }
+    });
+    
+    // 페이지 로드 시 초기 애니메이션
+    setTimeout(() => {
+        document.querySelectorAll('.result-bar').forEach(bar => {
+            bar.classList.add('animate');
+        });
+    }, 300);
+});
+
+// 행 호버 시 애니메이션 리셋
+document.querySelectorAll('table.report-table tbody tr.button-row').forEach(row => {
+    row.addEventListener('mouseenter', function() {
+        const progressBar = this.querySelector('.result-bar');
+        if (progressBar) {
+            progressBar.style.width = progressBar.style.getPropertyValue('--target-width');
+        }
+    });
+    
+    row.addEventListener('mouseleave', function() {
+        const progressBar = this.querySelector('.result-bar');
+        if (progressBar) {
+            progressBar.style.width = '0%';
+            setTimeout(() => {
+                progressBar.style.width = progressBar.style.getPropertyValue('--target-width');
+            }, 100);
+        }
+    });
+});
+</script>
 {% endblock %}

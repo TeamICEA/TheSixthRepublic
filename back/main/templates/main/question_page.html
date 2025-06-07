@@ -1,187 +1,213 @@
 {% extends 'main/base.html' %}
 {% load static %}
 
-{% block title %}정치 성향 분석 설문조사{% endblock %}
+{% block title %}정치 성향 분석 - 설문조사{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'main/css/question.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="question-container">
+<div class="survey-container">
     <!-- 진행률 표시 -->
     <div class="progress-section">
         <div class="progress-bar">
-            <div class="progress-fill" style="width: {{ progress_percentage }}%"></div>
+            <div class="progress-fill" style="width: {{ progress_percentage|default:0 }}%;"></div>
         </div>
         <div class="progress-text">
-            <span class="current-page">{{ page_num }}</span> / <span class="total-pages">{{ total_pages }}</span>
+            {{ page_num|default:1 }} / {{ total_pages|default:4 }} ({{ progress_percentage|default:0|floatformat:0 }}%)
         </div>
     </div>
 
-    <!-- 페이지 제목 -->
-    <div class="page-header">
-        <h1 class="page-title">정치 성향 분석</h1>
-        <p class="page-subtitle">각 질문에 대한 여러분의 생각을 선택해주세요</p>
+    <!-- 질문이 없을 때 메시지 -->
+    {% if not questions_with_data %}
+    <div class="question-card">
+        <div class="error-message">
+            질문을 불러올 수 없습니다. 페이지를 새로고침하거나 관리자에게 문의하세요.
+        </div>
+        <div class="nav-buttons">
+            <a href="{% url 'index' %}" class="btn-previous">
+                <i class="fas fa-home"></i> 메인으로
+            </a>
+        </div>
     </div>
+    {% else %}
 
-    <!-- 오류 메시지 -->
-    {% if error_message %}
-    <div class="error-message">
-        <i class="fas fa-exclamation-triangle"></i>
-        {{ error_message }}
-    </div>
-    {% endif %}
-
-    <!-- 설문 폼 -->
-    <form method="post" class="question-form">
+    <!-- 폼 시작 -->
+    <form method="post" action="">
         {% csrf_token %}
         
-        <!-- 질문 목록 -->
-        <div class="questions-section">
-            {% for item in questions_with_data %}
-            <div class="question-card {% if item.has_error %}error{% endif %}">
-                <!-- 질문 헤더 -->
-                <div class="question-header">
-                    <span class="question-number">{{ item.question.id }}.</span>
-                    <span class="question-category">{{ item.question.category.name }}</span>
-                    {% if item.question.question_type == 'urgent' %}
-                    <span class="question-type urgent">중요 현안</span>
+        <!-- 여러 질문들을 반복 -->
+        {% for question_data in questions_with_data %}
+        <div class="question-card">
+            <!-- 질문 번호와 카테고리 -->
+            <div class="question-header">
+                <span class="question-number">질문 {{ question_data.question.id }}.</span>
+                <span class="question-category category-{{ question_data.question.category.name|lower|default:'general' }}">
+                    {% if question_data.question.category.name == 'economic' %}
+                        경제·복지관
+                    {% elif question_data.question.category.name == 'social' %}
+                        사회·문화관
+                    {% elif question_data.question.category.name == 'political' %}
+                        정치 성향
                     {% else %}
-                    <span class="question-type political">정치 성향</span>
+                        {{ question_data.question.category.name|default:'일반' }}
                     {% endif %}
-                </div>
-
-                <!-- 질문 내용 -->
-                <div class="question-content">
-                    <h3 class="question-text">{{ item.question.question_text }}</h3>
-                </div>
-
-                <!-- 답변 선택지 -->
-                <div class="answer-options">
-                    {% for value, label in answer_choices %}
-                    <label class="answer-option {% if item.current_answer == value %}selected{% endif %}">
-                        <input type="radio" 
-                               name="question_{{ item.question.id }}" 
-                               value="{{ value }}"
-                               {% if item.current_answer == value %}checked{% endif %}
-                               required>
-                        <span class="answer-text">{{ label }}</span>
-                        <span class="answer-circle"></span>
-                    </label>
-                    {% endfor %}
-                </div>
-
-                <!-- 서술형 답변 (선택사항) -->
-                <div class="text-answer-section">
-                    <label for="question_text_{{ item.question.id }}" class="text-label">
-                        <i class="fas fa-edit"></i>
-                        추가 의견이나 가중치 (1-10)를 입력해주세요 (선택사항)
-                    </label>
-                    <textarea name="question_text_{{ item.question.id }}" 
-                              id="question_text_{{ item.question.id }}"
-                              class="text-answer"
-                              placeholder="여기에 의견을 자유롭게 작성하거나, 이 주제의 중요도를 1-10 숫자로 입력해주세요..."
-                              rows="3">{{ item.current_text }}</textarea>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-
-        <!-- 네비게이션 버튼 -->
-        <div class="navigation-section">
-            <div class="nav-buttons">
-                {% if not is_first_page %}
-                <a href="{% url 'question_page' prev_page %}" class="nav-btn prev-btn">
-                    <i class="fas fa-chevron-left"></i>
-                    이전
-                </a>
-                {% endif %}
-
-                {% if is_last_page %}
-                <button type="submit" class="nav-btn submit-btn">
-                    <i class="fas fa-check"></i>
-                    설문 완료
-                </button>
-                {% else %}
-                <button type="submit" class="nav-btn next-btn">
-                    다음
-                    <i class="fas fa-chevron-right"></i>
-                </button>
-                {% endif %}
+                </span>
             </div>
 
-            <!-- 페이지 인디케이터 -->
-            <div class="page-indicators">
-                {% for i in total_pages|make_list %}
-                <span class="page-dot {% if forloop.counter == page_num %}active{% endif %}"></span>
+            <!-- 질문 텍스트 -->
+            <div class="question-text">
+                {{ question_data.question.question_text|default:'질문 내용을 불러올 수 없습니다.' }}
+            </div>
+
+            <!-- 답변 옵션 -->
+            <div class="answer-options">
+                {% for choice_value, choice_label in answer_choices %}
+                <label class="answer-option" for="question_{{ question_data.question.id }}_{{ choice_value }}">
+                    <input 
+                        type="radio" 
+                        id="question_{{ question_data.question.id }}_{{ choice_value }}" 
+                        name="question_{{ question_data.question.id }}" 
+                        value="{{ choice_value }}"
+                        {% if question_data.current_answer == choice_value %}checked{% endif %}
+                        required
+                    >
+                    <span class="answer-text">{{ choice_label }}</span>
+                </label>
+                {% empty %}
+                <!-- 기본 선택지 -->
+                <label class="answer-option" for="question_{{ question_data.question.id }}_1">
+                    <input type="radio" id="question_{{ question_data.question.id }}_1" name="question_{{ question_data.question.id }}" value="1" required>
+                    <span class="answer-text">매우 동의</span>
+                </label>
+                <label class="answer-option" for="question_{{ question_data.question.id }}_2">
+                    <input type="radio" id="question_{{ question_data.question.id }}_2" name="question_{{ question_data.question.id }}" value="2" required>
+                    <span class="answer-text">동의</span>
+                </label>
+                <label class="answer-option" for="question_{{ question_data.question.id }}_3">
+                    <input type="radio" id="question_{{ question_data.question.id }}_3" name="question_{{ question_data.question.id }}" value="3" required>
+                    <span class="answer-text">보통</span>
+                </label>
+                <label class="answer-option" for="question_{{ question_data.question.id }}_4">
+                    <input type="radio" id="question_{{ question_data.question.id }}_4" name="question_{{ question_data.question.id }}" value="4" required>
+                    <span class="answer-text">비동의</span>
+                </label>
+                <label class="answer-option" for="question_{{ question_data.question.id }}_5">
+                    <input type="radio" id="question_{{ question_data.question.id }}_5" name="question_{{ question_data.question.id }}" value="5" required>
+                    <span class="answer-text">매우 비동의</span>
+                </label>
                 {% endfor %}
             </div>
+
+            <!-- 서술형 입력 섹션 -->
+            <div class="text-input-section">
+                <label class="text-input-label" for="question_text_{{ question_data.question.id }}">
+                    추가 의견이나 가치관을 입력해주세요 (선택사항)
+                </label>
+                <textarea 
+                    id="question_text_{{ question_data.question.id }}" 
+                    name="question_text_{{ question_data.question.id }}" 
+                    class="text-input-field"
+                    placeholder="여기에 의견을 자유롭게 작성해주세요..."
+                    rows="4">{{ question_data.current_text|default:'' }}</textarea>
+            </div>
+
+            <!-- 오류 표시 -->
+            {% if question_data.has_error %}
+            <div class="error-message">
+                이 질문에 답변해주세요.
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <!-- 전체 오류 메시지 -->
+        {% if error_message %}
+        <div class="error-message global">
+            {{ error_message }}
+        </div>
+        {% endif %}
+
+        <!-- 네비게이션 버튼 -->
+        <div class="nav-buttons">
+            {% if page_num and page_num > 1 %}
+            <a href="{% url 'question_page' prev_page %}" class="btn-previous">
+                <i class="fas fa-chevron-left"></i> 이전
+            </a>
+            {% else %}
+            <a href="{% url 'index' %}" class="btn-previous">
+                <i class="fas fa-home"></i> 메인으로
+            </a>
+            {% endif %}
+
+            {% if not is_last_page %}
+            <button type="submit" class="btn-next">
+                다음 <i class="fas fa-chevron-right"></i>
+            </button>
+            {% else %}
+            <button type="submit" class="btn-submit">
+                결과 보기 <i class="fas fa-check"></i>
+            </button>
+            {% endif %}
         </div>
     </form>
+    {% endif %}
 </div>
-{% endblock %}
 
-{% block scripts %}
+<!-- 간단한 JavaScript -->
 <script>
 // 폼 제출 전 검증
-document.querySelector('.question-form').addEventListener('submit', function(e) {
-    const requiredInputs = document.querySelectorAll('input[type="radio"][required]');
-    const questionGroups = {};
+document.querySelector('form').addEventListener('submit', function(e) {
+    const requiredQuestions = document.querySelectorAll('input[type="radio"][required]');
+    const questionIds = new Set();
     
-    // 각 질문별로 답변이 선택되었는지 확인
-    requiredInputs.forEach(input => {
-        const questionId = input.name;
-        if (!questionGroups[questionId]) {
-            questionGroups[questionId] = false;
-        }
-        if (input.checked) {
-            questionGroups[questionId] = true;
+    requiredQuestions.forEach(radio => {
+        const name = radio.getAttribute('name');
+        questionIds.add(name);
+    });
+    
+    let hasError = false;
+    questionIds.forEach(questionName => {
+        const checkedRadio = document.querySelector(`input[name="${questionName}"]:checked`);
+        if (!checkedRadio) {
+            hasError = true;
         }
     });
     
-    // 미답변 질문 확인
-    const unansweredQuestions = Object.keys(questionGroups).filter(
-        questionId => !questionGroups[questionId]
-    );
-    
-    if (unansweredQuestions.length > 0) {
+    if (hasError) {
         e.preventDefault();
         alert('모든 질문에 답변해주세요.');
-        
-        // 첫 번째 미답변 질문으로 스크롤
-        const firstUnanswered = document.querySelector(`input[name="${unansweredQuestions[0]}"]`);
-        if (firstUnanswered) {
-            firstUnanswered.closest('.question-card').scrollIntoView({
-                behavior: 'smooth',
-                block: 'center'
-            });
-        }
+        return false;
+    }
+    
+    // 제출 버튼 비활성화
+    const submitBtn = document.querySelector('button[type="submit"]');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 처리중...';
     }
 });
 
 // 라디오 버튼 선택 시 시각적 피드백
 document.querySelectorAll('input[type="radio"]').forEach(radio => {
     radio.addEventListener('change', function() {
-        // 같은 질문의 다른 옵션들에서 selected 클래스 제거
-        const questionName = this.name;
-        document.querySelectorAll(`input[name="${questionName}"]`).forEach(otherRadio => {
-            otherRadio.closest('.answer-option').classList.remove('selected');
+        const questionName = this.getAttribute('name');
+        
+        document.querySelectorAll(`input[name="${questionName}"]`).forEach(r => {
+            r.closest('.answer-option').classList.remove('selected');
         });
         
-        // 선택된 옵션에 selected 클래스 추가
-        this.closest('.answer-option').classList.add('selected');
-        
-        // 에러 상태 제거
-        this.closest('.question-card').classList.remove('error');
+        if (this.checked) {
+            this.closest('.answer-option').classList.add('selected');
+        }
     });
 });
 
-// 텍스트 영역 자동 크기 조절
-document.querySelectorAll('.text-answer').forEach(textarea => {
-    textarea.addEventListener('input', function() {
-        this.style.height = 'auto';
-        this.style.height = this.scrollHeight + 'px';
+// 페이지 로드 시 선택된 답변 표시
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
+        radio.closest('.answer-option').classList.add('selected');
     });
 });
 </script>

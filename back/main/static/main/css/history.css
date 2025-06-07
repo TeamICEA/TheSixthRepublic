@@ -1,107 +1,279 @@
-body {
-    font-family: 'Noto Sans KR', sans-serif;
-    background: #fff;
-    margin: 0;
-    padding: 0;
-}
-.nav-bar {
-    background: #d6f5e4;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    height: 60px;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-}
-.nav-logo-box {
-    margin-left: 16px;
-    width: 200px;
-    height: 24px;
-    background: #b8efce;
-}
-.nav-menu {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    font-size: 18px;
-    font-weight: bold;
-}
-.nav-menu div {
-    margin: 0 48px;
-    cursor: pointer;
-}
-.container {
-    max-width: 1300px;
-    margin: 60px auto 0 auto;
-    padding: 0 32px;
-}
-h1 {
-    font-size: 2.2rem;
-    font-weight: bold;
-    margin-bottom: 32px;
-}
-.report-area {
-    background: #d6f5e4;
-    border-radius: 32px;
-    padding: 42px 32px;
-}
-.report-title {
-    font-size: 1.6rem;
-    font-weight: bold;
-    margin-bottom: 32px;
-}
-table.report-table {
-    background: transparent;
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 18px;
-}
-table.report-table thead th {
-    font-size: 1.2rem;
-    font-weight: bold;
-    text-align: left;
-    padding-bottom: 8px;
-}
-table.report-table tbody tr {
-    transition: background 0.2s;
-}
-table.report-table tbody tr.button-row:hover,
-table.report-table tbody tr.button-row:focus {
-    background: #bbe9d3;
-    cursor: pointer;
-}
-table.report-table td, table.report-table th {
-    padding: 8px 10px;
+/* 나무위키 다크 모드 색상 체계 */
+:root {
+    --primary: #4A9EFF;
+    --primary-light: #6BB6FF;
+    --primary-dark: #2563EB;
+    --background: #1B1D1F;
+    --surface: #2E3033;
+    --surface-light: #3E4042;
+    --surface-darker: #252729;
+    --text-primary: #FFFFFF;
+    --text-secondary: #B0B3B8;
+    --text-muted: #8A8D93;
+    --border-light: #3E4042;
+    --border-medium: #4A4D50;
+    --success: #00C851;
+    --warning: #FFB347;
+    --error: #FF4444;
+    --hover: #383A3D;
 }
 
-/* 그래프 바 스타일 */
+body {
+    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--background);
+    color: var(--text-primary);
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
+
+.nav-bar {
+    display: none; /* base.html의 헤더 사용 */
+}
+
+.nav-logo-box {
+    display: none;
+}
+
+.nav-menu {
+    display: none;
+}
+
+.container {
+    max-width: 1000px; /* 다른 페이지와 동일한 너비 */
+    margin: 0 auto;
+    padding: 40px 20px; /* 다른 페이지와 동일한 패딩 */
+}
+
+h1 {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 30px;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 12px;
+}
+
+.report-area {
+    background-color: var(--surface);
+    border-radius: 12px;
+    padding: 24px;
+    border: 1px solid var(--border-light);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.report-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 8px;
+}
+
+table.report-table {
+    background-color: var(--surface-darker);
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border-medium);
+}
+
+table.report-table thead th {
+    font-size: 16px;
+    font-weight: 600;
+    text-align: left;
+    padding: 16px 12px;
+    background-color: var(--surface-light);
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-medium);
+}
+
+table.report-table tbody tr {
+    transition: background-color 0.2s ease;
+    border-bottom: 1px solid var(--border-light);
+}
+
+table.report-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+table.report-table tbody tr.button-row:hover,
+table.report-table tbody tr.button-row:focus {
+    background-color: var(--hover);
+    cursor: pointer;
+    outline: none;
+}
+
+table.report-table td, 
+table.report-table th {
+    padding: 12px;
+    color: var(--text-primary);
+}
+
+/* 정교한 정치 성향 진행률 바 - 단일 색상 + 애니메이션 */
 .result-bar-container {
     width: 220px;
-    height: 20px;
+    height: 24px;
     display: flex;
     align-items: center;
-    background: transparent;
-    border-radius: 10px;
+    background-color: var(--surface-darker);
+    border-radius: 12px;
+    border: 1px solid var(--border-light);
+    overflow: hidden;
+    position: relative;
 }
+
 .result-bar {
-    height: 20px;
-    border-radius: 10px 0 0 10px;
-    display: inline-block;
+    height: 100%;
+    border-radius: 12px;
+    transition: width 0.8s ease-out;
+    position: relative;
+    width: 0%; /* 초기값 0%에서 시작 */
 }
+
+/* 단일 색상으로 표시 */
 .bar-red {
-    background: #e80000;
+    background-color: #FF6347; /* 기본값 - JavaScript에서 동적 변경 */
+    border-radius: 12px;
+    width: 100%;
+    height: 100%;
 }
-.bar-blue {
-    background: #1e30de;
-}
+
+/* 기존 bar-green과 bar-blue 숨김 */
 .bar-green {
-    background: #90f3ae;
-    border-radius: 0 10px 10px 0;
+    display: none;
 }
+
+.bar-blue {
+    display: none;
+}
+
 .bar-text {
-    font-size: 1rem;
-    margin-left: 12px;
-    color: #545454;
-    min-width: 38px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    min-width: 40px;
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    /* 배경 제거하여 삐져나오는 문제 해결 */
+    padding: 0;
+    border-radius: 0;
+    backdrop-filter: none;
+    background: none;
+}
+
+/* 행 호버 시 진행률 바 애니메이션 */
+table.report-table tbody tr.button-row:hover .result-bar {
+    width: var(--target-width, 0%);
+}
+
+/* 진행률 바 초기 로딩 애니메이션 */
+@keyframes progressLoad {
+    0% {
+        width: 0%;
+    }
+    100% {
+        width: var(--target-width, 0%);
+    }
+}
+
+.result-bar.animate {
+    animation: progressLoad 1.2s ease-out forwards;
+}
+
+/* 빈 리포트 메시지 스타일 */
+table.report-table thead th:only-child {
+    text-align: center;
+    color: var(--text-muted);
+    font-style: italic;
+    padding: 40px 20px;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .container {
+        padding: 20px 16px;
+        max-width: calc(100% - 32px);
+        margin: 0 16px;
+    }
+    
+    h1 {
+        font-size: 24px;
+    }
+    
+    .report-area {
+        padding: 20px;
+    }
+    
+    .report-title {
+        font-size: 18px;
+    }
+    
+    table.report-table thead th,
+    table.report-table td {
+        padding: 8px 6px;
+        font-size: 14px;
+    }
+    
+    .result-bar-container {
+        width: 150px;
+        height: 20px;
+    }
+    
+    .bar-text {
+        font-size: 12px;
+        right: 4px;
+    }
+}
+
+@media (max-width: 576px) {
+    .container {
+        padding: 12px;
+        margin: 0 12px;
+        max-width: calc(100% - 24px);
+    }
+    
+    h1 {
+        font-size: 20px;
+    }
+    
+    table.report-table thead th,
+    table.report-table td {
+        padding: 6px 4px;
+        font-size: 13px;
+    }
+    
+    .result-bar-container {
+        width: 120px;
+        height: 18px;
+    }
+    
+    .bar-text {
+        font-size: 11px;
+        right: 3px;
+    }
+}
+
+/* 접근성 개선 */
+table.report-table tbody tr.button-row:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* 테이블 스크롤 (모바일에서 필요한 경우) */
+@media (max-width: 576px) {
+    .report-area {
+        overflow-x: auto;
+    }
+    
+    table.report-table {
+        min-width: 600px;
+    }
 }
