@@ -17,15 +17,15 @@
             <!-- 로고 영역 -->
             <div class="logo-section">
                 <a href="{% url 'index' %}" class="logo-link">
-                    <img src="{% static 'main/images/logo.png' %}" alt="서비스 로고" class="logo-img">
+                    <span class="logo-text">정치성향분석</span>
                 </a>
             </div>
             
             <!-- 내비게이션 영역 -->
             <nav class="main-nav">
                 <ul class="nav-list">
-                    <li class="nav-item">
-                        <a href="{% url 'smart_survey_redirect' %}">성향분석 리포트 보기</a>
+                    <li class="nav-item {% if 'history' in request.path %}nav-active{% endif %}">
+                        <a href="{% url 'smart_survey_redirect' %}">지난 리포트 다시보기</a>
                     </li>
                     <li class="nav-item {% if 'politicians' in request.path %}nav-active{% endif %}">
                         <a href="{% url 'politician_list' %}">정치인 데이터</a>

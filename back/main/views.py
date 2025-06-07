@@ -44,13 +44,12 @@ def get_user_id(request):
         traceback.print_exc()
         return None
 
-
 def smart_survey_redirect(request):
     """
-    베너의 '설문조사 보기' 버튼 클릭 시 상황에 따른 스마트 리다이렉트
+    베너의 '성향분석 리포트 보기' 버튼 클릭 시 상황에 따른 스마트 리다이렉트
     
-    1. 리포트가 있으면 → 최신 리포트 보기
-    2. 리포트 없는데 설문 진행 중이면 → 설문 이어서하기
+    1. 지난 설문이 존재하면 → 8페이지 지난 리포트 다시보기
+    2. 지난 설문이 없고 중단된 설문조사가 있으면 → 설문 이어서하기
     3. 아무것도 없으면 → 설문 시작하기
     """
     try:
@@ -77,14 +76,14 @@ def smart_survey_redirect(request):
             return redirect('question_page', page_num=1)
         
         # 2. 완료된 리포트가 있는지 확인 (가장 최신)
-        latest_report = UserReport.objects.filter(
+        completed_reports = UserReport.objects.filter(
             user=current_user
-        ).order_by('-created_at').first()
+        ).order_by('-created_at')
         
-        if latest_report:
-            # 리포트가 있으면 최신 리포트 보기
-            print(f"사용자 {user_uuid} → 최신 리포트 보기 (ID: {latest_report.id})")
-            return redirect('user_report', uuid=user_uuid)
+        if completed_reports.exists():
+            # 지난 설문이 존재하면 8페이지 지난 리포트 다시보기로 이동
+            print(f"사용자 {user_uuid} → 8페이지 지난 리포트 다시보기")
+            return redirect('history')
         
         # 3. 진행 중인 설문이 있는지 확인
         incomplete_responses = Response.objects.filter(
@@ -438,7 +437,6 @@ def question_page(request, page_num):
                     print(f"사용자 보고서 생성 완료: UserReport ID {result['user_report_id']}")
                 else:
                     print(f"보고서 생성 실패: {result['error_message']}")
-                    # 실패해도 결과 페이지로 이동 (기본 결과라도 보여주기)
                 
                 # 3. 세션 정리
                 if 'current_survey_session_id' in request.session:
@@ -1001,41 +999,87 @@ def PoliticianRanking(request):
 #     user_uuid = request.session.get('user_uuid')
 #     return user_uuid
 
-def ReportHistory(request):
-    #쿠키에서 리포트 목록을 가져와 템플릿에 랜더링
-    id = get_user_id(request)
-    responses = UserReport.objects.filter(user_id=id)
-    responses2: dict[list[UserReport]] = {}
+# 이 함수 uuid없으면 2페이지 보내야 하는 거 아님?
+# def ReportHistory(request):
+#     #쿠키에서 리포트 목록을 가져와 템플릿에 랜더링
+#     id = get_user_id(request)
+#     responses = UserReport.objects.filter(user_id=id)
+#     responses2: dict[list[UserReport]] = {}
 
-    for response in responses:
-        if responses2[response.created_at] is None:
-            responses2[response.created_at] = []
-        responses2[response.created_at].append(response)
+#     for response in responses:
+#         if responses2[response.created_at] is None:
+#             responses2[response.created_at] = []
+#         responses2[response.created_at].append(response)
 
-    context = {
-        "reports": []
-    }
-    i = 0
+#     context = {
+#         "reports": []
+#     }
+#     i = 0
 
-    for reports in responses2:
-        if i >= 10: # limit
-            break
+#     for reports in responses2:
+#         if i >= 10: # limit
+#             break
 
-        for report in reports:
-            if i >= 10: # limit
-                break
+#         for report in reports:
+#             if i >= 10: # limit
+#                 break
 
-            ratio = int(round(report.user_overall_tendency, 0))
+#             ratio = int(round(report.user_overall_tendency, 0))
 
-            context["reports"].append({
-                "rank": i + 1,
-                "date": report.created_at,
-                "party": report.parties_rank[0]["name"],
-                "politician": report.politicians_top[0]["name"],
-                "ratio": ratio,
-                "ratio2": 100 - ratio
-            })
-            i += 1
+#             context["reports"].append({
+#                 "rank": i + 1,
+#                 "date": report.created_at,
+#                 "party": report.parties_rank[0]["name"],
+#                 "politician": report.politicians_top[0]["name"],
+#                 "ratio": ratio,
+#                 "ratio2": 100 - ratio
+#             })
+#             i += 1
     
-    return render(request, 'main/history.html', context)
-#endregion
+#     return render(request, 'main/history.html', context)
+# #endregion
+
+def ReportHistory(request):
+    try:
+        user_uuid = get_user_id(request)
+        
+        if not user_uuid:
+            return redirect('question_page', page_num=1)
+        
+        try:
+            current_user = User.objects.get(id=user_uuid)
+        except User.DoesNotExist:
+            return redirect('question_page', page_num=1)
+        
+        # 사용자의 모든 완료된 리포트 조회 (최신순)
+        user_reports = UserReport.objects.filter(
+            user=current_user
+        ).order_by('-created_at')
+        
+        if not user_reports.exists():
+            return redirect('question_page', page_num=1)
+        
+        # 날짜를 문자열로 변환하여 딕셔너리 키로 사용
+        reports_with_formatted_date = []
+        for report in user_reports[:10]:  # 최신 10개만
+            reports_with_formatted_date.append({
+                'id': report.id,
+                'created_at': report.created_at,
+                'formatted_date': report.created_at.strftime('%Y년 %m월 %d일 %H:%M'),
+                'date_key': report.created_at.strftime('%Y-%m-%d-%H-%M-%S'),
+                'tendency_label': report.get_tendency_label(),
+                'overall_tendency': report.user_overall_tendency,
+                'parties_count': len(report.parties_rank) if report.parties_rank else 0,
+                'politicians_count': len(report.politicians_top) if report.politicians_top else 0,
+            })
+        
+        context = {
+            'user_reports': reports_with_formatted_date,
+            'total_reports': user_reports.count(),
+        }
+        
+        return render(request, 'main/report_history.html', context)
+        
+    except Exception as e:
+        print(f"ReportHistory 오류: {e}")
+        return redirect('question_page', page_num=1)
