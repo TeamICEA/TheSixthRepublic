@@ -25,13 +25,13 @@
             <nav class="main-nav">
                 <ul class="nav-list">
                     <li class="nav-item {% if 'history' in request.path %}nav-active{% endif %}">
-                        <a href="{% url 'history_or_survey' %}">지난 리포트 다시보기</a>
+                        <a href="{% url 'history_or_survey' %}">나의 리포트 보기</a>
                     </li>
                     <li class="nav-item {% if 'politicians' in request.path %}nav-active{% endif %}">
-                        <a href="{% url 'politician_list' %}">정치인 데이터</a>
+                        <a href="{% url 'politician_list' %}">정치인 분석</a>
                     </li>
                     <li class="nav-item {% if 'ranking' in request.path %}nav-active{% endif %}">
-                        <a href="{% url 'politician_ranking' %}">분야별 랭킹</a>
+                        <a href="{% url 'politician_ranking' %}">분야별 정치인 랭킹</a>
                     </li>
                 </ul>
             </nav>
