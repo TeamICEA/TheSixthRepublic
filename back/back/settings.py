@@ -28,7 +28,7 @@ SECRET_KEY = keys["DJANGO_KEY"]
 GEMINI_API_KEY = keys["GEMINI_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['175.205.96.45', '127.0.0.1']
 
