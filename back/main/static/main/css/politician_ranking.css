@@ -1,172 +1,471 @@
-/* 전체 페이지 정렬 */
+/* 나무위키 다크 모드 색상 체계 - 개선 */
+:root {
+    --primary: #4A9EFF;
+    --primary-light: #6BB6FF;
+    --primary-dark: #2E7FE8;
+    --background: #1B1D1F;
+    --surface: #2E3033;
+    --surface-light: #383A3D;
+    --surface-darker: #252729;
+    --text-primary: #FFFFFF;
+    --text-secondary: #B0B3B8;
+    --text-muted: #8A8D93;
+    --border-light: #3E4042;
+    --border-medium: #4A4D50;
+    --success: #00C851;
+    --warning: #FFB347;
+    --error: #FF4444;
+    --hover: #383A3D;
+    --gold: #ECA019;
+    
+    /* 정당 색상 */
+    --party-democrat: #152484; /* 더불어민주당 */
+    --party-power: #E61E2B; /* 국민의힘 */
+    --party-justice: #FFCC00; /* 정의당 */
+    --party-reform: #00A0E9; /* 개혁신당 */
+    --party-progressive: #8B4513; /* 진보당 */
+    --party-innovation: #4A9EFF; /* 조국혁신당 */
+    --party-independent: #FFFFFF; /* 무소속 */
+    --party-default: #B0B3B8; /* 기타 정당 */
+}
+
+body {
+    background-color: var(--background);
+    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: var(--text-primary);
+    line-height: 1.6;
+    font-size: 14px;
+}
+
+/* 랭킹 페이지 컨테이너 */
 .politician-ranking {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 30px 20px;
-  font-family: 'Noto Sans KR', sans-serif;
-  background-color: #f8fff8;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 24px;
+    background-color: var(--background);
+    min-height: 100vh;
 }
 
-/* 제목 */
+/* 페이지 제목 - 이중 밑줄 제거 */
 .page-header h1 {
-  font-size: 40px;
-  font-weight: bold;
-  margin-bottom: 30px;
-  text-align: left;
+    font-size: 24px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 24px;
+    text-align: left;
+    border-bottom: none;
+    padding-bottom: 0;
 }
 
-/* 외부 박스 스타일 (outer-box처럼) */
+/* 필터 섹션 */
 .filters-outerbox {
-  background-color: #daffe6;
-  padding: 24px;
-  margin-bottom: 24px;
-  border-radius: 16px;
-  display: flex;
-  justify-content: center; /* 안의 필터를 가운데 정렬 */
-  align-items: center;
+    background-color: var(--surface);
+    padding: 16px;
+    margin-bottom: 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border-light);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* 내부 필터 버튼 컨테이너 */
 .ranking_filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 58px;
-  justify-content: center;  /* 버튼 정렬 */
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
 }
 
-/* 버튼 */
+/* 필터 버튼 */
 .ranking_filters a {
-  padding: 15px 40px;
-  background-color: #b2e5c6;
-  border-radius: 20px;
-  text-decoration: none;
-  color: #333;
-  font-weight: bold;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  transition: background-color 0.2s;
+    padding: 6px 12px;
+    background-color: var(--surface-light);
+    border: 1px solid var(--border-medium);
+    border-radius: 4px;
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    min-height: 32px;
+    display: inline-flex;
+    align-items: center;
+}
+
+.ranking_filters a:hover {
+    background-color: var(--hover);
+    border-color: var(--primary);
+    color: var(--text-primary);
 }
 
 .ranking_filters a.active {
-  background-color: #a3e5a3;
-  color: white;
-}
-/* 랭킹 테이블 박스 */
-.ranking-table {
-  background-color: #daffe6;
-  padding: 24px;
-  border-radius: 16px;
+    background-color: var(--primary);
+    border-color: var(--primary);
+    color: white;
 }
 
-.ranking-table h3 {
-  margin-top: 0;
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 16px;
+/* 랭킹 테이블 */
+.ranking-table {
+    background-color: var(--surface);
+    border-radius: 8px;
+    border: 1px solid var(--border-light);
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
+
+/* 랭킹 헤더 - 배경색 개선 */
 .ranking-header {
-  margin-bottom: 16px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-light);
+    background-color: var(--surface-darker);
 }
 
 .ranking-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 25px;
-  font-weight: bold;
-  margin-bottom: 16px;
-  margin-top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0;
+    color: var(--text-primary);
 }
 
 .ranking-title .ranking-name {
-  margin: 0;
+    margin: 0;
+    color: var(--text-primary);
 }
 
 .sort-toggle {
-  color: #333 !important; /* 링크 기본 파란색 무력화 */
-  text-decoration: none !important; /* 밑줄 제거 */
-  font-weight: bold;
-  font-size: 25px;
-  cursor: pointer;
-  display: inline-block;
-  padding: 0;
-  margin: 0;
-  border: none;
-  background: none;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 4px 6px;
+    border-radius: 4px;
+    background-color: transparent;
 }
+
 .sort-toggle:hover {
-  color: #007b00;
-  text-decoration: none;
+    color: var(--primary);
+    background-color: var(--hover);
+    text-decoration: none;
 }
 
 /* 테이블 스타일 */
 table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-}
-
-th, td {
-  text-align: center;
-  padding: 10px;
-  border-bottom: 1px solid #ccc;
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
 }
 
 th {
-  background-color: #c5f5c5;
-  font-weight: bold;
+    text-align: center;
+    padding: 12px 8px;
+    background-color: var(--surface-darker);
+    color: var(--text-secondary);
+    font-weight: 500;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border-light);
 }
 
+td {
+    text-align: center;
+    padding: 12px 8px;
+    border-bottom: 1px solid var(--border-light);
+    vertical-align: middle;
+    background-color: var(--surface);
+    font-weight: 400;
+    font-size: 14px;
+    color: var(--text-primary);
+}
+
+/* 테이블 행 호버 */
+.clickable-row {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.clickable-row:hover {
+    background-color: var(--hover);
+}
+
+.clickable-row:hover td {
+    background-color: var(--hover);
+}
+
+/* 순위 번호 - 흰색으로 변경, 실제 1-3위만 금색 */
+.clickable-row td:first-child {
+    font-weight: 500;
+    color: var(--text-primary); /* 기본 흰색 */
+}
+
+/* 실제 1, 2, 3위만 금색 처리 (페이지네이션 고려) */
+.clickable-row[data-rank="1"] td:first-child,
+.clickable-row[data-rank="2"] td:first-child,
+.clickable-row[data-rank="3"] td:first-child {
+    color: var(--gold);
+    font-weight: 700;
+}
+
+/* 정치인 사진 - 기본 스타일 */
 img {
-  width: 30px;
-  height: 30px;
-  border-radius: 6px;
-  object-fit: cover;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--border-light);
+    transition: border-color 0.2s ease;
+}
+
+.photo-placeholder {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: var(--surface-light);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: 14px;
+    border: 3px solid var(--border-light);
+    transition: border-color 0.2s ease;
+}
+
+/* 정당별 사진 테두리 색상 - 더 구체적인 선택자 사용 */
+tr.party-더불어민주당 img,
+tr.party-더불어민주당 .photo-placeholder {
+    border-color: var(--party-democrat) !important;
+}
+
+tr.party-국민의힘 img,
+tr.party-국민의힘 .photo-placeholder {
+    border-color: var(--party-power) !important;
+}
+
+tr.party-정의당 img,
+tr.party-정의당 .photo-placeholder {
+    border-color: var(--party-justice) !important;
+}
+
+tr.party-개혁신당 img,
+tr.party-개혁신당 .photo-placeholder {
+    border-color: var(--party-reform) !important;
+}
+
+tr.party-진보당 img,
+tr.party-진보당 .photo-placeholder {
+    border-color: var(--party-progressive) !important;
+}
+
+tr.party-조국혁신당 img,
+tr.party-조국혁신당 .photo-placeholder {
+    border-color: var(--party-innovation) !important;
+}
+
+tr.party-무소속 img,
+tr.party-무소속 .photo-placeholder {
+    border-color: var(--party-independent) !important;
+}
+
+/* 정당명 색상 - 더 구체적인 선택자와 !important 사용 */
+tr.party-더불어민주당 .party-name {
+    color: var(--party-democrat) !important;
+    font-weight: 600;
+}
+
+tr.party-국민의힘 .party-name {
+    color: var(--party-power) !important;
+    font-weight: 600;
+}
+
+tr.party-정의당 .party-name {
+    color: var(--party-justice) !important;
+    font-weight: 600;
+}
+
+tr.party-개혁신당 .party-name {
+    color: var(--party-reform) !important;
+    font-weight: 600;
+}
+
+tr.party-진보당 .party-name {
+    color: var(--party-progressive) !important;
+    font-weight: 600;
+}
+
+tr.party-조국혁신당 .party-name {
+    color: var(--party-innovation) !important;
+    font-weight: 600;
+}
+
+tr.party-무소속 .party-name {
+    color: var(--party-independent) !important;
+    font-weight: 600;
+}
+
+/* 기타 정당 기본 색상 */
+.party-name {
+    font-weight: 500;
+    color: var(--party-default);
 }
 
 /* 페이지네이션 */
 .pagination {
-  display: flex;
-  margin-top: 30px;
-  text-align: center;
-   justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 4px; /* 버튼 사이 간격 */
+    display: flex;
+    margin-top: 24px;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    padding: 16px 0;
 }
 
 .pagination a,
 .pagination strong,
 .pagination .disabled {
-  display: inline-block;
-  margin: 0 4px;
-  padding: 8px 12px;
-  border-radius: 6px;
-  font-weight: bold;
-  min-width: 36px;
-  text-align: center;
-  font-size: 13px;
-  text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-weight: 500;
+    min-width: 32px;
+    text-align: center;
+    font-size: 14px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: 1px solid var(--border-light);
+    min-height: 32px;
 }
 
-/* 일반 링크 */
 .pagination a {
-  background-color: #daffe6;
-  color: black;
+    background-color: var(--surface);
+    color: var(--text-secondary);
 }
 
-/* 현재 페이지 */
+.pagination a:hover {
+    background-color: var(--hover);
+    border-color: var(--primary);
+    color: var(--text-primary);
+    text-decoration: none;
+}
+
 .pagination strong {
-  background-color: #a3e5a3;
-  color: white;
+    background-color: var(--primary);
+    color: white;
+    border-color: var(--primary);
 }
 
-/* 비활성 버튼 */
 .pagination .disabled {
-  background-color: #d9d9d9;
-  color: #aaa;
-  cursor: not-allowed;
+    background-color: var(--surface-light);
+    color: var(--text-muted);
+    cursor: not-allowed;
+    opacity: 0.6;
 }
 
-.clickable-row {
-  cursor: pointer;
+/* 이전/다음 버튼 */
+.pagination a:first-child,
+.pagination a:last-child {
+    background-color: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    font-weight: 500;
+}
+
+.pagination a:first-child:hover,
+.pagination a:last-child:hover {
+    background-color: var(--primary-light);
+    border-color: var(--primary-light);
+}
+
+.pagination .disabled:first-child,
+.pagination .disabled:last-child {
+    background-color: var(--surface-light);
+    color: var(--text-muted);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .politician-ranking {
+        padding: 16px;
+    }
+    
+    .page-header h1 {
+        font-size: 20px;
+    }
+    
+    .filters-outerbox {
+        padding: 12px;
+    }
+    
+    .ranking_filters {
+        gap: 6px;
+    }
+    
+    .ranking_filters a {
+        padding: 5px 10px;
+        font-size: 13px;
+    }
+    
+    .ranking-header {
+        padding: 12px 16px;
+    }
+    
+    .ranking-title {
+        font-size: 14px;
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+    }
+    
+    th, td {
+        padding: 8px 6px;
+        font-size: 13px;
+    }
+    
+    img, .photo-placeholder {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .pagination {
+        gap: 2px;
+        flex-wrap: wrap;
+    }
+    
+    .pagination a,
+    .pagination strong,
+    .pagination .disabled {
+        padding: 5px 8px;
+        min-width: 28px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 576px) {
+    .ranking_filters {
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .ranking_filters a {
+        width: 100%;
+        max-width: 200px;
+        text-align: center;
+        justify-content: center;
+    }
+    
+    /* 모바일에서 일부 컬럼 숨기기 */
+    table th:nth-child(4),
+    table td:nth-child(4) {
+        display: none;
+    }
+    
+    table th:nth-child(5),
+    table td:nth-child(5) {
+        display: none;
+    }
 }

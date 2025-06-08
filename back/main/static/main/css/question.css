@@ -1,424 +1,485 @@
-/* 2페이지 설문조사 전용 스타일 */
-
-/* 전체 컨테이너 */
-.question-container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
-    background-color: #f8f9fa;
-    min-height: 100vh;
+/* 나무위키 다크 모드 색상 체계 */
+:root {
+    --primary: #4A9EFF;
+    --primary-light: #6BB6FF;
+    --primary-dark: #2E7FE8;
+    --background: #1B1D1F;
+    --surface: #2E3033;
+    --surface-light: #3E4042;
+    --surface-darker: #252729;
+    --text-primary: #FFFFFF;
+    --text-secondary: #B0B3B8;
+    --text-muted: #8A8D93;
+    --border-light: #3E4042;
+    --border-medium: #4A4D50;
+    --success: #00C851;
+    --warning: #FFB347;
+    --error: #FF4444;
+    --hover: #383A3D;
 }
 
-/* 진행률 섹션 */
+/* 전체 배경 다크 모드 강제 적용 */
+html {
+    background-color: var(--background) !important;
+}
+
+body {
+    background-color: var(--background) !important;
+    color: var(--text-primary) !important;
+    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6;
+    font-size: 14px;
+    margin: 0;
+    padding: 0;
+}
+
+/* 모든 가능한 컨테이너 클래스에 너비 제한 강제 적용 */
+.survey-container,
+.container,
+.container-fluid,
+.container-sm,
+.container-md,
+.container-lg,
+.container-xl,
+.container-xxl,
+.main-content,
+.content,
+.wrapper,
+.page-wrapper {
+    max-width: 1000px !important;
+    margin: 0 auto !important;
+    padding: 24px !important;
+    background-color: var(--background) !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* 메인 콘텐츠 영역 너비 제한 */
+main,
+.main,
+section {
+    max-width: 1000px !important;
+    margin: 0 auto !important;
+    padding: 24px !important;
+    box-sizing: border-box !important;
+}
+
+/* 진행률 표시 */
 .progress-section {
-    margin-bottom: 30px;
-    text-align: center;
+    margin-bottom: 24px;
+    max-width: 100% !important;
 }
 
 .progress-bar {
     width: 100%;
-    height: 8px;
-    background-color: #e9ecef;
-    border-radius: 4px;
+    height: 6px;
+    background-color: var(--surface-light);
+    border-radius: 3px;
     overflow: hidden;
-    margin-bottom: 10px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border-light);
 }
 
 .progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, #B2E5C6, #4CAF50);
+    background-color: var(--primary);
     transition: width 0.3s ease;
-    border-radius: 4px;
+    border-radius: 3px;
 }
 
 .progress-text {
-    font-size: 16px;
-    font-weight: 600;
-    color: #2E7D32;
-}
-
-.current-page {
-    color: #4CAF50;
-    font-size: 18px;
-}
-
-/* 페이지 헤더 */
-.page-header {
     text-align: center;
-    margin-bottom: 40px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
 }
 
-.page-title {
-    font-size: 32px;
-    font-weight: 700;
-    color: #2C3E50;
-    margin-bottom: 10px;
-}
-
-.page-subtitle {
-    font-size: 16px;
-    color: #6c757d;
-    margin: 0;
-}
-
-/* 오류 메시지 */
-.error-message {
-    background-color: #f8d7da;
-    color: #721c24;
-    padding: 12px 16px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    border: 1px solid #f5c6cb;
-}
-
-.error-message i {
-    font-size: 16px;
-}
-
-/* 질문 섹션 */
-.questions-section {
-    margin-bottom: 40px;
-}
-
-.question-card {
-    background-color: white;
+/* 질문 카드 - 너비 강제 제한 및 여러 질문 지원 */
+.question-card,
+.card,
+.question-wrapper,
+.form-group {
+    background-color: var(--surface) !important;
+    padding: 32px !important;
     border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 24px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    border: 2px solid transparent;
-    transition: all 0.3s ease;
+    border: 1px solid var(--border-light);
+    margin-bottom: 32px; /* 질문 간 간격 증가 */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    color: var(--text-primary) !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
 }
 
-.question-card:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+/* 첫 번째 질문 카드는 위쪽 여백 없음 */
+.question-card:first-of-type {
+    margin-top: 0;
 }
 
-.question-card.error {
-    border-color: #dc3545;
-    background-color: #fff5f5;
-}
-
-/* 질문 헤더 */
+/* 질문 번호와 카테고리 - 통일성 있게 개선 */
 .question-header {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    max-width: 100% !important;
 }
 
 .question-number {
-    font-size: 18px;
-    font-weight: 700;
-    color: #4CAF50;
-    min-width: 30px;
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    background-color: var(--surface-darker);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-medium);
+    flex-shrink: 0;
 }
 
 .question-category {
-    background-color: #E6F9EC;
-    color: #2E7D32;
-    padding: 4px 12px;
-    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    background-color: var(--surface-light);
+    border-radius: 20px;
     font-size: 12px;
-    font-weight: 500;
-}
-
-.question-type {
-    padding: 4px 8px;
-    border-radius: 8px;
-    font-size: 11px;
     font-weight: 600;
-    text-transform: uppercase;
+    border: 1px solid var(--border-medium);
+    flex-shrink: 0;
 }
 
-.question-type.political {
-    background-color: #E3F2FD;
-    color: #1976D2;
+.category-economic {
+    background-color: rgba(74, 158, 255, 0.15);
+    color: var(--primary);
+    border-color: rgba(74, 158, 255, 0.3);
 }
 
-.question-type.urgent {
-    background-color: #FFF3E0;
-    color: #F57C00;
+.category-social {
+    background-color: rgba(0, 200, 81, 0.15);
+    color: var(--success);
+    border-color: rgba(0, 200, 81, 0.3);
 }
 
-/* 질문 내용 */
-.question-content {
+.category-political {
+    background-color: rgba(255, 183, 71, 0.15);
+    color: var(--warning);
+    border-color: rgba(255, 183, 71, 0.3);
+}
+
+/* 질문 제목과 텍스트 - 너비 제한 */
+.question-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary) !important;
     margin-bottom: 20px;
+    line-height: 1.5;
+    max-width: 100% !important;
+    word-wrap: break-word;
+}
+
+.question-description {
+    color: var(--text-secondary) !important;
+    font-size: 14px;
+    margin-bottom: 24px;
+    line-height: 1.6;
+    max-width: 100% !important;
+    word-wrap: break-word;
 }
 
 .question-text {
-    font-size: 18px;
-    font-weight: 600;
-    color: #2C3E50;
-    line-height: 1.5;
-    margin: 0;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-primary) !important;
+    line-height: 1.6;
+    margin-bottom: 24px;
+    padding: 0;
+    max-width: 100% !important;
+    word-wrap: break-word;
 }
 
-/* 답변 옵션 */
+/* 답변 옵션 - 너비 제한 및 간격 조정 */
 .answer-options {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    margin-bottom: 20px;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-bottom: 32px; /* 서술형 텍스트와의 간격 증가 */
 }
 
 .answer-option {
     display: flex;
     align-items: center;
-    padding: 16px;
-    background-color: #f8f9fa;
-    border: 2px solid #e9ecef;
+    padding: 16px 20px !important;
+    background-color: var(--surface-light) !important;
+    border: 2px solid var(--border-medium) !important;
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s ease;
+    text-decoration: none;
+    color: var(--text-secondary) !important;
     position: relative;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
 }
 
 .answer-option:hover {
-    background-color: #e9ecef;
-    border-color: #B2E5C6;
+    background-color: var(--hover) !important;
+    border-color: var(--primary) !important;
+    color: var(--text-primary) !important;
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(74, 158, 255, 0.2);
 }
 
 .answer-option.selected {
-    background-color: #E6F9EC;
-    border-color: #4CAF50;
-    color: #2E7D32;
+    background-color: var(--primary) !important;
+    border-color: var(--primary) !important;
+    color: white !important;
+    box-shadow: 0 4px 8px rgba(74, 158, 255, 0.4);
 }
 
 .answer-option input[type="radio"] {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
+    margin-right: 16px;
+    accent-color: var(--primary);
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
 }
 
 .answer-text {
     flex: 1;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 500;
-    margin-left: 12px;
+    line-height: 1.4;
+    color: inherit !important;
+    word-wrap: break-word;
+    max-width: calc(100% - 34px) !important;
 }
 
-.answer-circle {
-    width: 20px;
-    height: 20px;
-    border: 2px solid #ced4da;
-    border-radius: 50%;
-    position: relative;
-    transition: all 0.2s ease;
-}
-
-.answer-option.selected .answer-circle {
-    border-color: #4CAF50;
-    background-color: #4CAF50;
-}
-
-.answer-option.selected .answer-circle::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 8px;
-    height: 8px;
-    background-color: white;
-    border-radius: 50%;
-}
-
-/* 서술형 답변 섹션 */
-.text-answer-section {
-    border-top: 1px solid #e9ecef;
-    padding-top: 16px;
-}
-
-.text-label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    color: #6c757d;
-    margin-bottom: 8px;
-    cursor: pointer;
-}
-
-.text-label i {
-    font-size: 14px;
-    color: #4CAF50;
-}
-
-.text-answer {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ced4da;
-    border-radius: 6px;
-    font-size: 14px;
-    line-height: 1.5;
-    resize: vertical;
-    min-height: 80px;
-    transition: border-color 0.2s ease;
-}
-
-.text-answer:focus {
-    outline: none;
-    border-color: #4CAF50;
-    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
-}
-
-.text-answer::placeholder {
-    color: #adb5bd;
-}
-
-/* 네비게이션 섹션 */
-.navigation-section {
-    text-align: center;
-    padding: 20px 0;
-}
-
-.nav-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 16px;
+/* 서술형 입력 필드 - 완전 수정 및 간격 조정 */
+.text-input-section {
+    margin-top: 32px; /* 라디오 버튼과의 간격 증가 */
     margin-bottom: 24px;
 }
 
-.nav-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 24px;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
+.text-input-label {
+    display: block;
+    margin-bottom: 12px; /* 라벨과 입력 필드 간격 */
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary) !important;
+}
+
+.text-input-field,
+textarea,
+.form-control,
+input[type="text"],
+input[type="email"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 16px 20px !important;
+    background-color: var(--surface-light) !important;
+    border: 2px solid var(--border-medium) !important;
+    border-radius: 8px !important;
+    color: var(--text-primary) !important;
+    font-size: 15px !important;
+    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    line-height: 1.5 !important;
+    resize: vertical !important;
+    min-height: 80px !important; /* 5개 질문이므로 높이 줄임 */
+    transition: all 0.2s ease !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+}
+
+.text-input-field:focus,
+textarea:focus,
+.form-control:focus {
+    outline: none !important;
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 3px rgba(74, 158, 255, 0.2) !important;
+    background-color: var(--surface-light) !important;
+}
+
+.text-input-field::placeholder,
+textarea::placeholder,
+.form-control::placeholder {
+    color: var(--text-muted) !important;
+    font-style: italic !important;
+}
+
+/* 오류 메시지 스타일 */
+.error-message {
+    background-color: rgba(255, 68, 68, 0.1);
+    border: 1px solid rgba(255, 68, 68, 0.3);
+    color: var(--error) !important;
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin-top: 16px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* 전체 오류 메시지 */
+.error-message.global {
+    margin-bottom: 24px;
+    background-color: rgba(255, 68, 68, 0.15);
+    border-color: rgba(255, 68, 68, 0.4);
     font-weight: 600;
-    text-decoration: none;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    min-width: 120px;
-    justify-content: center;
 }
 
-.prev-btn {
-    background-color: #6c757d;
-    color: white;
-}
-
-.prev-btn:hover {
-    background-color: #5a6268;
-    color: white;
-    text-decoration: none;
-    transform: translateY(-1px);
-}
-
-.next-btn {
-    background-color: #4CAF50;
-    color: white;
-}
-
-.next-btn:hover {
-    background-color: #45a049;
-    transform: translateY(-1px);
-}
-
-.submit-btn {
-    background-color: #FF9800;
-    color: white;
-}
-
-.submit-btn:hover {
-    background-color: #F57C00;
-    transform: translateY(-1px);
-}
-
-/* 페이지 인디케이터 */
-.page-indicators {
+/* 네비게이션 버튼 - 이전/다음 버튼 통일 */
+.nav-buttons {
     display: flex;
-    justify-content: center;
-    gap: 8px;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 40px; /* 위쪽 여백 증가 */
+    gap: 16px;
+    width: 100% !important;
+    max-width: 100% !important;
 }
 
-.page-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background-color: #ced4da;
-    transition: all 0.2s ease;
+.nav-btn,
+.btn-previous,
+.btn-next {
+    padding: 12px 24px !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease !important;
+    border: 2px solid var(--border-medium) !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    min-height: 44px !important;
+    min-width: 100px !important;
+    justify-content: center !important;
+    background-color: var(--surface-light) !important;
+    color: var(--text-secondary) !important;
 }
 
-.page-dot.active {
-    background-color: #4CAF50;
-    transform: scale(1.2);
+.nav-btn:hover,
+.btn-previous:hover,
+.btn-next:hover {
+    background-color: var(--hover) !important;
+    color: var(--text-primary) !important;
+    text-decoration: none !important;
+    border-color: var(--border-light) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* 이전 버튼 스타일 */
+.btn-previous {
+    background-color: var(--surface-light) !important;
+    color: var(--text-secondary) !important;
+    border-color: var(--border-medium) !important;
+}
+
+.btn-previous:hover {
+    background-color: var(--hover) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-light) !important;
+}
+
+/* 다음 버튼을 이전 버튼과 동일하게 */
+.btn-next {
+    background-color: var(--surface-light) !important;
+    color: var(--text-secondary) !important;
+    border-color: var(--border-medium) !important;
+}
+
+.btn-next:hover {
+    background-color: var(--hover) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-light) !important;
+}
+
+/* 제출 버튼만 특별한 스타일 */
+.btn-submit {
+    background-color: var(--primary) !important;
+    color: white !important;
+    border-color: var(--primary) !important;
+}
+
+.btn-submit:hover {
+    background-color: var(--primary-light) !important;
+    border-color: var(--primary-light) !important;
+    color: white !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 8px rgba(74, 158, 255, 0.3) !important;
+}
+
+.nav-btn:disabled,
+.btn-previous:disabled,
+.btn-next:disabled {
+    background-color: var(--surface-darker) !important;
+    color: var(--text-muted) !important;
+    border-color: var(--border-light) !important;
+    cursor: not-allowed !important;
+    opacity: 0.5 !important;
+}
+
+.nav-btn:disabled:hover,
+.btn-previous:disabled:hover,
+.btn-next:disabled:hover {
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* 모든 텍스트 요소 다크 모드 */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text-primary) !important;
+}
+
+p, span, div, label {
+    color: var(--text-primary) !important;
+}
+
+/* Bootstrap 그리드 시스템 너비 제한 */
+.row {
+    max-width: 100% !important;
+    margin: 0 !important;
+}
+
+.col,
+.col-1, .col-2, .col-3, .col-4, .col-5, .col-6,
+.col-7, .col-8, .col-9, .col-10, .col-11, .col-12,
+.col-sm, .col-md, .col-lg, .col-xl, .col-xxl {
+    max-width: 100% !important;
+    padding: 0 !important;
 }
 
 /* 반응형 디자인 */
 @media (max-width: 768px) {
-    .question-container {
-        padding: 15px;
-    }
-    
-    .page-title {
-        font-size: 24px;
-    }
-    
-    .page-subtitle {
-        font-size: 14px;
+    .survey-container,
+    .container,
+    main,
+    section {
+        padding: 16px !important;
+        margin: 0 16px !important;
+        max-width: calc(100% - 32px) !important;
     }
     
     .question-card {
-        padding: 20px;
-        margin-bottom: 20px;
-    }
-    
-    .question-text {
-        font-size: 16px;
-    }
-    
-    .answer-option {
-        padding: 12px;
-    }
-    
-    .answer-text {
-        font-size: 13px;
-    }
-    
-    .nav-buttons {
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .nav-btn {
-        width: 100%;
-        max-width: 200px;
+        padding: 24px !important;
+        margin-bottom: 24px;
     }
     
     .question-header {
-        flex-wrap: wrap;
+        flex-direction: column;
+        align-items: flex-start;
         gap: 8px;
     }
     
-    .question-number {
+    .question-title {
         font-size: 16px;
-    }
-    
-    .question-category {
-        font-size: 11px;
-        padding: 3px 8px;
-    }
-}
-
-@media (max-width: 480px) {
-    .question-container {
-        padding: 10px;
-    }
-    
-    .page-title {
-        font-size: 20px;
-    }
-    
-    .question-card {
-        padding: 16px;
     }
     
     .question-text {
@@ -426,17 +487,125 @@
     }
     
     .answer-option {
-        padding: 10px;
+        padding: 12px 16px !important;
     }
     
-    .text-answer {
-        min-height: 60px;
-    }
-    
-    .nav-btn {
-        padding: 10px 20px;
+    .answer-text {
         font-size: 14px;
     }
+    
+    .text-input-field,
+    textarea,
+    .form-control {
+        padding: 12px 16px !important;
+        min-height: 60px !important;
+    }
+    
+    .nav-buttons {
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 32px;
+    }
+    
+    .nav-btn,
+    .btn-previous,
+    .btn-next {
+        width: 100% !important;
+        min-width: auto !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .survey-container,
+    .container,
+    main,
+    section {
+        padding: 12px !important;
+        margin: 0 12px !important;
+        max-width: calc(100% - 24px) !important;
+    }
+    
+    .question-card {
+        padding: 20px !important;
+        margin-bottom: 20px;
+    }
+    
+    .question-title {
+        font-size: 15px;
+    }
+    
+    .question-text {
+        font-size: 14px;
+    }
+    
+    .answer-option {
+        padding: 10px 12px !important;
+    }
+    
+    .nav-btn,
+    .btn-previous,
+    .btn-next {
+        padding: 10px 16px !important;
+        font-size: 13px !important;
+    }
+}
+
+/* 접근성 개선 */
+.answer-option:focus,
+.nav-btn:focus,
+.btn-previous:focus,
+.btn-next:focus,
+.text-input-field:focus,
+textarea:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* 키보드 네비게이션 지원 */
+.answer-option:focus-visible {
+    box-shadow: 0 0 0 3px rgba(74, 158, 255, 0.3);
+}
+
+/* 로딩 상태 */
+.loading {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-secondary) !important;
+}
+
+.loading-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--surface-light);
+    border-top: 3px solid var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 16px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 성공 메시지 */
+.success-message {
+    background-color: rgba(0, 200, 81, 0.1);
+    border: 1px solid rgba(0, 200, 81, 0.3);
+    color: var(--success) !important;
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin-top: 16px;
+    font-size: 14px;
+}
+
+/* 폼 검증 스타일 */
+.form-invalid .answer-option {
+    border-color: var(--error) !important;
+}
+
+.form-invalid .text-input-field {
+    border-color: var(--error) !important;
 }
 
 /* 애니메이션 효과 */
@@ -455,25 +624,8 @@
     animation: fadeInUp 0.5s ease-out;
 }
 
-.question-card:nth-child(1) { animation-delay: 0.1s; }
-.question-card:nth-child(2) { animation-delay: 0.2s; }
-.question-card:nth-child(3) { animation-delay: 0.3s; }
-.question-card:nth-child(4) { animation-delay: 0.4s; }
-.question-card:nth-child(5) { animation-delay: 0.5s; }
-
-/* 접근성 개선 */
-.answer-option:focus-within {
-    outline: 2px solid #4CAF50;
-    outline-offset: 2px;
-}
-
-.text-answer:focus {
-    outline: none;
-    border-color: #4CAF50;
-    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
-}
-
-.nav-btn:focus {
-    outline: 2px solid #4CAF50;
-    outline-offset: 2px;
-}
+.question-card:nth-child(2) { animation-delay: 0.1s; }
+.question-card:nth-child(3) { animation-delay: 0.2s; }
+.question-card:nth-child(4) { animation-delay: 0.3s; }
+.question-card:nth-child(5) { animation-delay: 0.4s; }
+.question-card:nth-child(6) { animation-delay: 0.5s; }

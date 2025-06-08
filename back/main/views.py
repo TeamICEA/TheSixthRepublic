@@ -43,19 +43,49 @@ def get_user_id(request):
         import traceback
         traceback.print_exc()
         return None
+from django.shortcuts import redirect
+
+def history_or_survey(request):
+    """
+    '지난 리포트 다시보기' 클릭 시:
+    - 리포트가 하나도 없으면 설문 시작(1페이지)로 이동
+    - 있으면 history 페이지로 이동
+    """
+    user_uuid = get_user_id(request)
+    if not user_uuid:
+        # 새 사용자면 설문 시작
+        new_user = User.objects.create()
+        user_uuid = str(new_user.id)
+        request.session['user_uuid'] = user_uuid
+        return redirect('question_page', page_num=1)
+
+    try:
+        current_user = User.objects.get(id=user_uuid)
+    except User.DoesNotExist:
+        new_user = User.objects.create()
+        user_uuid = str(new_user.id)
+        request.session['user_uuid'] = user_uuid
+        current_user = new_user
+        return redirect('question_page', page_num=1)
+
+    # UserReport가 하나라도 있으면 history로, 아니면 설문 시작
+    if UserReport.objects.filter(user=current_user).exists():
+        return redirect('history')
+    else:
+        return redirect('question_page', page_num=1)
 
 def smart_survey_redirect(request):
     """
-    베너의 '성향분석 리포트 보기' 버튼 클릭 시 상황에 따른 스마트 리다이렉트
-    
-    1. 지난 설문이 존재하면 → 8페이지 지난 리포트 다시보기
-    2. 지난 설문이 없고 중단된 설문조사가 있으면 → 설문 이어서하기
-    3. 아무것도 없으면 → 설문 시작하기
+    베너의 '성향분석 시작하기' 버튼 클릭 시 상황에 따른 스마트 리다이렉트
+
+    1. 진행 중인 설문이 있으면 → 이어서하기
+    2. 아무것도 없으면 → 설문 시작하기
+    3. (리포트 다시보기는 별도 메뉴에서 접근)
     """
     try:
         # 1. 사용자 UUID 처리
         user_uuid = get_user_id(request)
-        
+
         if not user_uuid:
             # 새 사용자면 설문 시작
             new_user = User.objects.create()
@@ -63,7 +93,7 @@ def smart_survey_redirect(request):
             request.session['user_uuid'] = user_uuid
             print(f"새 사용자 생성: {user_uuid} → 설문 시작")
             return redirect('question_page', page_num=1)
-        
+
         try:
             current_user = User.objects.get(id=user_uuid)
         except User.DoesNotExist:
@@ -74,39 +104,29 @@ def smart_survey_redirect(request):
             current_user = new_user
             print(f"사용자 재생성: {user_uuid} → 설문 시작")
             return redirect('question_page', page_num=1)
-        
-        # 2. 완료된 리포트가 있는지 확인 (가장 최신)
-        completed_reports = UserReport.objects.filter(
-            user=current_user
-        ).order_by('-created_at')
-        
-        if completed_reports.exists():
-            # 지난 설문이 존재하면 8페이지 지난 리포트 다시보기로 이동
-            print(f"사용자 {user_uuid} → 8페이지 지난 리포트 다시보기")
-            return redirect('history')
-        
-        # 3. 진행 중인 설문이 있는지 확인
+
+        # 1. 진행 중인 설문이 있는지 확인
         incomplete_responses = Response.objects.filter(
             user=current_user,
             survey_completed_at__isnull=True
         ).order_by('-id')
-        
+
         if incomplete_responses.exists():
             # 진행 중인 설문이 있으면 이어서하기
             # 세션에 설문 ID 설정
             first_response = incomplete_responses.first()
             request.session['current_survey_session_id'] = str(first_response.survey_attempt_id)
-            
+
             # 답변하지 않은 첫 번째 질문 찾기
             answered_question_ids = incomplete_responses.values_list('question_id', flat=True)
             all_question_ids = list(Question.objects.values_list('id', flat=True).order_by('id'))
-            
+
             next_unanswered_question = None
             for q_id in all_question_ids:
                 if q_id not in answered_question_ids:
                     next_unanswered_question = q_id
                     break
-            
+
             if next_unanswered_question:
                 # 다음 답변할 질문이 속한 페이지 계산
                 next_page = ((next_unanswered_question - 1) // 5) + 1
@@ -116,11 +136,11 @@ def smart_survey_redirect(request):
                 # 모든 질문에 답했는데 완료 처리가 안 된 경우 → 결과 페이지
                 print(f"사용자 {user_uuid} → 결과 페이지로 이동")
                 return redirect('user_report')
-        
-        # 4. 아무것도 없으면 새로운 설문 시작
+
+        # 2. 아무것도 없으면 새로운 설문 시작
         print(f"사용자 {user_uuid} → 새 설문 시작")
         return redirect('question_page', page_num=1)
-        
+
     except Exception as e:
         print(f"스마트 리다이렉트 오류: {e}")
         # 오류 시 기본적으로 설문 시작

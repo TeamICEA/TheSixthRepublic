@@ -1,167 +1,251 @@
-body {
-    background: white;
-    margin: 0;
-    font-family: 'Noto Sans KR', sans-serif;
-    color: #222;
-}
-.header-bar {
-    width: 100vw;
-    background: #D7F5E3;
-    height: 40px;
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 100;
-}
-.nav {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #D7F5E3;
-    width: 100vw;
-    padding: 0;
-    margin: 0;
-    position: relative;
-    z-index: 110;
-    height: 40px;
-    box-sizing: border-box;
-}
-.nav .nav-highlight {
-    width: 144px;
-    height: 20px;
-    background: #B0E3C6;
-    border-radius: 2px;
-    margin-left: 8px;
-    margin-right: 8px;
-    display: inline-block;
-    vertical-align: middle;
-    position: absolute;
-    left: 0;
-    top: 10px;
-}
-.nav-menu {
-    display: flex;
-    width: 100%;
-    justify-content: space-around;
-    font-size: 13px;
-    position: relative;
-    z-index: 120;
-}
-.nav-menu li {
-    list-style: none;
-    font-weight: bold;
-    cursor: pointer;
-    padding: 0 8px;
-    line-height: 40px;
+/* 기존 CSS 변수와 기본 스타일 유지 */
+:root {
+    --primary: #4A9EFF;
+    --primary-light: #6BB6FF;
+    --primary-dark: #2563EB;
+    --background: #1B1D1F;
+    --surface: #2E3033;
+    --surface-light: #3E4042;
+    --surface-darker: #252729;
+    --text-primary: #FFFFFF;
+    --text-secondary: #B0B3B8;
+    --text-muted: #8A8D93;
+    --border-light: #3E4042;
+    --border-medium: #4A4D50;
+    --success: #00C851;
+    --warning: #FFB347;
+    --error: #FF4444;
+    --hover: #383A3D;
 }
 
-.main-section {
-    max-width: 90vw;
-    margin: 64px auto 0 auto;
-    padding-top: 32px;
+body {
+    background-color: var(--background) !important;
+    margin: 0;
+    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: var(--text-primary);
+    line-height: 1.6;
 }
+
+.header-bar { display: none; }
+.nav { display: none; }
+
+/* 메인 섹션 */
+.main-section {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 24px;
+    background-color: var(--background);
+    min-height: calc(100vh - 64px);
+}
+
+/* 메인 배너 */
 .main-banner {
-    background: #C4F0D5;
-    padding: 64px 0 56px 0;
-    border-radius: 24px;
-    margin-bottom: 48px;
+    background-color: var(--primary-dark);
+    max-width: 800px;
+    margin: 0 auto 40px auto;
+    padding: 48px 40px;
+    border-radius: 12px;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     justify-content: center;
-    position: relative;
+    text-align: center;
     min-height: 240px;
-}
-.main-banner-content {
-    margin-left: 96px;
-}
-.main-banner h1 {
-    font-size: 24px;
-    font-weight: 700;
-    margin-bottom: 32px;
-    margin-top: 0;
-}
-.main-banner-btn {
-    background: #B4ECCC;
-    border: none;
-    border-radius: 24px;
-    padding: 16px 40px;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    color: #222;
-    margin-top: 16px;
-    box-shadow: none;
-    transition: background 0.2s;
-    display: inline-block;
-}
-.main-banner-btn:hover {
-    background: #A2E2BD;
+    border: 1px solid var(--border-light);
+    box-shadow: 0 6px 12px rgba(37, 99, 235, 0.3);
 }
 
-.section-title {
-    font-size: 18px;
-    font-weight: 700;
-    margin: 48px 0 24px 0;
+.main-banner-content {
+    margin: 0;
+    max-width: 600px;
 }
+
+.main-banner h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    margin-top: 0;
+    color: white;
+    line-height: 1.4;
+}
+
+.main-banner-btn {
+    background-color: var(--primary);
+    border: none;
+    border-radius: 8px;
+    padding: 16px 32px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    color: white;
+    margin-top: 16px;
+    box-shadow: 0 4px 8px rgba(74, 158, 255, 0.3);
+    transition: all 0.2s ease;
+    display: inline-block;
+    text-decoration: none;
+}
+
+.main-banner-btn:hover {
+    background-color: var(--primary-light);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(74, 158, 255, 0.4);
+    text-decoration: none;
+    color: white;
+}
+
+/* 섹션 제목 */
+.section-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 40px 0 24px 0;
+    color: var(--text-primary);
+    text-align: left;
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 12px;
+}
+
+/* 뉴스 섹션 - 그리드로 변경 */
 .news-section {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 48px 72px;
-    padding-left: 48px;
-    padding-right: 48px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    padding: 0;
 }
 
+/* 뉴스 컬럼을 카드처럼 변경 */
 .news-column {
-    margin-bottom: 32px;
+    background-color: var(--surface);
+    border-radius: 12px;
+    border: 1px solid var(--border-light);
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
 }
+
+.news-column:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
 .news-column h2 {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 600;
-    margin-bottom: 16px;
-    margin-top: 0;
+    margin: 0;
+    padding: 16px 20px;
+    color: var(--text-primary);
+    background-color: var(--surface-darker);
+    border-bottom: 1px solid var(--border-light);
 }
+
+/* 뉴스 리스트를 세로 배치 */
 .news-list {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    padding: 0;
 }
+
+/* 각 뉴스 아이템을 카드 스타일로 */
 .news-item {
     display: flex;
-    align-items: flex-start;
-    gap: 12px;
+    flex-direction: column;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-light);
+    transition: all 0.2s ease;
 }
+
+.news-item:last-child {
+    border-bottom: none;
+}
+
+.news-item:hover {
+    background-color: var(--hover);
+}
+
+/* 뉴스 이미지를 상단에 배치 */
 .news-img {
-    width: 66px;
-    height: 56px;
-    background: #D9D9D9;
-    border-radius: 3px;
+    width: 100%;
+    height: 120px;
+    background-color: var(--surface-darker);
+    border-radius: 6px;
+    margin-bottom: 12px;
+    position: relative;
+    border: 1px solid var(--border-light);
 }
+
+.news-img::after {
+    content: "📰";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 32px;
+    opacity: 0.3;
+}
+
+/* 뉴스 텍스트 */
 .news-text {
-    font-size: 12px;
-    color: #444;
-    margin-top: 0;
-    margin-bottom: 0;
+    font-size: 14px;
+    color: var(--text-secondary);
     line-height: 1.4;
+    text-decoration: none;
+    transition: color 0.2s ease;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
-@media (min-width: 960px) {
+
+.news-text:hover {
+    color: var(--text-primary);
+    text-decoration: none;
+}
+
+/* 반응형 디자인 */
+@media (min-width: 1200px) {
     .news-section {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 48px 72px;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
     }
-    .main-section {
-    max-width: 1440px;
-    padding-left: 0;
-    padding-right: 0;
-    }
-    .main-banner-content {
-    margin-left: 120px;
+    
+    .main-banner h1 {
+        font-size: 32px;
     }
 }
-@media (max-width: 720px) {
-    .main-section { max-width: 100vw; }
-    .main-banner { padding-left: 12vw; min-height: 120px;}
-    .main-banner h1 { font-size: 18px; }
-    .main-banner-btn { padding: 8px 20px; font-size: 15px; }
-    .news-section { grid-template-columns: 1fr 1fr; padding-left: 4vw; padding-right: 4vw;}
+
+@media (max-width: 768px) {
+    .main-section {
+        padding: 16px;
+        margin: 0 16px;
+        max-width: calc(100% - 32px);
+    }
+    
+    .main-banner {
+        padding: 32px 24px;
+        min-height: 200px;
+        max-width: 100%;
+    }
+    
+    .main-banner h1 {
+        font-size: 22px;
+    }
+    
+    .news-section {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+    
+    .news-img {
+        height: 100px;
+    }
+}
+
+@media (max-width: 576px) {
+    .news-section {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .main-banner h1 {
+        font-size: 18px;
+    }
 }
