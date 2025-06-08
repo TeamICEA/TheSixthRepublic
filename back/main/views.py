@@ -313,9 +313,12 @@ def question_page(request, page_num):
                 
                 if next_unanswered_question:
                     next_page = ((next_unanswered_question - 1) // QUESTIONS_PER_PAGE) + 1
-                    if page_num != next_page:
+                    #region 이 부분 수정(석환)
+                    if page_num > next_page:
                         return redirect('question_page', page_num=next_page)
-        
+                    #endregion
+
+                    
         # 11. POST 요청 처리 (사용자가 답변을 제출했을 때)
         if request.method == 'POST':
             # 12. 필수 답변 검사
