@@ -8,22 +8,82 @@
 {% endblock %}
 
 {% block content %}
-<div class="chat-container">
-<div class="chat-row">
-    <img class="profile-img" src="{{ pic_link }}" alt="프로필사진">
-    <div class="chat-bubble">
-    {{ response|linebreaksbr }}
+<div class="chat-container" id="chat-box">
+    <div id="loading-banner" style="display: none;">
+      <div class="loading-backdrop"></div>
+      <div class="loading-content">
+        <div class="spinner"></div>
+        <span class="loading-text">{{ name }}님이 입력 중...</span>
+      </div>
+    </div>
+
+    {% for m in messages %}
+    <div class="chat-row {% if m.role == 'user' %}user-row{% else %}bot-row{% endif %}">
+      {% if m.role == 'user' %}
+        <div class="chat-bubble user-bubble">
+          {{ m.text|linebreaksbr }}
+        </div>
+      {% else %}
+        <img class="profile-img bot-profile" src="{{ pic_link }}" alt="봇">
+        <div class="chat-bubble bot-bubble">
+          {{ m.text|linebreaksbr }}
+        </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+    <div class="chat-row user-row" style="display: none;" id="my-chat-1">
+        <div class="chat-bubble user-bubble" style="display: none;" id="my-chat-2"></div>
     </div>
 </div>
-</div>
 
-<form class="chat-input-wrap" method="post" action="{% url 'chat' str_id=str_id %}">
-{% csrf_token %}
-<div class="input-box-container">
-    <input class="chat-input-box" autocomplete="off" name="message" type="text" placeholder="무엇이든 물어보세요">
-    <button class="send-btn" type="submit">
-    <span class="send-arrow">&#8593;</span>
-    </button>
-</div>
+<form class="chat-input-wrap" id="chat-form" method="post" action="{% url 'chat' str_id=str_id %}">
+  {% csrf_token %}
+  <input type="hidden" name="messages" id="messages-field" value='{{ messages }}'>
+  <div class="input-box-container">
+    <input class="chat-input-box" autocomplete="off" name="message" id="user-message" type="text" placeholder="무엇이든 물어보세요" required>
+    <input class="chat-input-box" autocomplete="off" id="user-message-2" placeholder="무엇이든 물어보세요" required="" type="hidden">
+  <button class="send-btn" type="submit"><span class="send-arrow">&#8593;</span></button>
 </form>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  var form = document.getElementById('chat-form');
+  var banner = document.getElementById('loading-banner');
+  var mychat1 = document.getElementById('my-chat-1')
+  var mychat2 = document.getElementById('my-chat-2')
+  var mychat3 = document.getElementById('user-message')
+  var mychat4 = document.getElementById('user-message-2')
+
+  if (form && banner) {
+      form.addEventListener('submit', function() {
+          banner.style.display = "flex";
+          mychat1.style.display = "flex";
+          mychat2.style.display = "flex";
+          mychat2.textContent = mychat3.value;
+
+          const chatBox = document.getElementById("chat-box");
+        if (chatBox) {
+        window.scrollTo({
+            'top': chatBox.scrollHeight, 
+            'left': 0,
+            behavior: 'instant'
+        });
+        mychat3.type = 'hidden';
+        mychat4.type = 'text';
+        }
+      });
+  }
+});
+
+window.addEventListener('load', function () {
+    const chatBox = document.getElementById("chat-box");
+    if (chatBox) {
+      window.scrollTo({
+        'top': chatBox.scrollHeight, 
+        'left': 0,
+        behavior: 'instant'
+      });
+    }
+  });
+</script>
 {% endblock %}
