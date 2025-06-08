@@ -608,7 +608,7 @@ body {
 }
 
 /* 3. 정당별 테두리 색상 지정 */
-.border-party-0 { border-color: #5D6470; }   /* 무소속 */
+.border-party-0 { border-color: #FFFFFF; }   /* 무소속 */
 .border-party-1 { border-color: #142484; }   /* 더불어민주당 */
 .border-party-2 { border-color: #E61D2B; }   /* 국민의힘 */
 .border-party-3 { border-color: #0073CF; }   /* 조국 */

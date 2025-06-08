@@ -277,7 +277,7 @@ tr.party-무소속 .party-name {
     font-weight: 600;
 }
 
-tr.party-0 .table-photo{ border-color: #5D6470; }   /* 무소속 */
+tr.party-0 .table-photo{ border-color: #FFFFFF; }   /* 무소속 */
 tr.party-1 .table-photo{ border-color: #142484; }   /* 더불어민주당 */
 tr.party-2 .table-photo{ border-color: #E61D2B; }   /* 국민의힘 */
 tr.party-3 .table-photo{ border-color: #0073CF; }   /* 조국 */
