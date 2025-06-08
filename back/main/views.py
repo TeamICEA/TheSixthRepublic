@@ -17,6 +17,7 @@ from django.db.models.functions import *
 from .models import *
 from .utils import process_survey_completion
 from django.http import Http404
+from bs4 import BeautifulSoup
 
 # Create your views here.
 CLEANR = re.compile('<.*?>')
@@ -191,11 +192,27 @@ def add_news_articles(request):
         for item in text_json["items"]:
             title: str = re.sub(CLEANR, '', item["title"]).replace("&quot;", '"').replace("&amp;", "&")
             link: str = item["link"]
+            image: str = ""
             # description: str = re.sub(CLEANR, '', item["description"])
+
+            try:
+                response = requests.get(link, headers={
+                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:138.0) Gecko/20100101 Firefox/138.0",
+                        "Referer": "https://www.google.com/",
+                        "Connection": "keep-alive"
+                    })
+
+                if response.status_code == 200:
+                    soup = BeautifulSoup(response.text, "html.parser")
+                    image_meta = soup.find(name="meta", attrs={"property": "og:image"})
+                    image = image_meta["content"]
+            except:
+                pass
 
             article = {
                 "title": title,
-                "link": link
+                "link": link,
+                "image": image
             }
             context[str(i)].append(article)
 
@@ -645,6 +662,13 @@ def ShowUserReport(request):
             print(f"  - full_text 길이: {len(latest_report.full_text) if latest_report.full_text else 0}")
             print(f"  - parties_rank 개수: {len(latest_report.parties_rank) if latest_report.parties_rank else 0}")
             print(f"  - politicians_top 개수: {len(latest_report.politicians_top) if latest_report.politicians_top else 0}")
+
+            latest_report.full_text = latest_report.full_text.replace("**", "").replace("\\n", "\n").replace("'", "")
+            for i in range(0, 10):
+                latest_report.politicians_top[i]['reason'] = latest_report.politicians_top[i]['reason'].replace("**", "").replace("\\n", "\n").replace("'", "")
+                latest_report.politicians_bottom[i]['reason'] = latest_report.politicians_bottom[i]['reason'].replace("**", "").replace("\\n", "\n").replace("'", "")
+            for i in range(0, 7):
+                latest_report.parties_rank[i]['reason'] = latest_report.parties_rank[i]['reason'].replace("**", "").replace("\\n", "\n").replace("'", "")
         else:
             print("❌ 리포트가 없음 - 설문 페이지로 리다이렉트")
             return redirect('question_page', page_num=1)
@@ -670,7 +694,7 @@ def ShowUserReportBy(request, latest_report: UserReport):
         # 리포트 데이터 상세 검증
         print("🔍 리포트 데이터 검증 시작:")
         
-        full_text = latest_report.full_text
+        full_text = latest_report.full_text.replace("**", "").replace("\\n", "\n").replace("'", "")
         print(f"  - full_text: {type(full_text)}, 길이: {len(full_text) if full_text else 0}")
         
         parties_rank = latest_report.parties_rank
@@ -681,6 +705,12 @@ def ShowUserReportBy(request, latest_report: UserReport):
         
         politicians_bottom = latest_report.politicians_bottom
         print(f"  - politicians_bottom: {type(politicians_bottom)}, 개수: {len(politicians_bottom) if politicians_bottom else 0}")
+
+        for i in range(0, 10):
+            politicians_top[i]['reason'] = politicians_top[i]['reason'].replace("**", "").replace("\\n", "\n").replace("'", "")
+            politicians_bottom[i]['reason'] = politicians_bottom[i]['reason'].replace("**", "").replace("\\n", "\n").replace("'", "")
+        for i in range(0, 7):
+            parties_rank[i]['reason'] = parties_rank[i]['reason'].replace("**", "").replace("\\n", "\n").replace("'", "")
         
         # 각 데이터의 샘플 출력
         if full_text:
@@ -699,6 +729,7 @@ def ShowUserReportBy(request, latest_report: UserReport):
             'politicians_top': politicians_top,
             'politicians_bottom': politicians_bottom,
         }
+        print(context["politicians_top"][1]["reason"])
         
         print("✅ 컨텍스트 구성 완료")
         print(f"🎯 템플릿 렌더링: main/user_report.html")
