@@ -62,14 +62,14 @@
             {% for politician in politicians %}
             {% with actual_rank=forloop.counter|add:politicians.start_index|add:"-1" %}
             <tr onclick="window.location.href='{% url 'politician_report' politician.str_id %}'" 
-                class="clickable-row party-{{ politician.party|slugify }}"
+                class="clickable-row party-{{ politician.party.id }}"
                 data-rank="{{ actual_rank }}">
             <td>{{ actual_rank }}</td>
-            <td class="party-{{ politician.party|slugify }}">
+            <td class="party-{{ politician.party.id }}">
             {% if politician.pic_link %}
-              <img src="{{ politician.pic_link }}" alt="{{ politician.name }}">
+              <img src="{{ politician.pic_link }}" alt="{{ politician.name }}" class="table-photo">
              {% else %}
-                            <div class="photo-placeholder">
+                            <div class="photo-placeholder table-photo">
                                 <i class="fas fa-user"></i>
                             </div>
                         {% endif %}

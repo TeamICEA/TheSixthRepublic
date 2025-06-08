@@ -91,7 +91,12 @@ body {
     min-height: 32px;
     display: inline-flex;
     align-items: center;
+    margin-right:30px;
 }
+.ranking_filters a:last-child {
+    margin-right: 0;
+}
+
 
 .ranking_filters a:hover {
     background-color: var(--hover);
@@ -137,7 +142,7 @@ body {
 }
 
 .sort-toggle {
-    color: var(--text-secondary);
+    color: #FFFFFF;
     text-decoration: none;
     font-weight: 500;
     font-size: 14px;
@@ -235,40 +240,6 @@ img {
 }
 
 /* 정당별 사진 테두리 색상 - 더 구체적인 선택자 사용 */
-tr.party-더불어민주당 img,
-tr.party-더불어민주당 .photo-placeholder {
-    border-color: var(--party-democrat) !important;
-}
-
-tr.party-국민의힘 img,
-tr.party-국민의힘 .photo-placeholder {
-    border-color: var(--party-power) !important;
-}
-
-tr.party-정의당 img,
-tr.party-정의당 .photo-placeholder {
-    border-color: var(--party-justice) !important;
-}
-
-tr.party-개혁신당 img,
-tr.party-개혁신당 .photo-placeholder {
-    border-color: var(--party-reform) !important;
-}
-
-tr.party-진보당 img,
-tr.party-진보당 .photo-placeholder {
-    border-color: var(--party-progressive) !important;
-}
-
-tr.party-조국혁신당 img,
-tr.party-조국혁신당 .photo-placeholder {
-    border-color: var(--party-innovation) !important;
-}
-
-tr.party-무소속 img,
-tr.party-무소속 .photo-placeholder {
-    border-color: var(--party-independent) !important;
-}
 
 /* 정당명 색상 - 더 구체적인 선택자와 !important 사용 */
 tr.party-더불어민주당 .party-name {
@@ -306,10 +277,20 @@ tr.party-무소속 .party-name {
     font-weight: 600;
 }
 
+tr.party-0 .table-photo{ border-color: #FFFFFF; }   /* 무소속 */
+tr.party-1 .table-photo{ border-color: #142484; }   /* 더불어민주당 */
+tr.party-2 .table-photo{ border-color: #E61D2B; }   /* 국민의힘 */
+tr.party-3 .table-photo{ border-color: #0073CF; }   /* 조국 */
+tr.party-4 .table-photo{ border-color: #FF7211; }   /* 기타 */
+tr.party-5 .table-photo{ border-color: #D5001C; }
+tr.party-6 .table-photo{ border-color: #01D2C3; }
+tr.party-7 .table-photo{ border-color: #F58402; }
+
+
 /* 기타 정당 기본 색상 */
 .party-name {
-    font-weight: 500;
-    color: var(--party-default);
+    font-weight: 400;
+    color: #FFFFFF;
 }
 
 /* 페이지네이션 */
@@ -415,11 +396,22 @@ tr.party-무소속 .party-name {
     
     .ranking-title {
         font-size: 14px;
-        flex-direction: column;
+        flex-direction: row; /* ✅ row로 변경 */
+        justify-content: center; /* ✅ 가운데 정렬 */
+        align-items: center;
         gap: 8px;
         text-align: center;
+        flex-wrap: wrap; /* 🔄 너무 좁으면 줄바꿈 */
     }
-    
+
+    .ranking-title .ranking-name {
+        text-align: center;
+    }
+
+    .sort-toggle {
+        font-size: 13px;
+        padding: 2px 6px;
+    }    
     th, td {
         padding: 8px 6px;
         font-size: 13px;

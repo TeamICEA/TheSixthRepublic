@@ -72,9 +72,9 @@ body {
     border-radius: 8px;
     padding: 20px;
     min-height: 160px;
-    font-size: 15px; /* 14*/
-    line-height: 1.8; /* 1.6*/
-    color: var(--text-secondary);
+    font-size: 14px; /* 14*/
+    line-height: 1.6; /* 1.6*/
+    color: var(--text-primary);
 }
 
 /* 랭킹 테이블 + 이유 박스 묶는 row */
@@ -98,7 +98,7 @@ body {
     padding: 16px;
     overflow-y: auto;
     box-sizing: border-box;
-    max-height: 620px;
+    max-height: 600px;
     border: 1px solid var(--border-medium);
     min-width: 0;
 }
@@ -112,7 +112,7 @@ body {
 
 .reason {
     font-size: 14px;
-    color: var(--text-secondary);
+    color: var(--text-primary);
     line-height: 1.6;
 }
 
@@ -173,6 +173,100 @@ table img {
 td:first-child {
     text-align: center;
     font-weight: 600;
+}
+tr.party-0 img,
+tr.party-0 .photo-placeholder {
+  border-color: #FFFFFF; /* 무소속 */
+}
+
+tr.party-1 img,
+tr.party-1 .photo-placeholder {
+  border-color: #142484; /* 더불어민주당 */
+}
+
+tr.party-2 img,
+tr.party-2 .photo-placeholder {
+  border-color: #E61D2B; /* 국민의힘 */
+}
+
+tr.party-3 img,
+tr.party-3 .photo-placeholder {
+  border-color: #0073CF; /* 조국 */
+}
+
+tr.party-4 img,
+tr.party-4 .photo-placeholder {
+  border-color: #FF7211; /* 기타 */
+}
+
+tr.party-5 img,
+tr.party-5 .photo-placeholder {
+  border-color: #D5001C;
+}
+
+tr.party-6 img,
+tr.party-6 .photo-placeholder {
+  border-color: #01D2C3;
+}
+
+tr.party-7 img,
+tr.party-7 .photo-placeholder {
+  border-color: #F58402;
+}
+
+table img,
+.party-img-placeholder {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border-light); /* 기본값 */
+}
+.photo-placeholder {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: var(--surface-light);
+    border: 2px solid var(--border-light);
+    display: inline-block; /* ✅ img처럼 정렬 맞춤 */
+    vertical-align: middle; /* ✅ 정렬 보정 */
+    font-size: 14px;
+    color: var(--text-muted);
+    overflow: hidden;
+    text-align: center;
+    line-height: 32px; /* 아이콘을 정확히 가운데로 */
+}
+
+.party-img-더불어민주당 {
+    border-color: #142484;
+}
+
+.party-img-국민의힘 {
+    border-color: #E61D2B;
+}
+
+.party-img-조국혁신당 {
+    border-color: #0073CF;
+}
+
+.party-img-개혁신당 {
+    border-color: #FF7211;
+}
+
+.party-img-진보당 {
+    border-color: #D5001C;
+}
+
+.party-img-기본소득당 {
+    border-color: #01D2C3;
+}
+
+.party-img-사회민주당 {
+    border-color: #F58402;
+}
+
+.party-img-무소속 {
+    border-color: #FFFFFF;
 }
 
 /* 반응형 디자인 */

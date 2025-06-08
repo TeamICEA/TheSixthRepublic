@@ -11,7 +11,6 @@ html, body {
     justify-content: center;
     align-items: center;
     z-index: 9999;
-    /* 추가적으로 필요하다면 background: transparent; */
 }
 
 .loading-backdrop {
@@ -35,14 +34,6 @@ html, body {
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
-.spinner {
-    width: 32px; height: 32px;
-    border: 10px solid #ddd;
-    border-top: 10px solid #5CC39F;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-bottom: 18px;
-}
 
 .spinner {
     width: 32px;
@@ -53,148 +44,248 @@ html, body {
     animation: spin 1s linear infinite;
     margin-bottom: 18px;
 }
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
+
 .loading-text {
     font-size: 20px;
     color: #222;
 }
 
-/* 기존 chat-row, 채팅버블 등은 그대로 사용 */
+/* 채팅 컨테이너 - 적절한 중간 너비 */
 .chat-container {
     padding-top: 80px;
     padding-bottom: 180px;
-    max-width: 100vw;
+    max-width: 800px; /* 600px와 1000px의 중간값 */
+    margin: 0 auto;
     min-height: 100vh;
     overflow-y: auto;
+    padding-left: 24px;
+    padding-right: 24px;
+    box-sizing: border-box;
 }
 
 .chat-row {
     display: flex;
     align-items: flex-start;
     width: 100%;
-    margin-top: 40px;
-    margin-left: 500px;
+    margin-top: 32px;
+    margin-left: 0;
 }
 
 .user-row {
     flex-direction: row-reverse;
-    /* justify-content: flex-end; */
-    margin-left: -500px;
+    justify-content: flex-start;
 }
+
 .bot-row {
-    /* 기본값 (왼쪽) */
+    justify-content: flex-start;
 }
+
 .user-bubble {
     background: #A5E5C3;
     color: #212121;
     align-self: flex-end;
 }
+
 .bot-bubble {
     background: #484848;
     color: white;
 }
+
 .profile-img.bot-profile {
-    width: 56px;
-    height: 56px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
     object-fit: cover;
     background: #ccc;
-    margin-right: 18px;
+    margin-right: 16px;
 }
 
+/* 채팅 버블 크기 최적화 */
 .chat-bubble {
-    border-radius: 20px;
-    font-size: 20px;
-    line-height: 1.3;
-    padding: 16px 24px;
-    max-width: 900px;
-    min-width: 100px;
+    border-radius: 18px;
+    font-size: 16px;
+    line-height: 1.4;
+    padding: 12px 18px;
+    max-width: 70%; /* 적절한 버블 너비 */
+    min-width: 80px;
     font-weight: 400;
     box-sizing: border-box;
     display: flex;
     align-items: center;
+    word-wrap: break-word;
 }
 
-/* 입력부 + 버튼 */
+/* 입력부 + 버튼 - 채팅에 최적화된 너비 */
 .chat-input-wrap {
     position: fixed;
     left: 0;
     bottom: 0;
     width: 100vw;
     background: #1B1D1F;
-    padding: 32px 0 32px 0;
+    padding: 28px 0;
     z-index: 200;
     box-sizing: border-box;
 }
+
 .input-box-container {
-    max-width: 90vw;
+    max-width: 800px; /* 채팅 컨테이너와 동일한 너비 */
     margin: 0 auto;
+    padding: 0 24px;
     display: flex;
     align-items: center;
     justify-content: center;
+    box-sizing: border-box;
 }
+
 .chat-input-box {
-    width: 90vw;
-    max-width: 85vw;
+    width: 100%;
+    max-width: 720px; /* 입력창 최대 너비 조정 */
     min-width: 260px;
     background: #484848;
-    padding: 22px 24px;
+    padding: 18px 20px;
     border: none;
     outline: none;
-    font-size: 20px;
-    border-radius: 16px;
-    margin-right: 16px;
+    font-size: 16px;
+    border-radius: 14px;
+    margin-right: 14px;
     color: white;
     box-sizing: border-box;
 }
+
 .chat-input-box::placeholder {
     color: #bbb;
 }
+
+/* 개선된 전송 버튼 */
 .send-btn {
-    width: 48px;
-    height: 48px;
-    background: #fff;
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, #4A9EFF, #6BB6FF);
     border-radius: 50%;
     border: none;
-    margin-left: auto;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 30px;
-}
-.send-btn:hover {
-    background: #e3f9e8;
-}
-.send-arrow {
-    font-size: 32px;
-    color: #222;
+    font-size: 20px;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(74, 158, 255, 0.3);
 }
 
-@media(max-width: 900px) {
-    .chat-bubble {
-    font-size: 22px;
-    min-width: 0;
-    max-width: 90vw;
-    padding: 18px 18px;
-    }
-    .chat-input-box {
-    font-size: 22px;
-    padding: 13px 16px;
-    }
-    .chat-row { margin-left: 12px; }
+.send-btn:hover {
+    background: linear-gradient(135deg, #6BB6FF, #4A9EFF);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(74, 158, 255, 0.4);
 }
-@media(max-width: 600px) {
+
+.send-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(74, 158, 255, 0.3);
+}
+
+/* 개선된 화살표 - 중앙 정렬 및 두께 조정 */
+.send-arrow {
+    font-size: 18px;
+    color: white;
+    font-weight: 900;
+    margin-left: 0;
+    display: inline-block;
+    transform: scaleX(1.2);
+    line-height: 1;
+}
+
+/* 비활성화 상태 */
+.send-btn:disabled {
+    background: #484848;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.send-btn:disabled .send-arrow {
+    color: #888;
+}
+
+/* 반응형 디자인 */
+@media(max-width: 900px) {
+    .chat-container {
+        max-width: calc(100% - 32px);
+        margin: 0 16px;
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+    
+    .input-box-container {
+        max-width: calc(100% - 32px);
+        margin: 0 16px;
+        padding: 0 16px;
+    }
+}
+
+@media(max-width: 768px) {
+    .chat-container {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+    
     .chat-bubble {
-    font-size: 15px;
-    padding: 12px 8px;
+        font-size: 15px;
+        max-width: 75%;
+        padding: 10px 14px;
     }
+    
     .chat-input-box {
-    font-size: 15px;
-    padding: 8px 8px;
+        font-size: 15px;
+        padding: 14px 16px;
+        max-width: none;
     }
-    .input-box-container { max-width: 98vw; }
-    .chat-row { margin-left: 2vw;}
+    
+    .input-box-container {
+        padding: 0 12px;
+    }
+    
+    .profile-img.bot-profile {
+        width: 42px;
+        height: 42px;
+        margin-right: 12px;
+    }
+}
+
+@media(max-width: 576px) {
+    .chat-container {
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+    
+    .chat-bubble {
+        font-size: 14px;
+        max-width: 80%;
+        padding: 10px 14px;
+        border-radius: 16px;
+    }
+    
+    .chat-input-box {
+        font-size: 14px;
+        padding: 12px 14px;
+    }
+    
+    .input-box-container {
+        padding: 0 8px;
+    }
+    
+    .profile-img.bot-profile {
+        width: 40px;
+        height: 40px;
+        margin-right: 10px;
+    }
+    
+    .send-btn {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .send-arrow {
+        font-size: 16px;
+    }
 }

@@ -46,7 +46,7 @@
                 <tbody>
                     {% if parties_rank %}
                         {% for party in parties_rank %}
-                        <tr class="clickable-row" onclick="showReason(this,'reason-display-top-party')" data-reason="{{ party.reason|linebreaksbr }}">
+                        <tr class="clickable-row party-{{party.id}}" onclick="showReason(this,'reason-display-top-party')" data-reason="{{ party.reason|linebreaksbr }}">
                             <td>{{ party.rank }}</td>
                             <td>
                                 {% if party.logo %}
@@ -101,13 +101,13 @@
                 <tbody>
                     {% if politicians_top %}
                         {% for politician in politicians_top|slice:":10" %}
-                        <tr class="clickable-row" onclick="showReason(this,'reason-display-top')" data-reason="{{ politician.reason|linebreaksbr }}">
+                        <tr class="clickable-row pary-{{politician.party}}" onclick="showReason(this,'reason-display-top')" data-reason="{{ politician.reason|linebreaksbr }}">
                             <td>{{ politician.rank }}</td>
                             <td>
                                 {% if politician.picture %}
-                                <img src="{{ politician.picture }}" alt="{{ politician.name }} 사진"/>
+                                <img src="{{ politician.picture }}" alt="{{ politician.name }} 사진 " class="party-img-{{politician.party}}"/>
                                 {% else %}
-                                <div class="photo-placeholder">
+                                <div class="photo-placeholder party-img-{{politician.party}}">
                                     <i class="fas fa-user"></i>
                                 </div>
                                 {% endif %}
@@ -162,9 +162,9 @@
                             <td>{{ politician.rank }}</td>
                             <td>
                                 {% if politician.picture %}
-                                <img src="{{ politician.picture }}" alt="{{ politician.name }} 사진"/>
+                                <img src="{{ politician.picture }}" alt="{{ politician.name }} 사진" class="party-img-{{politician.party}}"/>
                                 {% else %}
-                                <div class="photo-placeholder">
+                                <div class="photo-placeholder party-img-{{politician.party}}">
                                     <i class="fas fa-user"></i>
                                 </div>
                                 {% endif %}
