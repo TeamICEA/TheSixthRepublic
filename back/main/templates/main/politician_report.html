@@ -35,9 +35,9 @@
 
     <div class="profile-img-box">
       {% if pic %}
-        <img src="{{pic}}" alt="{{name}} 사진">
+        <img src="{{pic}}" alt="{{name}} 사진 class="profile-photo-img">
       {% else %}
-        <div class="photo-placeholder1">
+        <div class="photo-placeholder1 party-img-{{ party }}">
           <i class="fas fa-user" style="font-size: 200px;"></i>
         </div>
       {% endif %}
@@ -96,9 +96,9 @@
                         <td>
                             
                             {% if politician.picture %}
-                            <img src="{{politician.picture}}" alt="{{ politician.name }} 사진"/>
+                            <img src="{{politician.picture}}" alt="{{ politician.name }} 사진" class="party-img-{{politician.party}}"/>
                             {% else %}
-                            <div class="photo-placeholder">
+                            <div class="photo-placeholder party-img-{{politician.party}}">
                                 <i class="fas fa-user"></i>
                             </div>
                         {% endif %}
@@ -155,9 +155,9 @@
                             
                             
                             {% if politician.picture %}
-                            <img src="{{politician.picture}}" alt="{{ politician.name }} 사진"/></td> 
+                            <img src="{{politician.picture}}" alt="{{ politician.name }} 사진" class="party-img-{{politician.party}}"/></td> 
                                                     {% else %}
-                            <div class="photo-placeholder">
+                            <div class="photo-placeholder party-img-{{politician.party}}">
                                 <i class="fas fa-user"></i>
                             </div>
                         {% endif %}
