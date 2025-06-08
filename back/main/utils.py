@@ -346,8 +346,8 @@ def calculate_euclidean_similarity(vector1, vector2):
         
         # 유사도로 변환 (거리가 가까울수록 유사도가 높음)
         # 최대 가능 거리를 고려하여 정규화
-        # 벡터가 0~1 범위이므로 10차원 벡터의 최대 거리는 sqrt(10)
-        max_distance = np.sqrt(len(vector1))
+        # 벡터가 0~10 범위이므로 10차원 벡터의 최대 거리는 sqrt(1000)
+        max_distance = np.sqrt(len(vector1)) * 10
         
         # 0~1 범위의 유사도로 변환: 1 - (거리/최대거리)
         similarity = 1 - (euclidean_distance / max_distance)
