@@ -1,5 +1,6 @@
 # The 6th Republic
 ![logo](https://avatars.githubusercontent.com/u/207436724?s=300&v=4)
+![intro](https://github.com/TeamICEA/TheSixthRepublic/blob/main/intro.jpg?raw=true)
  > [!NOTE]
  > 정치 성향 분석 서비스
 >
@@ -31,7 +32,14 @@ Discover where you stand.
     "NAVER_KEY_SECRET": "KEY5"
 }
 ```
-`keys.json`을 루트 디렉터리 내에 생성하셔서 내용을 API KEY에 맞춰 넣으시면 됩니다.
+1. `keys.json`을 루트 디렉터리 내에 생성하셔서 내용을 API KEY에 맞춰 넣어주세요.
+
+```
+pip install -r requirements.txt
+```
+2. 위 명령어로 필요한 패키지를 설치해주세요.
+
+3. Django를 이용하실 경우 `back` 디렉터리가 현재 작업 디렉터리가 되도록 해주세요.
 
 ## 크레딧
 - 충북대학교 내 '**오픈소스 기초 프로젝트**' 수업의 프로젝트입니다.
