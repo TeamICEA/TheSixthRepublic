@@ -84,7 +84,7 @@ table.report-table {
 table.report-table thead th {
     font-size: 16px;
     font-weight: 600;
-    text-align: left;
+    text-align: center;
     padding: 16px 12px;
     background-color: var(--surface-light);
     color: var(--text-primary);
@@ -111,6 +111,7 @@ table.report-table td,
 table.report-table th {
     padding: 12px;
     color: var(--text-primary);
+    text-align: center;
 }
 
 /* 정교한 정치 성향 진행률 바 - 단일 색상 + 애니메이션 */
@@ -220,6 +221,7 @@ table.report-table thead th:only-child {
     table.report-table td {
         padding: 8px 6px;
         font-size: 14px;
+        text-align: center;
     }
     
     .result-bar-container {

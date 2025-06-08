@@ -58,14 +58,24 @@ body {
     flex-shrink: 0;
 }
 
-.logo-section .logo-text {
-    color: var(--text-primary);
-    font-size: 20px;
-    font-weight: 500;
+.logo-link {
+    display: flex;                /* 수평 정렬 */
+    align-items: center;          /* 수직 중앙 정렬 */
     text-decoration: none;
 }
 
-.logo-section .logo-link {
+.logo-image {
+    height: 45px;                 /* 로고 이미지 크기 제한 */
+    width: auto;
+    margin-right: 8px;
+    object-fit: contain;
+    vertical-align: middle;
+}
+
+.logo-text {
+    color: var(--text-primary);
+    font-size: 20px;
+    font-weight: 500;
     text-decoration: none;
 }
 
@@ -538,7 +548,9 @@ body {
 .politicians-table {
     width: 100%;
     border-collapse: collapse;
-    margin: 0;
+    margin: 0 auto;
+    table-layout:fixed;
+
 }
 
 .politicians-table thead {
@@ -547,7 +559,7 @@ body {
 
 .politicians-table th {
     padding: 12px 16px;
-    text-align: left;
+    text-align: center;
     font-weight: 500;
     color: var(--text-secondary);
     font-size: 13px;
@@ -556,7 +568,7 @@ body {
 
 .politicians-table td {
     padding: 12px 16px;
-    text-align: left;
+    text-align: center;
     border-bottom: 1px solid var(--border-light);
     font-size: 14px;
     vertical-align: middle;
@@ -570,28 +582,40 @@ body {
 
 .politicians-table tbody tr:hover {
     background-color: var(--hover);
+    color: var(--text-primary);
+}
+.politicians-table tbody tr:hover td {
+    color: var(--text-primary); /* 모든 셀 내부의 텍스트도 흰색으로 */
 }
 
-.politician-photo {
+/* 1. 공통 사진 스타일 */
+.photo-common {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    object-fit: cover;
-    border: 1px solid var(--border-light);
-}
-
-.photo-placeholder {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background-color: var(--surface-light);
+    border: 2px solid var(--border-light); /* fallback border */
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: var(--text-muted);
+    object-fit: cover;
     font-size: 14px;
-    border: 1px solid var(--border-light);
+    color: var(--text-muted);
 }
+
+/* 2. 사진이 없는 경우 전용 스타일 */
+.photo-placeholder {
+    background-color: var(--surface-light);
+}
+
+/* 3. 정당별 테두리 색상 지정 */
+.border-party-0 { border-color: #5D6470; }   /* 무소속 */
+.border-party-1 { border-color: #142484; }   /* 더불어민주당 */
+.border-party-2 { border-color: #E61D2B; }   /* 국민의힘 */
+.border-party-3 { border-color: #0073CF; }   /* 조국 */
+.border-party-4 { border-color: #FF7211; }   /* 기타 */
+.border-party-5 { border-color: #D5001C; }
+.border-party-6 { border-color: #01D2C3; }
+.border-party-7 { border-color: #F58402; }
 
 /* 빈 결과 메시지 */
 .empty-message {

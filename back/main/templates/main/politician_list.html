@@ -7,7 +7,7 @@
 <div class="politician-list-container">
     <!-- 페이지 제목 -->
     <div class="page-header">
-        <h1 class="page-title">정치인별 기본 데이터 & 정치인의 성향 리포트</h1>
+        <h1 class="page-title">정치인별 기본 데이터 & 정치인 성향 리포트</h1>
     </div>
     
     <!-- 필터링 및 검색 영역 -->
@@ -106,9 +106,9 @@
                 <tr onclick="window.location.href='{% url 'politician_report' politician.str_id %}';" style="cursor: pointer;">
                     <td>
                         {% if politician.pic_link %}
-                            <img src="{{ politician.pic_link }}" alt="{{ politician.name }} 사진" class="politician-photo">
+                            <img src="{{ politician.pic_link }}" alt="{{ politician.name }} 사진" class="photo-common border-party-{{ politician.party.id }}">
                         {% else %}
-                            <div class="photo-placeholder">
+                            <div class="photo-placeholder photo-common border-party-{{ politician.party.id }}">
                                 <i class="fas fa-user"></i>
                             </div>
                         {% endif %}

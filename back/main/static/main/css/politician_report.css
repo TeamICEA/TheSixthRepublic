@@ -79,6 +79,7 @@ body {
     flex: 2;
     display: flex;
     flex-direction: column;
+    padding-left: 16px;
 }
 
 .profile-info dl {
@@ -93,6 +94,12 @@ body {
     margin-bottom: 10px;
     color: var(--text-secondary);
 }
+.profile-info dt h3 {
+    color: var(--text-primary);
+    margin: 0; /* 여백 초기화 필요시 */
+    margin-bottom: 12px;
+}
+
 
 .profile-info dd {
     margin: 0 0 6px 0;
@@ -120,6 +127,21 @@ body {
     border: 3px solid var(--primary); /* 기본값 */
     transition: border-color 0.2s ease;
 }
+.photo-placeholder1 {
+    width: 100%;
+    height: auto;
+    min-height: 300px; /* 이미지와 균형 맞추기 */
+    border-radius: 12px;
+    background-color: var(--surface-light);
+    border: 3px solid var(--border-light); /* 기본값 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    overflow: hidden;
+    transition: border-color 0.2s ease;
+}
+
 
 /* 정당별 사진 테두리 */
 .party-더불어민주당 .profile-img-box img {
@@ -356,6 +378,7 @@ body {
     border: 1px solid var(--border-medium);
 }
 
+
 .reason-title {
     font-weight: 600;
     margin-bottom: 15px;
@@ -364,12 +387,13 @@ body {
 }
 
 .reason {
-    font-size: 14px;
+    font-size: 15px;
     color: var(--text-primary);
-    line-height: 1.6;
+    line-height: 1.8;
 }
 
 /* 테이블 스타일 - 다크 모드 */
+/* 기존 테이블 스타일 유지 */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -382,7 +406,7 @@ table {
 
 th, td {
     padding: 12px 8px;
-    text-align: left;
+    text-align: center;
     border-bottom: 1px solid var(--border-light);
     color: var(--text-primary);
 }
@@ -398,13 +422,78 @@ tr:hover {
     background-color: var(--hover);
 }
 
-table img {
+/* 공통 이미지 스타일 */
+table img,
+.party-img-placeholder {
     width: 32px;
     height: 32px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid var(--border-light);
+    border: 2px solid var(--border-light); /* 기본값 */
 }
+.photo-placeholder {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: var(--surface-light);
+    border: 2px solid var(--border-light);
+    display: inline-block; /* ✅ img처럼 정렬 맞춤 */
+    vertical-align: middle; /* ✅ 정렬 보정 */
+    font-size: 14px;
+    color: var(--text-muted);
+    overflow: hidden;
+    text-align: center;
+    line-height: 32px; /* 아이콘을 정확히 가운데로 */
+}
+
+
+/* 정당별 테두리 색상 (이미지 + placeholder 모두 적용 가능) */
+.party-img-더불어민주당 {
+    border-color: var(--party-더불어민주당);
+}
+
+.party-img-국민의힘 {
+    border-color: var(--party-국민의힘);
+}
+
+.party-img-조국혁신당 {
+    border-color: var(--party-조국혁신당);
+}
+
+.party-img-개혁신당 {
+    border-color: var(--party-개혁신당);
+}
+
+.party-img-진보당 {
+    border-color: var(--party-진보당);
+}
+
+.party-img-기본소득당 {
+    border-color: var(--party-기본소득당);
+}
+
+.party-img-사회민주당 {
+    border-color: var(--party-사회민주당);
+}
+
+.party-img-무소속 {
+    border-color: var(--party-무소속);
+}
+
+/* 공통 이미지/아이콘 placeholder 스타일 */
+.table-photo {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid var(--border-light); /* 기본 테두리 */
+    object-fit: cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto; /* 테이블 셀 안에서 가로 중앙 */
+    overflow: hidden;
+}
+
 
 /* clearfix */
 .outer-box::after {
@@ -441,17 +530,20 @@ table img {
         padding: 20px;
     }
     
-    .profile-top {
-        flex-direction: column;
+.profile-top {
+        flex-direction: row;         /* 👈 변경: 세로에서 가로로 */
+        flex-wrap: wrap;             /* 👈 공간 부족하면 줄바꿈 허용 */
+        align-items: flex-start;     /* 👈 이미지와 텍스트 상단 정렬 */
         gap: 16px;
     }
-    
+
     .profile-img-box {
-        align-self: center;
-        min-width: auto;
-        max-width: 200px;
+        flex: 1;
+        min-width: 160px;
+        max-width: 240px;
+        align-self: flex-start;      /* 👈 가운데 정렬 해제 */
     }
-    
+
     .ranking-row {
         flex-direction: column;
         gap: 16px;
@@ -465,6 +557,8 @@ table img {
         padding: 20px;
     }
 }
+
+
 
 @media (max-width: 576px) {
     .profile-info dt {
