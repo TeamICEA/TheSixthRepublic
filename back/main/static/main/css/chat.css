@@ -1,70 +1,101 @@
-body {
-    background: white;
-    margin: 0;
-    font-family: 'Noto Sans KR', sans-serif;
-    color: #111;
-}
-
-.header-bar {
-    width: 100vw;
-    background: #D7F5E3;
-    height: 48px;
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 100;
-}
-.nav {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #D7F5E3;
-    width: 100vw;
-    height: 48px;
-    box-sizing: border-box;
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 110;
-}
-.nav-highlight {
-    width: 182px;
-    height: 26px;
-    background: #B0E3C6;
-    border-radius: 2px;
-    margin-right: 20px;
-    margin-left: 0;
-    display: inline-block;
-    position: absolute;
-    left: 16px;
-}
-.nav-menu {
-    display: flex;
-    width: 100%;
-    justify-content: center;
-    font-size: 18px;
-    position: relative;
-    z-index: 120;
-    list-style: none;
-    gap: 72px;
-    font-weight: bold;
+html, body {
+    height: 100%;
     margin: 0;
     padding: 0;
 }
 
+#loading-banner {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    /* 추가적으로 필요하다면 background: transparent; */
+}
+
+.loading-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.3);
+}
+
+.loading-content {
+    position: relative;
+    z-index: 10;
+    border-radius: 10px;
+    padding: 32px 40px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    background: #fff;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+.spinner {
+    width: 32px; height: 32px;
+    border: 10px solid #ddd;
+    border-top: 10px solid #5CC39F;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 18px;
+}
+
+.spinner {
+    width: 32px;
+    height: 32px;
+    border: 5px solid #ddd;
+    border-top: 5px solid #5CC39F;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 18px;
+}
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+.loading-text {
+    font-size: 20px;
+    color: #222;
+}
+
+/* 기존 chat-row, 채팅버블 등은 그대로 사용 */
 .chat-container {
     padding-top: 80px;
     padding-bottom: 180px;
     max-width: 100vw;
     min-height: 100vh;
+    overflow-y: auto;
 }
+
 .chat-row {
     display: flex;
     align-items: flex-start;
+    width: 100%;
     margin-top: 40px;
-    margin-left: 48px;
+    margin-left: 500px;
 }
-.profile-img {
+
+.user-row {
+    flex-direction: row-reverse;
+    /* justify-content: flex-end; */
+    margin-left: -500px;
+}
+.bot-row {
+    /* 기본값 (왼쪽) */
+}
+.user-bubble {
+    background: #A5E5C3;
+    color: #212121;
+    align-self: flex-end;
+}
+.bot-bubble {
+    background: #484848;
+    color: white;
+}
+.profile-img.bot-profile {
     width: 56px;
     height: 56px;
     border-radius: 50%;
@@ -72,27 +103,27 @@ body {
     background: #ccc;
     margin-right: 18px;
 }
+
 .chat-bubble {
-    background: #C4F0D5;
-    color: #212121;
-    border-radius: 28px;
-    font-size: 32px;
+    border-radius: 20px;
+    font-size: 20px;
     line-height: 1.3;
-    padding: 24px 36px;
+    padding: 16px 24px;
     max-width: 900px;
-    min-width: 350px;
+    min-width: 100px;
     font-weight: 400;
     box-sizing: border-box;
     display: flex;
     align-items: center;
 }
 
+/* 입력부 + 버튼 */
 .chat-input-wrap {
     position: fixed;
     left: 0;
     bottom: 0;
     width: 100vw;
-    background: #CFF6DF;
+    background: #1B1D1F;
     padding: 32px 0 32px 0;
     z-index: 200;
     box-sizing: border-box;
@@ -108,15 +139,18 @@ body {
     width: 90vw;
     max-width: 85vw;
     min-width: 260px;
-    background: #F5F5F5;
+    background: #484848;
     padding: 22px 24px;
     border: none;
     outline: none;
-    font-size: 32px;
+    font-size: 20px;
     border-radius: 16px;
     margin-right: 16px;
-    color: #222;
+    color: white;
     box-sizing: border-box;
+}
+.chat-input-box::placeholder {
+    color: #bbb;
 }
 .send-btn {
     width: 48px;
@@ -129,8 +163,6 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: none;
-    transition: background 0.2s;
     font-size: 30px;
 }
 .send-btn:hover {
@@ -138,13 +170,9 @@ body {
 }
 .send-arrow {
     font-size: 32px;
-    transition: transform 0.1s;
     color: #222;
 }
-.chat-input-box::placeholder {
-    font-size: 32px;
-    color: #bbb;
-}
+
 @media(max-width: 900px) {
     .chat-bubble {
     font-size: 22px;

@@ -909,9 +909,11 @@ def GoToChat(request,str_id:str):
     politicians = Politician.objects.filter(str_id=str_id)
     user_text = "" # 유저의 메시지는 어디서 가져올 것인가
     text = "" # 답변
+    messages = []
 
     if request.method == "POST":
         message = request.POST.get('message')
+        messages = request.POST.get('messages')
         user_text = message
 
     if politicians:
@@ -948,14 +950,14 @@ def GoToChat(request,str_id:str):
             "str_id": str_id,
             "name": politician.name,
             "pic_link": politician.pic_link,
-            "response": f"안녕하십니까, {politician.name}입니다."
+            "messages": [{"role": "model", "text": f"안녕하십니까, {politician.name}입니다."}]
         }
 
         if user_text == "": # 첫 페이지
             if politician.name == "이재명":
-                context["response"] = "안녕하십니까, 이제부터 진짜 대한민국! 지금은 이재명입니다."
+                context["messages"][0]["text"] = "안녕하십니까, 이제부터 진짜 대한민국! 지금은 이재명입니다."
             else:
-                context["response"] = ManageChat(request, "(인삿말)", politician, poly_infos)[0]
+                context["messages"][0]["text"] = ManageChat(request, "(인삿말)", politician, poly_infos)[0]
             return render(request, "main/chat.html", context)
 
         response = ManageChat(request, user_text, politician, poly_infos)
@@ -971,7 +973,15 @@ def GoToChat(request,str_id:str):
     if text == "":
         text = "죄송합니다. 하루 토큰 사용량을 초과하였습니다. 내일 다시 시도해주세요."
 
-    context["response"] = text
+    if messages is not None and len(messages) > 0:
+        context["messages"].clear()
+        try:
+            context["messages"] = json.loads(messages.replace("'", '"'))
+        except:
+            pass
+
+    context["messages"].append({"role": "user", "text": user_text})
+    context["messages"].append({"role": "model", "text": text})
     return render(request, "main/chat.html", context)
 
 def ManageChat(request, user_text: str, politician: Politician, poly_infos: dict) -> tuple[str, int]:
