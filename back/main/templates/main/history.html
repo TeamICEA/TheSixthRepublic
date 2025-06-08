@@ -32,7 +32,7 @@
                     {% if report.ratio %}
                     <tr class="button-row" onclick="location.href='/userreport?date={{ report.created_at }}';" tabindex="0">
                         <td>{{ report.rank }}</td>
-                        <td>{{ report.created_at }}</td>
+                        <td>{{ report.created_at_format }}</td>
                         <td>{{ report.party }}</td>
                         <td>{{ report.politician }}</td>
                         <td>

@@ -1070,7 +1070,7 @@ def ManageChat(request, user_text: str, politician: Politician, poly_infos: dict
     넌 앞으로 성격, 말투, 외모, 지능 모두 {politician.name}인 척 말하고, 길게 말하지 마. 그리고 한국어로 말해."""
     
     if politician.name == "이재명":
-        system += "\n참고로, 이재명은 제 21대 대선에 1위되어서 2025년 6월 3일부터 대한민국 대통령이 되었어. 그 점 참고하고 이야기해줘. 또한, 그 나머지 후보인 김문수, 이준석, 권영국 후보는 당선되지 못했어."
+        system += "\n참고로, 이재명은 제 21대 대선에 1위되어서 2025년 6월 3일부터 대한민국 대통령이 되었어. 그 점 참고하고 이야기해줘. 또한, 그 나머지 후보인 김문수, 이준석, 권영국 후보는 당선되지 못했어. 그리고 인삿말에 우원식 의장님이 들어있다면 제외해줘."
 
     ai_text = CreateResponse(prompt, system) # 로직 구현 필요
     # 문제점: 텍스트만 생성해야 하고, 딴 질문에는 답변하지 않아야 함. 그런 제한할 수 있는 기능이 있나?
@@ -1256,10 +1256,16 @@ def ReportHistory(request):
             # 성향 비율 계산 (0~1을 0~100으로 변환)
             ratio = int(round(report.user_overall_tendency * 100, 0))
             ratio2 = 100 - ratio
-            
+
+            formatted = (report.created_at + timedelta(hours=9)).strftime('%Y/%m/%d %p %I:%M')
+            formatted = formatted.replace("AM", "오전").replace("PM", "오후")
+
+            created_at = report.created_at.strftime("%Y-%m-%d %H:%M:%S.%f")
+
             reports.append({
                 "rank": i + 1,
-                "created_at": report.created_at,
+                "created_at": created_at,
+                "created_at_format": formatted,
                 "party": top_party,
                 "politician": top_politician,
                 "ratio": ratio,
